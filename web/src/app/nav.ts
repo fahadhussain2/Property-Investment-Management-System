@@ -1,5 +1,6 @@
 import {
   BarChart3Icon,
+  BookOpenTextIcon,
   Building2Icon,
   FileSignatureIcon,
   HomeIcon,
@@ -16,6 +17,7 @@ export type NavItem = { to: string; label: string; icon: LucideIcon }
 /** Desktop sidebar, in order. */
 export const sidebarNav: NavItem[] = [
   { to: '/', label: 'Dashboard', icon: HomeIcon },
+  { to: '/entries', label: 'Entries', icon: BookOpenTextIcon },
   { to: '/properties', label: 'Properties', icon: Building2Icon },
   { to: '/money', label: 'Cash & Bank', icon: WalletIcon },
   { to: '/leases', label: 'Leases & Rent', icon: FileSignatureIcon },
@@ -35,5 +37,5 @@ export const bottomNav: (NavItem & { primary?: boolean })[] = [
 
 /** Items reachable from the mobile "More" page. */
 export const moreNav: NavItem[] = sidebarNav.filter((i) =>
-  ['/leases', '/parties', '/reports', '/settings'].includes(i.to),
+  ['/entries', '/leases', '/parties', '/reports', '/settings'].includes(i.to),
 )

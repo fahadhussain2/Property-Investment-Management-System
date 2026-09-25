@@ -45,6 +45,11 @@ sets `script-shell` to Git Bash, and `web/scripts/with-local-supabase.mjs` runs 
 - Grids: always `grid-cols-1` (or `minmax(0,…)` tracks). A bare `grid` or `1fr` track grows to its longest
   unbroken row and makes phones scroll sideways. e2e overflow checks use `expectNoHorizontalScroll`
   (compares with `clientWidth`) after real content has loaded.
+- Entry forms are config-driven (`features/entries/types.ts`); field names = `post_voucher` payload keys.
+  Previews come from `preview_voucher` (DB dry run). Never re-implement posting rules in the UI.
+- After saving, `navigate()` first, then `invalidateAfterPosting()`. Refreshing first can re-render a guard
+  that redirects elsewhere (this bit the "correct entry" flow).
+- Dialogs can open inside other forms: `FormDialog` stops submit propagation (React bubbles through portals).
 - Every page has one `<h1>` (`PageHeader`/`AuthLayout`); e2e tests find pages by heading.
 
 ## Definition of done

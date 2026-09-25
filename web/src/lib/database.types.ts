@@ -798,6 +798,11 @@ export type Database = {
         }[]
       }
       post_voucher: { Args: { p: Json; p_org: string }; Returns: Json }
+      preview_edit: {
+        Args: { p_changes: Json; p_voucher: string }
+        Returns: Json
+      }
+      preview_voucher: { Args: { p: Json; p_org: string }; Returns: Json }
       property_status: {
         Args: { p_as_of?: string; p_org: string; p_prop: string }
         Returns: Database["public"]["Enums"]["property_status"]
@@ -843,6 +848,7 @@ export type Database = {
           type: Database["public"]["Enums"]["account_type"]
         }[]
       }
+      voucher_detail: { Args: { p_voucher: string }; Returns: Json }
     }
     Enums: {
       account_type: "asset" | "liability" | "equity" | "income" | "expense"

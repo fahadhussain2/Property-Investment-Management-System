@@ -2,7 +2,7 @@
 
 > Stage 3 artifact. Implements [`spec.md`](spec.md). Each milestone is one PR, and each
 > ends with a **verification gate** that Claude must pass before asking for human review.
-> Status: **APPROVED**, 2026-09-25 · M0 ✅ · M1 ✅ · M2 ✅ · M3 ✅ in review (73 pgTAP, 6/6 evals, 19 unit, 9 e2e) · next: M4
+> Status: **APPROVED**, 2026-09-25 · M0 ✅ · M1 ✅ · M2 ✅ · M3 ✅ · M4 ✅ in review (90 pgTAP, 7/7 evals, 33 unit, 14 e2e) · next: M5
 
 ## Repository layout (target)
 
@@ -61,6 +61,8 @@
 - **Gate:** report numbers equal the `evals/` expected values when fed through the UI.
 
 ### M6 — Leases & rent roll
+- Carry-over from M4: rent/deposit forms get a lease field (corrections currently clear `lease_id`);
+  opening receivables/payables may need a property tag for the per-property ledger (M5).
 - Lease CRUD, automatic RENTED/VACANT status, rent roll with months unpaid, and expiring leases.
 - **Gate:** pgTAP tests plus e2e for the lease lifecycle.
 

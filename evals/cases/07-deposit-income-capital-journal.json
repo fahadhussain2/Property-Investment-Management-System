@@ -1,0 +1,26 @@
+{
+  "name": "Capital, security deposit in and out, commission income, drawings and a journal entry",
+  "setup": {
+    "banks": [{ "name": "Meezan", "opening": "0.00" }],
+    "cash_opening": "0.00",
+    "properties": [{ "code": "SHOP-4", "kind": "shop", "opening_cost": "3000000.00" }],
+    "parties": [{ "name": "Tenant X", "roles": ["tenant"] }]
+  },
+  "steps": [
+    { "type": "capital", "date": "2026-01-01", "amount": "5000000.00", "into": "bank:Meezan" },
+    { "type": "deposit", "date": "2026-01-05", "property": "SHOP-4", "party": "Tenant X", "amount": "100000.00", "into": "1000", "direction": "received" },
+    { "type": "income", "date": "2026-01-10", "account": "4200", "amount": "250000.00", "into": "bank:Meezan", "memo": "Commission on plot deal" },
+    { "type": "drawing", "date": "2026-01-15", "amount": "300000.00", "from": "bank:Meezan" },
+    { "type": "deposit", "date": "2026-01-20", "property": "SHOP-4", "party": "Tenant X", "amount": "100000.00", "from": "1000", "direction": "refunded" },
+    { "type": "journal", "date": "2026-02-01", "memo": "Bank charges for January", "lines": [
+      { "account": "6590", "debit": "1500.00" },
+      { "account": "bank:Meezan", "credit": "1500.00" }
+    ] }
+  ],
+  "expect": {
+    "balances": { "bank:Meezan": "4948500.00", "1000": "0.00", "2200": "0.00", "3000": "5000000.00", "3100": "-300000.00" },
+    "income_statement": { "from": "2026-01-01", "to": "2026-12-31", "other_income": "250000.00", "total_expenses": "1500.00", "net_profit": "248500.00" },
+    "property_summary": { "SHOP-4": { "cost": "3000000.00", "net_profit": "0.00" } },
+    "trial_balance_difference": "0.00"
+  }
+}

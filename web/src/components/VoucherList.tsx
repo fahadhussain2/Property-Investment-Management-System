@@ -1,4 +1,5 @@
 import { ReceiptTextIcon } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { EmptyState } from '@/components/EmptyState'
 import { VOUCHER_TYPES, type VoucherType } from '@/lib/labels'
 import { formatMoney, toMoney } from '@/lib/money'
@@ -29,18 +30,30 @@ export function VoucherList({ rows, currency }: { rows: VoucherRow[]; currency: 
       {rows.map((v) => {
         const cancelled = v.status === 'reversed' || v.reverses_id !== null
         return (
-          <li key={v.id} className={cn('flex items-start gap-3 px-4 py-3 text-sm', cancelled && 'text-muted-foreground')}>
-            <div className="w-24 shrink-0 tabular-nums">{new Date(v.date + 'T00:00:00').toLocaleDateString()}</div>
-            <div className="min-w-0 flex-1">
-              <div className={cn('font-medium', cancelled && 'line-through')}>{VOUCHER_TYPES[v.type]}</div>
-              <div className="truncate text-xs text-muted-foreground">
-                {v.number}
-                {v.memo ? ` · ${v.memo}` : ''}
+          <li key={v.id}>
+            <Link
+              to={`/entries/${v.id}`}
+              className={cn(
+                'flex items-start gap-3 px-4 py-3 text-sm hover:bg-accent',
+                cancelled && 'text-muted-foreground',
+              )}
+            >
+              <div className="w-24 shrink-0 tabular-nums">
+                {new Date(v.date + 'T00:00:00').toLocaleDateString()}
               </div>
-            </div>
-            <div className={cn('shrink-0 tabular-nums', cancelled && 'line-through')}>
-              {formatMoney(toMoney(v.amount), currency)}
-            </div>
+              <div className="min-w-0 flex-1">
+                <div className={cn('font-medium', cancelled && 'line-through')}>
+                  {VOUCHER_TYPES[v.type]}
+                </div>
+                <div className="truncate text-xs text-muted-foreground">
+                  {v.number}
+                  {v.memo ? ` · ${v.memo}` : ''}
+                </div>
+              </div>
+              <div className={cn('shrink-0 tabular-nums', cancelled && 'line-through')}>
+                {formatMoney(toMoney(v.amount), currency)}
+              </div>
+            </Link>
           </li>
         )
       })}
