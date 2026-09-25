@@ -25,8 +25,8 @@ export async function inviteMember(orgId: string, email: string, role: Role) {
   unwrap(await supabase.from('invitations').insert({ org_id: orgId, email, role }))
 }
 
-export async function revokeInvitation(id: string) {
-  unwrap(await supabase.from('invitations').delete().eq('id', id))
+export async function revokeInvitation(orgId: string, id: string) {
+  unwrap(await supabase.from('invitations').delete().eq('org_id', orgId).eq('id', id))
 }
 
 // RLS turns a forbidden update/delete into "0 rows changed", not an error, so check the count.

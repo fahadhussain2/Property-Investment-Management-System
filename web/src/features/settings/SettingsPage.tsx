@@ -8,8 +8,8 @@ export function SettingsPage() {
   const { current } = useOrg()
   const sections = [
     { to: '/settings/members', label: 'Members & invitations', icon: UsersIcon, ready: true },
-    { to: '/settings', label: 'Bank & cash accounts (M3)', icon: LandmarkIcon, ready: false },
-    { to: '/settings', label: 'Chart of accounts (M3)', icon: ListTreeIcon, ready: false },
+    { to: '/settings/accounts/money', label: 'Bank & cash accounts', icon: LandmarkIcon, ready: true },
+    { to: '/settings/accounts', label: 'Chart of accounts', icon: ListTreeIcon, ready: true },
   ]
   return (
     <>

@@ -1,4 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
+import { LandmarkIcon } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { PageHeader } from '@/components/PageHeader'
 import { SectionError, SectionLoading } from '@/components/QueryState'
@@ -33,8 +35,21 @@ type BalanceRow = { account_id: string; code: string; name: string; subtype: str
 function CashCards({ rows, currency }: { rows: BalanceRow[]; currency: string }) {
   const money = rows.filter((a) => a.subtype === 'cash' || a.subtype === 'bank')
   const total = sum(money.map((a) => toMoney(a.balance)))
+  const hasBank = money.some((a) => a.subtype === 'bank')
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {!hasBank && (
+        <Link
+          to="/settings/accounts/money"
+          className="flex items-center gap-3 rounded-lg border border-dashed p-4 text-sm hover:bg-accent sm:col-span-2 lg:col-span-3"
+        >
+          <LandmarkIcon className="size-5 text-muted-foreground" aria-hidden />
+          <span>
+            <span className="font-medium">Add your bank accounts</span>
+            <span className="block text-muted-foreground">So payments and receipts can be recorded against them.</span>
+          </span>
+        </Link>
+      )}
       <Card className="sm:col-span-2 lg:col-span-3">
         <CardHeader>
           <CardDescription>Total cash &amp; bank</CardDescription>
