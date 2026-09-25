@@ -2,7 +2,7 @@
 
 > Stage 3 artifact. Implements [`spec.md`](spec.md). Each milestone is one PR, and each
 > ends with a **verification gate** that Claude must pass before asking for human review.
-> Status: **APPROVED**, 2026-09-25 · M0 ✅ · M1 ✅ (27 pgTAP tests, 6/6 evals) · next: M2
+> Status: **APPROVED**, 2026-09-25 · M0 ✅ · M1 ✅ · M2 ✅ in review (44 pgTAP, 6/6 evals, 11 unit, 5 e2e) · next: M3
 
 ## Repository layout (target)
 
@@ -47,6 +47,7 @@
 
 ### M3 — Properties & parties
 - Property register with status filters, the property form, and parties CRUD.
+- Settings: bank & cash accounts (`add_money_account`), chart of accounts (add/rename/deactivate).
 - **Gate:** component tests; manual screenshot check at 375 px and 1280 px.
 
 ### M4 — Voucher entry
@@ -65,6 +66,9 @@
 
 ### M7 — Go-live
 - Supabase cloud project and Cloudflare Pages deploy (GitHub Actions).
+- **Blocker: turn on "Confirm email" in the hosted Supabase Auth settings.** `accept_invitations()`
+  relies on confirmed emails; with confirmations off, anyone signing up with an invited address joins.
+  Configure Resend SMTP (free tier) so confirmation emails are not rate-limited.
 - Nightly backup workflow; keep-alive workflow.
 - Opening-balance wizard; enter the real register data as of the cut-over date.
 - **Gate:** the owner confirms that opening cash, bank and property balances match the registers (UAT sign-off).

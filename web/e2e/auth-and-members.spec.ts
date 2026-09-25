@@ -1,0 +1,96 @@
+import { expect, test, type Page } from '@playwright/test'
+
+// Each test uses fresh users, so tests are independent and can re-run against the same local DB.
+const unique = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
+const PASSWORD = 'correct-horse-9'
+
+async function signUp(page: Page, email: string, businessName?: string) {
+  await page.goto('/signup')
+  if (businessName) await page.getByLabel('Business name').fill(businessName)
+  await page.getByLabel('Email').fill(email)
+  await page.getByLabel('Password').fill(PASSWORD)
+  await page.getByRole('button', { name: 'Create account' }).click()
+}
+
+test('owner signs up with a business and lands on the dashboard', async ({ page }) => {
+  const business = `Hussain Estates ${unique()}`
+  await signUp(page, `owner-${unique()}@e2e.local`, business)
+
+  await expect(page.getByRole('heading', { name: business })).toBeVisible()
+  await expect(page.getByTestId('total-cash')).toHaveText('Rs 0')
+  await expect(page.getByTestId('balance-1000')).toContainText('Cash in Hand')
+})
+
+// Regression (M2 review): a failed balance load once rendered "Rs 0" as if it were a real balance.
+test('dashboard shows an error, never a fake zero, when balances fail to load', async ({ page }) => {
+  await page.route('**/rest/v1/rpc/account_balances', (route) =>
+    route.fulfill({ status: 500, contentType: 'application/json', body: '{"message":"database unavailable"}' }),
+  )
+  await signUp(page, `err-${unique()}@e2e.local`, `Error Estates ${unique()}`)
+
+  await expect(page.getByRole('alert')).toContainText('Could not load this', { timeout: 15_000 })
+  await expect(page.getByTestId('total-cash')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible()
+})
+
+test('user without a business goes through onboarding', async ({ page }) => {
+  await signUp(page, `solo-${unique()}@e2e.local`)
+  await expect(page).toHaveURL(/\/onboarding$/)
+
+  const business = `Solo Properties ${unique()}`
+  await page.getByLabel('Business name').fill(business)
+  await page.getByRole('button', { name: 'Create business' }).click()
+  await expect(page.getByRole('heading', { name: business })).toBeVisible()
+})
+
+test('owner invites an accountant who joins through the link', async ({ browser }) => {
+  const business = `Team Estates ${unique()}`
+  const ownerEmail = `owner-${unique()}@e2e.local`
+  const staffEmail = `staff-${unique()}@e2e.local`
+
+  const owner = await (await browser.newContext()).newPage()
+  await signUp(owner, ownerEmail, business)
+  await expect(owner.getByRole('heading', { name: business })).toBeVisible()
+
+  await owner.goto('/settings/members')
+  await owner.getByRole('button', { name: 'Invite' }).click()
+  await owner.getByLabel('Email').fill(staffEmail)
+  await owner.getByLabel('Role', { exact: true }).selectOption('accountant')
+  await owner.getByRole('button', { name: 'Create invitation' }).click()
+  const link = (await owner.getByTestId('invite-link').textContent())!.trim()
+  expect(link).toContain(encodeURIComponent(staffEmail))
+
+  // The staff member opens the link in their own browser.
+  const staff = await (await browser.newContext()).newPage()
+  await staff.goto(link)
+  await expect(staff.getByRole('heading', { name: 'Join your team' })).toBeVisible()
+  await expect(staff.getByLabel('Email')).toHaveValue(staffEmail)
+  await staff.getByLabel('Password').fill(PASSWORD)
+  await staff.getByRole('button', { name: 'Create account' }).click()
+  await expect(staff.getByRole('heading', { name: business })).toBeVisible()
+
+  await staff.goto('/settings/members')
+  const members = staff.getByTestId('members-list')
+  await expect(members).toContainText(ownerEmail)
+  await expect(members).toContainText(staffEmail)
+  await expect(members.getByText('accountant')).toBeVisible()
+  // Accountants cannot manage members.
+  await expect(staff.getByRole('button', { name: 'Invite' })).toHaveCount(0)
+})
+
+test.describe('mobile', () => {
+  test.use({ viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true })
+
+  test('shows bottom tabs and never scrolls sideways', async ({ page }) => {
+    await signUp(page, `mobile-${unique()}@e2e.local`, `Mobile Estates ${unique()}`)
+    await expect(page.getByTestId('bottom-nav')).toBeVisible()
+    await expect(page.getByTestId('bottom-nav').getByRole('link', { name: 'New' })).toBeVisible()
+
+    for (const path of ['/', '/settings/members', '/more']) {
+      await page.goto(path)
+      await expect(page.getByTestId('bottom-nav')).toBeVisible()
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
+      expect(overflow, `horizontal overflow on ${path}`).toBeLessThanOrEqual(0)
+    }
+  })
+})
