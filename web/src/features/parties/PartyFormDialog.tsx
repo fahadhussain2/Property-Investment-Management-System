@@ -8,11 +8,14 @@ export function PartyFormDialog({
   open,
   onOpenChange,
   party,
+  defaultRoles,
   onSave,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   party?: Party
+  /** Roles pre-ticked for a new party (e.g. 'seller' when created from a purchase). */
+  defaultRoles?: string[]
   onSave: (input: PartyInput) => Promise<void>
 }) {
   return (
@@ -37,7 +40,7 @@ export function PartyFormDialog({
                     type="checkbox"
                     name="roles"
                     value={r.value}
-                    defaultChecked={party?.roles.includes(r.value)}
+                    defaultChecked={(party?.roles ?? defaultRoles ?? []).includes(r.value)}
                     className="size-4 accent-primary"
                   />
                   {r.label}

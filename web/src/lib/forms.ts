@@ -26,9 +26,20 @@ export function parseForm<S extends z.ZodType>(
 /** Turns known database error messages into plain language for the user. */
 export function friendlyError(e: unknown): string {
   const msg = e instanceof Error ? e.message : String(e)
+  if (msg.includes('not a member of this organization with role'))
+    return 'Your role in this business is view-only. Ask an owner if you need to record entries.'
   if (msg.includes('at least one owner')) return 'A business must always have at least one owner.'
   if (msg.includes('invitations_pending_idx')) return 'This email already has a pending invitation.'
   if (msg.includes('row-level security')) return 'You do not have permission to do that.'
+  if (msg.includes('property is already sold')) return 'This property is already sold.'
+  if (msg.includes('paid_now exceeds price')) return 'Paid now can’t be more than the price.'
+  if (msg.includes('plus advances') && msg.includes('exceeds sale price'))
+    return 'Money received now plus token money already received is more than the sale price.'
+  if (msg.includes('choose an active cash or bank account')) return 'Choose an active cash or bank account.'
+  if (msg.includes('reverse the sale of this property first'))
+    return 'This property has been sold. Void the sale first, then change its purchase or costs.'
+  if (msg.includes('already reversed')) return 'This entry has already been voided.'
+  if (msg.includes('journal is unbalanced')) return 'Debits and credits must be equal.'
   if (msg.includes('bring it to zero')) return 'This account still has money in it. Move the balance out before hiding it.'
   if (msg.includes('system accounts')) return 'Built-in accounts can be renamed, but not hidden or deleted.'
   if (msg.includes('type cannot be changed')) return 'An account keeps its type. Add a new account instead.'

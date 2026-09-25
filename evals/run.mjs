@@ -112,6 +112,15 @@ function toPayload(ctx, org, step) {
   if (money) p.account_id = ctx.account(org, money)
   if (step.type === 'transfer') p.to_account_id = ctx.account(org, step.to)
   if (step.account) p.category_account_id = ctx.account(org, step.account)
+  if (step.lines) {
+    p.lines = step.lines.map((l) => ({
+      account_id: ctx.account(org, l.account),
+      ...(l.debit && { debit: l.debit }),
+      ...(l.credit && { credit: l.credit }),
+      ...(l.property && { property_id: org.properties[l.property] }),
+      ...(l.party && { party_id: org.parties[l.party] }),
+    }))
+  }
   return p
 }
 

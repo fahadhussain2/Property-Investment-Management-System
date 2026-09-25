@@ -39,6 +39,9 @@ export function FormDialog<S extends z.ZodType>({
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
+    // React bubbles events through portals: without this, a dialog opened from inside another form
+    // (e.g. "+ New property" in an entry form) would also submit the outer form.
+    e.stopPropagation()
     const result = parseForm(schema, e.currentTarget)
     if (result.errors) return setErrors(result.errors)
     setBusy(true)

@@ -33,3 +33,15 @@ export function formatMoney(a: Money, currency = 'PKR'): string {
  * numbers; convert them here at the edge and never do arithmetic on the raw number.
  */
 export const toMoney = (x: number | string | null | undefined): Money => new Decimal(x ?? 0).toFixed(2)
+
+/** "1.25 crore" / "1.5 lakh" for amounts of a lakh or more (how amounts are said in Pakistan). */
+export function inLakhCrore(a: Money): string | null {
+  const d = new Decimal(a).abs()
+  const fmt = (x: Decimal) => x.toDecimalPlaces(2).toString()
+  if (d.gte(10_000_000)) return `${fmt(d.div(10_000_000))} crore`
+  if (d.gte(100_000)) return `${fmt(d.div(100_000))} lakh`
+  return null
+}
+
+/** Today's date in the user's time zone as YYYY-MM-DD. */
+export const today = () => new Date().toLocaleDateString('en-CA')
