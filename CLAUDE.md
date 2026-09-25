@@ -42,6 +42,9 @@ sets `script-shell` to Git Bash, and `web/scripts/with-local-supabase.mjs` runs 
 - API `numeric` values arrive as JSON numbers: convert with `toMoney()` immediately.
 - Current org/role: `useOrg()` (`canWrite` hides write actions for viewers; the DB enforces it anyway).
 - Never render a fallback number (e.g. Rs 0) for data that failed to load: use `SectionError`.
+- Grids: always `grid-cols-1` (or `minmax(0,…)` tracks). A bare `grid` or `1fr` track grows to its longest
+  unbroken row and makes phones scroll sideways. e2e overflow checks use `expectNoHorizontalScroll`
+  (compares with `clientWidth`) after real content has loaded.
 - Every page has one `<h1>` (`PageHeader`/`AuthLayout`); e2e tests find pages by heading.
 
 ## Definition of done

@@ -26,7 +26,7 @@ export function LoginPage() {
 
   return (
     <AuthLayout title="Sign in" description="Welcome back. Sign in to your books.">
-      <form onSubmit={onSubmit} className="grid gap-4" noValidate>
+      <form onSubmit={onSubmit} className="grid grid-cols-1 gap-4" noValidate>
         <Field label="Email" name="email" type="email" autoComplete="email" error={errors.email} />
         <Field
           label="Password"

@@ -84,7 +84,7 @@ export function AppShell() {
             <PlusIcon /> New entry
           </NavLink>
         )}
-        <nav aria-label="Main" className="grid gap-1">
+        <nav aria-label="Main" className="grid grid-cols-1 gap-1">
           {sidebarNav.map(({ to, label, icon: Icon }) => (
             <NavLink key={to} to={to} end={to === '/'} className={sideLink}>
               <Icon className="size-4" aria-hidden /> {label}

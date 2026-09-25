@@ -73,7 +73,7 @@ export function SignupPage() {
           : 'Replace your paper registers in a few minutes.'
       }
     >
-      <form onSubmit={onSubmit} className="grid gap-4" noValidate>
+      <form onSubmit={onSubmit} className="grid grid-cols-1 gap-4" noValidate>
         {!invitedEmail && (
           <Field
             label="Business name"

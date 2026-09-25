@@ -88,7 +88,7 @@ function InviteDialog({
           </DialogDescription>
         </DialogHeader>
         {invited ? (
-          <div className="grid gap-3">
+          <div className="grid grid-cols-1 gap-3">
             <code className="break-all rounded-md bg-muted p-3 text-xs" data-testid="invite-link">
               {inviteLink(invited)}
             </code>
@@ -102,7 +102,7 @@ function InviteDialog({
             </DialogFooter>
           </div>
         ) : (
-          <form onSubmit={onSubmit} className="grid gap-4" noValidate>
+          <form onSubmit={onSubmit} className="grid grid-cols-1 gap-4" noValidate>
             <Field
               label="Email"
               name="email"
@@ -180,7 +180,7 @@ export function MembersPage() {
     },
     onError,
   })
-  const revoke = useMutation({ mutationFn: revokeInvitation, onSuccess: refresh, onError })
+  const revoke = useMutation({ mutationFn: (id: string) => revokeInvitation(current.id, id), onSuccess: refresh, onError })
 
   return (
     <>

@@ -1,16 +1,5 @@
-import { expect, test, type Page } from '@playwright/test'
-
-// Each test uses fresh users, so tests are independent and can re-run against the same local DB.
-const unique = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
-const PASSWORD = 'correct-horse-9'
-
-async function signUp(page: Page, email: string, businessName?: string) {
-  await page.goto('/signup')
-  if (businessName) await page.getByLabel('Business name').fill(businessName)
-  await page.getByLabel('Email').fill(email)
-  await page.getByLabel('Password').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Create account' }).click()
-}
+import { expect, test } from '@playwright/test'
+import { expectNoHorizontalScroll, PASSWORD, signUp, unique } from './helpers'
 
 test('owner signs up with a business and lands on the dashboard', async ({ page }) => {
   const business = `Hussain Estates ${unique()}`
@@ -89,8 +78,7 @@ test.describe('mobile', () => {
     for (const path of ['/', '/settings/members', '/more']) {
       await page.goto(path)
       await expect(page.getByTestId('bottom-nav')).toBeVisible()
-      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
-      expect(overflow, `horizontal overflow on ${path}`).toBeLessThanOrEqual(0)
+      await expectNoHorizontalScroll(page, path)
     }
   })
 })

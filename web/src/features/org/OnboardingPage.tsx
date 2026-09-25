@@ -39,7 +39,7 @@ export function OnboardingPage() {
       title="Set up your business"
       description="Waiting for an invitation instead? Ask the owner to invite this email, then sign in again."
     >
-      <form onSubmit={onSubmit} className="grid gap-4" noValidate>
+      <form onSubmit={onSubmit} className="grid grid-cols-1 gap-4" noValidate>
         <Field label="Business name" name="name" autoComplete="organization" error={errors.name} />
         <Field
           label="Currency"

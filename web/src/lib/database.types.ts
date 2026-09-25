@@ -736,6 +736,10 @@ export type Database = {
           voucher_type: Database["public"]["Enums"]["voucher_type"]
         }[]
       }
+      add_category_account: {
+        Args: { p_kind: string; p_name: string; p_org: string }
+        Returns: string
+      }
       add_money_account: {
         Args: {
           p_account_no?: string
