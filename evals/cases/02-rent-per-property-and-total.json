@@ -1,0 +1,27 @@
+{
+  "name": "Rent tracked per property and rolled into total profit",
+  "setup": {
+    "banks": [{ "name": "Meezan", "opening": "0.00" }],
+    "cash_opening": "0.00",
+    "properties": [{ "code": "DP-25", "kind": "house", "opening_cost": "9000000.00" }, { "code": "SHOP-4", "kind": "shop", "opening_cost": "3000000.00" }],
+    "parties": [{ "name": "Tenant X", "roles": ["tenant"] }, { "name": "Tenant Y", "roles": ["tenant"] }],
+    "leases": [
+      { "property": "SHOP-4", "party": "Tenant X", "start": "2026-01-01", "monthly_rent": "50000.00" },
+      { "property": "DP-25", "party": "Tenant Y", "start": "2026-01-01", "monthly_rent": "80000.00" }
+    ]
+  },
+  "steps": [
+    { "type": "rent", "date": "2026-01-05", "property": "SHOP-4", "party": "Tenant X", "amount": "50000.00", "into": "1000", "period": "2026-01" },
+    { "type": "rent", "date": "2026-02-05", "property": "SHOP-4", "party": "Tenant X", "amount": "50000.00", "into": "1000", "period": "2026-02" },
+    { "type": "rent", "date": "2026-03-05", "property": "SHOP-4", "party": "Tenant X", "amount": "50000.00", "into": "1000", "period": "2026-03" },
+    { "type": "rent", "date": "2026-01-03", "property": "DP-25", "party": "Tenant Y", "amount": "240000.00", "into": "bank:Meezan", "period": "2026-01..2026-03" }
+  ],
+  "expect": {
+    "property_summary": {
+      "SHOP-4": { "rent_income": "150000.00", "status": "rented" },
+      "DP-25": { "rent_income": "240000.00", "status": "rented" }
+    },
+    "income_statement": { "from": "2026-01-01", "to": "2026-12-31", "rent_income": "390000.00", "rent_income_by_property": { "SHOP-4": "150000.00", "DP-25": "240000.00" }, "net_profit": "390000.00" },
+    "trial_balance_difference": "0.00"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "Buyer pays token money, sale completes later with balance receivable",
+  "setup": {
+    "banks": [{ "name": "Meezan", "opening": "0.00" }],
+    "cash_opening": "0.00",
+    "properties": [{ "code": "PLOT-7", "kind": "plot", "opening_cost": "4000000.00" }],
+    "parties": [{ "name": "Buyer C", "roles": ["buyer"] }]
+  },
+  "steps": [
+    { "type": "buyer_advance", "date": "2026-04-01", "property": "PLOT-7", "party": "Buyer C", "amount": "1000000.00", "into": "1000" },
+    { "type": "sale", "date": "2026-05-01", "property": "PLOT-7", "party": "Buyer C", "price": "5000000.00", "received_now": "2500000.00", "into": "bank:Meezan" }
+  ],
+  "expect": {
+    "status_history": { "PLOT-7": ["vacant", "under_agreement", "sold"] },
+    "balances": { "2100": "0.00", "1300": "1500000.00", "1000": "1000000.00", "bank:Meezan": "2500000.00" },
+    "property_summary": { "PLOT-7": { "net_profit": "1000000.00" } },
+    "trial_balance_difference": "0.00"
+  }
+}

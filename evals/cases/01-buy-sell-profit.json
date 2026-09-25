@@ -1,0 +1,21 @@
+{
+  "name": "Buy DP-25 partly on credit, capitalize transfer fee, sell at profit",
+  "setup": {
+    "banks": [{ "name": "Meezan", "opening": "20000000.00" }],
+    "cash_opening": "1000000.00",
+    "properties": [{ "code": "DP-25", "kind": "house" }],
+    "parties": [{ "name": "Seller A", "roles": ["seller"] }, { "name": "Buyer B", "roles": ["buyer"] }]
+  },
+  "steps": [
+    { "type": "purchase", "date": "2026-01-10", "property": "DP-25", "party": "Seller A", "price": "10000000.00", "paid_now": "4000000.00", "from": "bank:Meezan" },
+    { "type": "property_cost", "date": "2026-01-15", "property": "DP-25", "amount": "200000.00", "from": "1000", "memo": "Transfer fee" },
+    { "type": "pay_seller", "date": "2026-02-01", "property": "DP-25", "party": "Seller A", "amount": "6000000.00", "from": "bank:Meezan" },
+    { "type": "sale", "date": "2026-06-01", "property": "DP-25", "party": "Buyer B", "price": "12500000.00", "received_now": "12500000.00", "into": "bank:Meezan" }
+  ],
+  "expect": {
+    "property_summary": { "DP-25": { "cost": "10200000.00", "sale_price": "12500000.00", "net_profit": "2300000.00", "status": "sold" } },
+    "income_statement": { "from": "2026-01-01", "to": "2026-12-31", "property_sales": "12500000.00", "cost_of_properties_sold": "10200000.00", "gross_trading_profit": "2300000.00", "net_profit": "2300000.00" },
+    "balances": { "bank:Meezan": "22500000.00", "1000": "800000.00", "1200": "0.00", "2000": "0.00" },
+    "trial_balance_difference": "0.00"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "Editing a posted rent voucher reverses and reposts with audit trail",
+  "setup": {
+    "cash_opening": "0.00",
+    "properties": [{ "code": "SHOP-4", "kind": "shop", "opening_cost": "3000000.00" }],
+    "parties": [{ "name": "Tenant X", "roles": ["tenant"] }]
+  },
+  "steps": [
+    { "id": "r1", "type": "rent", "date": "2026-01-05", "property": "SHOP-4", "party": "Tenant X", "amount": "50000.00", "into": "1000" },
+    { "type": "edit", "voucher": "r1", "changes": { "amount": "55000.00" } }
+  ],
+  "expect": {
+    "voucher_count": { "rent": 3 },
+    "voucher_status": { "r1": "reversed" },
+    "property_summary": { "SHOP-4": { "rent_income": "55000.00" } },
+    "audit_log_entries_for": { "r1": { "min": 1 } },
+    "trial_balance_difference": "0.00"
+  }
+}

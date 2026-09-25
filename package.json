@@ -1,0 +1,15 @@
+{
+  "name": "property-ledger",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "db:start": "supabase start",
+    "db:reset": "supabase db reset",
+    "db:test": "supabase test db",
+    "evals": "node evals/run.mjs"
+  },
+  "devDependencies": {
+    "pg": "^8.23.0",
+    "supabase": "^2.117.0"
+  }
+}

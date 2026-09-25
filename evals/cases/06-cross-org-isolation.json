@@ -1,0 +1,18 @@
+{
+  "name": "A member of one organization cannot see or touch another organization's data",
+  "setup": {
+    "orgs": [
+      { "key": "org1", "members": [{ "key": "userA", "role": "owner" }] },
+      { "key": "org2", "members": [{ "key": "userB", "role": "owner" }], "cash_opening": "500000.00", "properties": [{ "code": "DP-25", "kind": "house", "opening_cost": "9000000.00" }] }
+    ]
+  },
+  "steps": [
+    { "as": "userA", "select": ["vouchers", "journal_lines", "properties", "parties", "accounts", "leases", "audit_log"], "where_org": "org2" },
+    { "as": "userA", "post_voucher": { "org": "org2", "type": "expense", "account": "6000", "amount": "1.00", "from": "1000", "date": "2026-01-01" } }
+  ],
+  "expect": {
+    "rows_visible": 0,
+    "post_voucher_error": "not a member",
+    "org2_trial_balance_unchanged": true
+  }
+}

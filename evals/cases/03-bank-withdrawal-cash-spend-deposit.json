@@ -1,0 +1,19 @@
+{
+  "name": "Withdraw from bank, spend cash on repair, deposit the rest back",
+  "setup": {
+    "banks": [{ "name": "Meezan", "opening": "2000000.00" }],
+    "cash_opening": "100000.00",
+    "properties": [{ "code": "DP-25", "kind": "house", "opening_cost": "9000000.00" }]
+  },
+  "steps": [
+    { "type": "transfer", "date": "2026-03-01", "from": "bank:Meezan", "to": "1000", "amount": "500000.00" },
+    { "type": "expense", "date": "2026-03-02", "account": "6000", "property": "DP-25", "amount": "30000.00", "from": "1000", "memo": "Plumbing repair" },
+    { "type": "transfer", "date": "2026-03-03", "from": "1000", "to": "bank:Meezan", "amount": "470000.00" }
+  ],
+  "expect": {
+    "balances": { "bank:Meezan": "1970000.00", "1000": "100000.00" },
+    "ledger": { "account": "1000", "from": "2026-03-01", "to": "2026-03-31", "opening": "100000.00", "lines": 3, "closing": "100000.00" },
+    "property_summary": { "DP-25": { "expenses": "30000.00", "net_profit": "-30000.00" } },
+    "trial_balance_difference": "0.00"
+  }
+}
