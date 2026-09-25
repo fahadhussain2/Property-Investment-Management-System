@@ -27,3 +27,9 @@ export function formatMoney(a: Money, currency = 'PKR'): string {
   const symbol = currency === 'PKR' ? 'Rs' : currency
   return `${d.isNegative() && !d.isZero() ? '-' : ''}${symbol} ${grouped}${frac === '00' ? '' : `.${frac}`}`
 }
+
+/**
+ * Normalises a numeric value from the API into Money. PostgREST returns `numeric` columns as JSON
+ * numbers; convert them here at the edge and never do arithmetic on the raw number.
+ */
+export const toMoney = (x: number | string | null | undefined): Money => new Decimal(x ?? 0).toFixed(2)

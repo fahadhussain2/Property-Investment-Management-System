@@ -187,6 +187,9 @@ Net profit                                    Total income − expenses
 - A deferred constraint trigger guarantees `sum(debit) = sum(credit)` per voucher.
 - Voucher numbers are sequential **per organization, per type** (PUR-0001, SAL-0001, RNT-0001, …).
 - Sign-up creates an organization, makes the user its `owner` and seeds the chart of accounts.
+- **Invitations (no server, no email sending):** an owner records `invitations(email, role)` and shares
+  a `/signup?email=…` link (e.g. on WhatsApp). On sign-in, `accept_invitations()` turns pending invites
+  for the caller's **confirmed** email into memberships. An organization always keeps at least one owner.
 
 ### Data model (tables)
 

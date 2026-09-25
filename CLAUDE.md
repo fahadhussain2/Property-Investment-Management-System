@@ -12,12 +12,15 @@ Source of truth for scope: `intent/*/spec.md`. Read the active spec before codin
 - `npm run db:start` / `npm run db:reset`: local Supabase / rebuild DB from migrations
 - `npm run db:test`: pgTAP tests (integrity, tenant isolation)
 - `npm run evals`: acceptance scenarios in `evals/cases` (runs as real users, RLS on, rolled back)
-- `cd web && npm run dev`: frontend · `cd web && npm run check`: typecheck + lint + unit tests
-- All four must pass before saying "done".
+- `npm run db:types`: regenerate `web/src/lib/database.types.ts` after any migration (CI fails if stale)
+- `cd web && npm run dev`: frontend on :5173 (reads URL/key from `supabase status`; no .env needed)
+- `cd web && npm run check`: typecheck + lint + unit tests · `cd web && npm run e2e`: Playwright
+- db:test, evals, check and e2e must all pass before saying "done".
 
 ## Windows note
 The folder path contains `&`, which breaks npm's `.cmd` shims. A local, git-ignored `.npmrc`
-sets `script-shell` to Git Bash. Recreate it on a new machine:
+sets `script-shell` to Git Bash, and `web/scripts/with-local-supabase.mjs` runs local bins through
+`node` directly. Never spawn `.cmd` shims from scripts. Recreate the `.npmrc` on a new machine:
 `npm config set script-shell "C:\Program Files\Git\bin\bash.exe" --location=project` (in root and `web/`).
 
 ## Non-negotiable rules
@@ -34,7 +37,12 @@ sets `script-shell` to Git Bash. Recreate it on a new machine:
 ## Naming
 - "Organization" (`org_id`) = SaaS customer. "Tenant" = a renter (a `party` with role `tenant`). Never mix these up.
 - Voucher types: `purchase, property_cost, pay_seller, buyer_advance, sale, receive_buyer, rent, deposit, expense, income, transfer, capital, drawing, opening, journal`.
-- Frontend features: `web/src/features/<feature>/` with `api.ts` (queries), `components/`, `schema.ts` (zod).
+- Frontend features: `web/src/features/<feature>/` with `api.ts` (queries), pages, `schema.ts` (zod).
+  Pure logic goes in files that do not import `lib/supabase` (so unit tests need no env).
+- API `numeric` values arrive as JSON numbers: convert with `toMoney()` immediately.
+- Current org/role: `useOrg()` (`canWrite` hides write actions for viewers; the DB enforces it anyway).
+- Never render a fallback number (e.g. Rs 0) for data that failed to load: use `SectionError`.
+- Every page has one `<h1>` (`PageHeader`/`AuthLayout`); e2e tests find pages by heading.
 
 ## Definition of done
 Spec requirement met · pgTAP and unit tests added · `npm run check` + `supabase test db` + evals green · works at 375 px width.
