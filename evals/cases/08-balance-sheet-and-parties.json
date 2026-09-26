@@ -1,0 +1,39 @@
+{
+  "name": "Who owes whom, and the balance sheet balances, after credit purchase, token money, part-paid sale, deposit and an expense",
+  "setup": {
+    "banks": [{ "name": "Meezan", "opening": "10000000.00" }],
+    "cash_opening": "0.00",
+    "properties": [{ "code": "PLOT-9", "kind": "plot" }, { "code": "SHOP-4", "kind": "shop", "opening_cost": "3000000.00" }],
+    "parties": [
+      { "name": "Seller S", "roles": ["seller"] },
+      { "name": "Buyer B", "roles": ["buyer"] },
+      { "name": "Tenant T", "roles": ["tenant"] }
+    ]
+  },
+  "steps": [
+    { "type": "purchase", "date": "2026-01-05", "property": "PLOT-9", "party": "Seller S", "price": "5000000.00", "paid_now": "2000000.00", "from": "bank:Meezan" },
+    { "type": "pay_seller", "date": "2026-02-01", "property": "PLOT-9", "party": "Seller S", "amount": "1000000.00", "from": "bank:Meezan" },
+    { "type": "buyer_advance", "date": "2026-03-01", "property": "PLOT-9", "party": "Buyer B", "amount": "500000.00", "into": "bank:Meezan" },
+    { "type": "sale", "date": "2026-04-01", "property": "PLOT-9", "party": "Buyer B", "price": "6000000.00", "received_now": "3000000.00", "into": "bank:Meezan" },
+    { "type": "deposit", "date": "2026-04-10", "property": "SHOP-4", "party": "Tenant T", "amount": "200000.00", "into": "1000", "direction": "received" },
+    { "type": "expense", "date": "2026-04-15", "account": "6000", "property": "SHOP-4", "amount": "50000.00", "from": "bank:Meezan" }
+  ],
+  "expect": {
+    "party_balances": {
+      "Seller S": { "payable": "2000000.00", "net": "-2000000.00" },
+      "Buyer B": { "receivable": "2500000.00", "advances": "0.00", "net": "2500000.00" },
+      "Tenant T": { "deposits": "200000.00", "net": "-200000.00" }
+    },
+    "balances": { "bank:Meezan": "10450000.00", "1000": "200000.00" },
+    "property_summary": { "PLOT-9": { "cost": "5000000.00", "net_profit": "1000000.00", "status": "sold" } },
+    "balance_sheet": {
+      "as_of": "2026-12-31",
+      "total_assets": "16150000.00",
+      "total_liabilities": "2200000.00",
+      "total_equity": "13950000.00",
+      "current_earnings": "950000.00",
+      "difference": "0.00"
+    },
+    "trial_balance_difference": "0.00"
+  }
+}

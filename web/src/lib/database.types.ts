@@ -324,6 +324,7 @@ export type Database = {
           fiscal_year_start_month: number
           id: string
           name: string
+          timezone: string
         }
         Insert: {
           created_at?: string
@@ -332,6 +333,7 @@ export type Database = {
           fiscal_year_start_month?: number
           id?: string
           name: string
+          timezone?: string
         }
         Update: {
           created_at?: string
@@ -340,6 +342,7 @@ export type Database = {
           fiscal_year_start_month?: number
           id?: string
           name?: string
+          timezone?: string
         }
         Relationships: []
       }
@@ -797,12 +800,50 @@ export type Database = {
           user_id: string
         }[]
       }
+      org_today: { Args: { p_org: string }; Returns: string }
+      party_balances: {
+        Args: { p_org: string }
+        Returns: {
+          advances: number
+          deposits: number
+          name: string
+          net: number
+          party_id: string
+          payable: number
+          receivable: number
+          roles: string[]
+        }[]
+      }
+      party_ledger: {
+        Args: { p_from: string; p_org: string; p_party: string; p_to: string }
+        Returns: {
+          account_name: string
+          balance: number
+          credit: number
+          debit: number
+          entry_date: string
+          memo: string
+          property_code: string
+          seq: number
+          voucher_id: string
+          voucher_number: string
+          voucher_type: Database["public"]["Enums"]["voucher_type"]
+        }[]
+      }
       post_voucher: { Args: { p: Json; p_org: string }; Returns: Json }
       preview_edit: {
         Args: { p_changes: Json; p_voucher: string }
         Returns: Json
       }
       preview_voucher: { Args: { p: Json; p_org: string }; Returns: Json }
+      property_breakdown: {
+        Args: { p_org: string; p_property: string }
+        Returns: {
+          amount: number
+          label: string
+          section: string
+        }[]
+      }
       property_status: {
         Args: { p_as_of?: string; p_org: string; p_prop: string }
         Returns: Database["public"]["Enums"]["property_status"]

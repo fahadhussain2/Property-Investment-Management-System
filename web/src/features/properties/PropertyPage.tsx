@@ -16,6 +16,7 @@ import { friendlyError } from '@/lib/forms'
 import { kindLabel } from '@/lib/labels'
 import { formatMoney, toMoney } from '@/lib/money'
 import { deleteProperty, fetchProperty, fetchVouchersFor, propertyKeys, updateProperty } from './api'
+import { PropertyBreakdown } from './PropertyBreakdown'
 import { PropertyFormDialog } from './PropertyFormDialog'
 import { forSaleSchema } from './schema'
 
@@ -141,6 +142,10 @@ export function PropertyPage() {
             </CardHeader>
           </Card>
         ))}
+      </div>
+
+      <div className="mb-6">
+        <PropertyBreakdown propertyId={property.id} summary={summary} />
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">

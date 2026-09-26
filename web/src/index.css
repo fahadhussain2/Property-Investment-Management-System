@@ -128,3 +128,23 @@
     @apply font-sans;
     }
 }
+/* Paper: A4, no app chrome (the shell marks it print:hidden), readable black on white. */
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm;
+  }
+  html,
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  tr,
+  li {
+    break-inside: avoid;
+  }
+}

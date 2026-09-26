@@ -16,6 +16,8 @@ Source of truth for scope: `intent/*/spec.md`. Read the active spec before codin
 - `cd web && npm run dev`: frontend on :5173 (reads URL/key from `supabase status`; no .env needed)
 - `cd web && npm run check`: typecheck + lint + unit tests · `cd web && npm run e2e`: Playwright
 - db:test, evals, check and e2e must all pass before saying "done".
+- Local auth allows 1000 sign-ups/5 min (config.toml): each e2e run creates ~22 users, and the default 30
+  likely caused intermittent sign-up failures on back-to-back runs. Keep e2e users unique per test.
 
 ## Windows note
 The folder path contains `&`, which breaks npm's `.cmd` shims. A local, git-ignored `.npmrc`
@@ -31,8 +33,10 @@ sets `script-shell` to Git Bash, and `web/scripts/with-local-supabase.mjs` runs 
 5. **Balances are computed from `journal_lines`.** Do not add stored balance columns.
 6. **Posted vouchers are immutable.** Edit = reverse + repost (`edit_voucher`). Void = reverse.
 7. **Status is derived, not stored.** Use `property_status()`/`properties_overview`; never add a status column.
-8. **Merged migrations are append-only.** Write a new migration; never edit an old one.
-9. Business logic lives in SQL functions; the React side is forms and display only.
+8. **Business dates use the organization's calendar, never the DB clock.** The DB runs in UTC; Pakistan is
+   UTC+5. Use `org_today(org)` (organizations.timezone) for "today"; never `current_date` in business logic.
+9. **Merged migrations are append-only.** Write a new migration; never edit an old one.
+10. Business logic lives in SQL functions; the React side is forms and display only.
 
 ## Naming
 - "Organization" (`org_id`) = SaaS customer. "Tenant" = a renter (a `party` with role `tenant`). Never mix these up.
@@ -47,9 +51,13 @@ sets `script-shell` to Git Bash, and `web/scripts/with-local-supabase.mjs` runs 
   (compares with `clientWidth`) after real content has loaded.
 - Entry forms are config-driven (`features/entries/types.ts`); field names = `post_voucher` payload keys.
   Previews come from `preview_voucher` (DB dry run). Never re-implement posting rules in the UI.
-- After saving, `navigate()` first, then `invalidateAfterPosting()`. Refreshing first can re-render a guard
-  that redirects elsewhere (this bit the "correct entry" flow).
+- After saving, `navigate()` first, then `invalidateAfterPosting()`. And a page that redirects based on data
+  it just changed (the edit page vs. a now-voided original) must read that data under its OWN query key,
+  outside what the save invalidates: RR navigations are transitions, so the old page can still re-render and
+  redirect after `navigate()` (this caused an intermittent e2e failure in M4/M5).
 - Dialogs can open inside other forms: `FormDialog` stops submit propagation (React bubbles through portals).
+- Reports use `ReportShell` (period/as-of kept in the URL, Print, CSV via `toCsv`, which neutralises formulas).
+  Anything collapsible on screen must still print (see the income statement's rent breakdown).
 - Every page has one `<h1>` (`PageHeader`/`AuthLayout`); e2e tests find pages by heading.
 
 ## Definition of done

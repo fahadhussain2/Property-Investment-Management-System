@@ -14,7 +14,7 @@ import { fetchParties, partyKeys } from '@/features/parties/api'
 import { fetchPropertySummaries, propertyKeys } from '@/features/properties/api'
 import { friendlyError, type FieldErrors } from '@/lib/forms'
 import { today } from '@/lib/money'
-import { editVoucher, entryKeys, fetchEntry, invalidateAfterPosting, postVoucher, previewEdit, previewVoucher, type Preview } from './api'
+import { editVoucher, fetchEntry, invalidateAfterPosting, postVoucher, previewEdit, previewVoucher, type Preview } from './api'
 import { AmountField, CategoryPicker, DirectionField, MoneyAccountPicker, PartyPicker, PropertyPicker } from './fields'
 import { buildPayload, payloadToValues, type FormValues, type Payload } from './payload'
 import { PreviewPanel } from './PreviewPanel'
@@ -24,7 +24,16 @@ import { entryType, type EntryType, type FieldSpec } from './types'
 /** /new/:type (record) and /entries/:id/edit (correct an existing entry). */
 export function EntryFormPage() {
   const { type, id } = useParams()
-  const entry = useQuery({ queryKey: entryKeys.detail(id ?? ''), queryFn: () => fetchEntry(id!), enabled: !!id })
+  // Own cache key (not under ['entry']), fetched once. After a correction is saved, the refresh of
+  // ['entry'] must not reach this page: seeing its original now "voided", it would redirect back to it,
+  // racing (and, under load, beating) the navigation to the corrected entry.
+  const entry = useQuery({
+    queryKey: ['entry-edit', id],
+    queryFn: () => fetchEntry(id!),
+    enabled: !!id,
+    staleTime: Infinity,
+    gcTime: 0,
+  })
 
   if (id) {
     if (entry.isPending) return <SectionLoading label="Loading entry…" />
