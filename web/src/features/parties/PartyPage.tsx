@@ -14,6 +14,7 @@ import { friendlyError } from '@/lib/forms'
 import { roleLabel } from '@/lib/labels'
 import { deleteParty, fetchParty, partyKeys, updateParty } from './api'
 import { PartyFormDialog } from './PartyFormDialog'
+import { PartyStatement } from './PartyStatement'
 
 export function PartyPage() {
   const { id = '' } = useParams()
@@ -92,6 +93,9 @@ export function PartyPage() {
           )
         }
       />
+      <div className="mb-6">
+        <PartyStatement partyId={p.id} partyName={p.name} />
+      </div>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
         <section>
           <h2 className="mb-2 text-sm font-semibold text-muted-foreground">Details</h2>

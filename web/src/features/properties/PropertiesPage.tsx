@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Building2Icon, PlusIcon, SearchIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -22,7 +22,11 @@ export function PropertiesPage() {
   const { current, canWrite } = useOrg()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const [status, setStatus] = useState<StatusFilter>('all')
+  const [params] = useSearchParams()
+  const initial = params.get('status') as StatusFilter | null
+  const [status, setStatus] = useState<StatusFilter>(
+    initial && STATUS_FILTERS.some((f) => f.value === initial) ? initial : 'all',
+  )
   const [kind, setKind] = useState<PropertyKind | 'all'>('all')
   const [q, setQ] = useState('')
   const [adding, setAdding] = useState(false)

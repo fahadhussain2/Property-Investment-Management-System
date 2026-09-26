@@ -215,6 +215,18 @@ async function runSingleOrgCase(ctx, c, failures) {
       if (rows[0].n < min) failures.push(`audit_log_entries_for.${id}: expected >= ${min}, got ${rows[0].n}`)
     }
   }
+  if (x.party_balances) {
+    const { rows } = await ctx.q('select * from public.party_balances($1)', [org.id])
+    for (const [name, fields] of Object.entries(x.party_balances)) {
+      const row = rows.find((r) => r.name === name)
+      for (const [f, v] of Object.entries(fields)) check(failures, `party_balances.${name}.${f}`, row?.[f], v)
+    }
+  }
+  if (x.balance_sheet) {
+    const { as_of, ...fields } = x.balance_sheet
+    const { rows } = await ctx.q('select public.balance_sheet($1, $2) as r', [org.id, as_of])
+    for (const [f, v] of Object.entries(fields)) check(failures, `balance_sheet.${f}`, rows[0].r[f], v)
+  }
   if (x.trial_balance_difference !== undefined) {
     check(failures, 'trial_balance_difference', await tbDifference(ctx, org), x.trial_balance_difference)
   }

@@ -2,7 +2,7 @@
 
 > Stage 3 artifact. Implements [`spec.md`](spec.md). Each milestone is one PR, and each
 > ends with a **verification gate** that Claude must pass before asking for human review.
-> Status: **APPROVED**, 2026-09-25 · M0 ✅ · M1 ✅ · M2 ✅ · M3 ✅ · M4 ✅ in review (90 pgTAP, 7/7 evals, 33 unit, 14 e2e) · next: M5
+> Status: **APPROVED**, 2026-09-25 · M0 ✅ · M1 ✅ · M2 ✅ · M3 ✅ · M4 ✅ · M5 ✅ in review (104 pgTAP, 8/8 evals, 38 unit, 15 e2e) · next: M6
 
 ## Repository layout (target)
 

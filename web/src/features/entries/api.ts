@@ -76,7 +76,7 @@ export async function fetchEntry(id: string) {
   return unwrap(await supabase.rpc('voucher_detail', { p_voucher: id })) as unknown as EntryDetail | null
 }
 
-export type EntryFilters = { type?: VoucherType | 'all'; from?: string; to?: string }
+export type EntryFilters = { type?: VoucherType | 'all'; from?: string; to?: string; limit?: number }
 
 export async function fetchEntries(orgId: string, f: EntryFilters) {
   let q = supabase
@@ -86,13 +86,13 @@ export async function fetchEntries(orgId: string, f: EntryFilters) {
   if (f.type && f.type !== 'all') q = q.eq('type', f.type)
   if (f.from) q = q.gte('date', f.from)
   if (f.to) q = q.lte('date', f.to)
-  return unwrap(await q.order('date', { ascending: false }).order('created_at', { ascending: false }).limit(500))
+  return unwrap(await q.order('date', { ascending: false }).order('created_at', { ascending: false }).limit(f.limit ?? 500))
 }
 
 /** Everything that shows balances or history must refresh after a post, edit or void. */
 export function invalidateAfterPosting(qc: QueryClient, orgId: string) {
   return Promise.all(
-    [['account-balances', orgId], ['accounts', orgId], ['properties', orgId], ['vouchers', orgId], ['entries', orgId], ['entry']].map(
+    [['account-balances', orgId], ['accounts', orgId], ['properties', orgId], ['vouchers', orgId], ['entries', orgId], ['entry'], ['reports', orgId]].map(
       (queryKey) => qc.invalidateQueries({ queryKey }),
     ),
   )

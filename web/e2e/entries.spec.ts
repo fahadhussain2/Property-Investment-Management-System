@@ -1,39 +1,5 @@
-import { expect, test, type Locator, type Page } from '@playwright/test'
-import { expectNoHorizontalScroll, newBusiness, PASSWORD, unique } from './helpers'
-
-/** Picks the option whose text contains `text` (money-account options include a live balance). */
-async function choose(select: Locator, text: string) {
-  const value = await select.locator('option', { hasText: text }).first().getAttribute('value')
-  await select.selectOption(value!)
-}
-
-async function addBank(page: Page, name: string) {
-  await page.goto('/settings/accounts/money')
-  await page.getByRole('button', { name: 'Add account' }).click()
-  await page.getByRole('dialog').getByLabel('Name', { exact: true }).fill(name)
-  await page.getByRole('dialog').getByRole('button', { name: 'Add account' }).click()
-  await expect(page.getByTestId('money-accounts')).toContainText(name)
-}
-
-async function openingBalances(page: Page, amounts: Record<string, string>) {
-  await page.goto('/new')
-  await page.getByRole('link', { name: /Opening balances/ }).click()
-  for (const [account, amount] of Object.entries(amounts)) await page.getByLabel(account, { exact: true }).fill(amount)
-  await page.getByRole('button', { name: 'Review' }).click()
-  await expect(page.getByTestId('entry-preview')).toContainText('Opening Balance Equity')
-  await page.getByRole('button', { name: 'Save opening balances' }).click()
-  await expect(page.getByTestId('total-cash')).toBeVisible()
-}
-
-/** Fills and saves an entry form; returns after landing on the saved entry page. */
-async function review(page: Page) {
-  await page.getByRole('button', { name: 'Review' }).click()
-  await expect(page.getByTestId('entry-preview')).toBeVisible()
-}
-async function save(page: Page, label = 'Save entry') {
-  await page.getByRole('button', { name: label }).click()
-  await expect(page).toHaveURL(/\/entries\/[0-9a-f-]{36}$/)
-}
+import { expect, test } from '@playwright/test'
+import { addBank, choose, expectNoHorizontalScroll, newBusiness, openingBalances, PASSWORD, review, save, unique } from './helpers'
 
 test('acceptance scenario 1 through the UI: buy on credit, add costs, sell, profit shown automatically', async ({ page }) => {
   test.slow() // a long multi-screen flow; needs more than the default 30 s when run in parallel
@@ -213,6 +179,7 @@ test('bank withdrawal, cash expense, and a balanced journal entry', async ({ pag
 
 // Regression (M4 review): viewers could open entry forms by URL and only failed on save.
 test('a viewer cannot open entry forms, even by typing the address', async ({ browser }) => {
+  test.slow() // two sign-ups plus an invitation: 22–30 s under parallel load, too close to the 30 s default
   const owner = await (await browser.newContext()).newPage()
   await newBusiness(owner, 'own')
   const viewerEmail = `viewer-${unique()}@e2e.local`

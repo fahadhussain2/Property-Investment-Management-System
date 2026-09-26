@@ -14,6 +14,15 @@ import { JournalPage } from '@/features/entries/JournalPage'
 import { NewEntryPage } from '@/features/entries/NewEntryPage'
 import { OpeningBalancesPage } from '@/features/entries/OpeningBalancesPage'
 import { MembersPage } from '@/features/members/MembersPage'
+import { MoneyBookPage } from '@/features/money/MoneyBookPage'
+import { MoneyPage } from '@/features/money/MoneyPage'
+import { BalanceSheetPage } from '@/features/reports/BalanceSheetPage'
+import { IncomeStatementPage } from '@/features/reports/IncomeStatementPage'
+import { LedgerPage } from '@/features/reports/LedgerPage'
+import { PartyBalancesPage } from '@/features/reports/PartyBalancesPage'
+import { PropertyProfitabilityPage } from '@/features/reports/PropertyProfitabilityPage'
+import { ReportsPage } from '@/features/reports/ReportsPage'
+import { TrialBalancePage } from '@/features/reports/TrialBalancePage'
 import { OnboardingPage } from '@/features/org/OnboardingPage'
 import { OrgProvider } from '@/features/org/OrgProvider'
 import { PartiesPage } from '@/features/parties/PartiesPage'
@@ -52,8 +61,15 @@ export const router = createBrowserRouter([
       { path: 'entries', element: <EntriesPage /> },
       { path: 'entries/:id', element: <EntryPage /> },
       { path: 'entries/:id/edit', element: <RequireWrite><EntryFormPage /></RequireWrite> },
-      { path: 'money', element: <ComingSoon title="Cash & Bank" milestone="M5" /> },
-      { path: 'reports', element: <ComingSoon title="Reports" milestone="M5" /> },
+      { path: 'money', element: <MoneyPage /> },
+      { path: 'money/:accountId', element: <MoneyBookPage /> },
+      { path: 'reports', element: <ReportsPage /> },
+      { path: 'reports/income-statement', element: <IncomeStatementPage /> },
+      { path: 'reports/balance-sheet', element: <BalanceSheetPage /> },
+      { path: 'reports/trial-balance', element: <TrialBalancePage /> },
+      { path: 'reports/properties', element: <PropertyProfitabilityPage /> },
+      { path: 'reports/parties', element: <PartyBalancesPage /> },
+      { path: 'reports/ledger', element: <LedgerPage /> },
       { path: 'leases', element: <ComingSoon title="Leases & Rent" milestone="M6" /> },
       { path: 'settings', element: <SettingsPage /> },
       { path: 'settings/members', element: <MembersPage /> },

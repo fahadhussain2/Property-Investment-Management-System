@@ -72,9 +72,9 @@ const sideLink = ({ isActive }: { isActive: boolean }) =>
 export function AppShell() {
   const { canWrite } = useOrg()
   return (
-    <div className="min-h-dvh bg-background md:grid md:grid-cols-[15rem_1fr]">
+    <div className="min-h-dvh bg-background md:grid md:grid-cols-[15rem_minmax(0,1fr)] print:block">
       {/* Desktop sidebar */}
-      <aside className="sticky top-0 hidden h-dvh flex-col gap-4 border-r bg-muted/30 p-4 md:flex">
+      <aside className="sticky top-0 hidden h-dvh print:!hidden flex-col gap-4 border-r bg-muted/30 p-4 md:flex">
         <div className="flex items-center gap-2 px-1 text-sm font-semibold">
           <Building2Icon className="size-5" aria-hidden /> Property Ledger
         </div>
@@ -94,14 +94,14 @@ export function AppShell() {
       </aside>
 
       <div className="flex min-w-0 flex-col">
-        <header className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b bg-background/95 px-4 backdrop-blur">
+        <header className="sticky top-0 z-10 flex h-14 print:hidden items-center gap-3 border-b bg-background/95 px-4 backdrop-blur">
           <div className="min-w-0 flex-1 md:hidden">
             <OrgSwitcher />
           </div>
           <div className="hidden flex-1 md:block" />
           <UserMenu />
         </header>
-        <main className="flex-1 px-4 pt-4 pb-24 md:px-8 md:pt-6 md:pb-8">
+        <main className="flex-1 px-4 pt-4 pb-24 md:px-8 md:pt-6 md:pb-8 print:p-0">
           <Outlet />
         </main>
       </div>
@@ -110,7 +110,7 @@ export function AppShell() {
       <nav
         aria-label="Main"
         data-testid="bottom-nav"
-        className="fixed inset-x-0 bottom-0 z-10 grid grid-cols-5 border-t bg-background pb-[env(safe-area-inset-bottom)] md:hidden"
+        className="fixed inset-x-0 bottom-0 z-10 grid grid-cols-5 print:hidden border-t bg-background pb-[env(safe-area-inset-bottom)] md:hidden"
       >
         {bottomNav
           .filter((i) => canWrite || !i.primary)
