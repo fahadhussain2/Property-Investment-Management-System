@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { PageHeader } from '@/components/PageHeader'
 import { SectionError, SectionLoading } from '@/components/QueryState'
 import { entryKeys, fetchEntries } from '@/features/entries/api'
+import { fetchExpiringLeases, leaseKeys } from '@/features/leases/api'
+import { EXPIRING_DAYS } from '@/features/leases/rentRoll'
 import { useOrg } from '@/features/org/OrgProvider'
 import { fetchPropertySummaries, propertyKeys } from '@/features/properties/api'
 import { statusCounts, type StatusFilter } from '@/features/properties/filter'
@@ -46,6 +48,7 @@ export function DashboardPage() {
   const properties = useQuery({ queryKey: propertyKeys.all(current.id), queryFn: () => fetchPropertySummaries(current.id) })
   const fyProfit = useQuery({ queryKey: [...reportKeys.all(current.id), 'income', fy], queryFn: () => fetchIncomeStatement(current.id, fy) })
   const monthProfit = useQuery({ queryKey: [...reportKeys.all(current.id), 'income', month], queryFn: () => fetchIncomeStatement(current.id, month) })
+  const expiring = useQuery({ queryKey: leaseKeys.expiring(current.id), queryFn: () => fetchExpiringLeases(current.id) })
   const recent = useQuery({ queryKey: [...entryKeys.all(current.id), { limit: 5 }], queryFn: () => fetchEntries(current.id, { limit: 5 }) })
 
   if (balances.isPending) return <SectionLoading label="Loading your books…" />
@@ -179,6 +182,31 @@ export function DashboardPage() {
               </CardHeader>
             </Card>
           </div>
+        </Section>
+
+        <Section title="Leases ending soon" link={{ to: '/leases?show=ending', label: 'Rent roll' }}>
+          {expiring.isPending ? (
+            <SectionLoading />
+          ) : expiring.isError ? (
+            <SectionError error={expiring.error} onRetry={() => expiring.refetch()} />
+          ) : expiring.data.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No lease ends in the next {EXPIRING_DAYS} days.</p>
+          ) : (
+            <ul className="divide-y rounded-lg border" data-testid="expiring-leases">
+              {expiring.data.map((l) => (
+                <li key={l.lease_id}>
+                  <Link to={`/leases/${l.lease_id}`} className="flex items-center justify-between gap-3 px-4 py-2 text-sm hover:bg-accent">
+                    <span className="min-w-0 truncate">
+                      <span className="font-medium">{l.property_code}</span> · {l.tenant_name}
+                    </span>
+                    <span className="shrink-0 text-muted-foreground">
+                      {l.end_date} · {l.days_to_end === 0 ? 'today' : `in ${l.days_to_end} ${l.days_to_end === 1 ? 'day' : 'days'}`}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </Section>
 
         <Section title="Latest entries" link={{ to: '/entries', label: 'Day book' }}>

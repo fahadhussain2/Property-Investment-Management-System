@@ -14,6 +14,7 @@ import { fetchMembers, memberKeys } from '@/features/members/api'
 import { useOrg } from '@/features/org/OrgProvider'
 import { VOUCHER_TYPES } from '@/lib/labels'
 import { formatMoney, sub } from '@/lib/money'
+import { cn } from '@/lib/utils'
 import { entryKeys, fetchEntry, invalidateAfterPosting, reverseVoucher } from './api'
 import { LinesTable, ProfitBanner } from './PreviewPanel'
 import { entryType } from './types'
@@ -85,7 +86,7 @@ export function EntryPage() {
           active && (
             <>
               {editable && (
-                <Link to={`/entries/${e.id}/edit`} className={buttonVariants({ variant: 'outline' })}>
+                <Link to={`/entries/${e.id}/edit`} className={cn(buttonVariants({ variant: 'outline' }))}>
                   <PencilIcon /> Correct
                 </Link>
               )}

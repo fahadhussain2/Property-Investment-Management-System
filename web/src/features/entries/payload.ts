@@ -57,21 +57,18 @@ export function buildPayload(
         payload[f.name] = raw === 'refunded' ? 'refunded' : 'received'
         break
       case 'memo':
+      case 'lease':
         payload[f.name] = raw || null
         break
       default: {
         // pickers: property, party, money_account, to_account, category
         payload[f.name] = raw || null
-        const optional = f.optional || (f.kind === 'party' && entry.type === 'purchase')
+        const optional = f.optional || (f.kind === 'party' && entry.type === 'purchase') || (f.inLease && !!v('lease_id'))
         const conditional = f.requiredIf !== undefined
         if (!raw && !optional && !conditional) errors[f.name] = PICK_MESSAGE[f.kind] ?? `Choose the ${f.label.toLowerCase()}`
       }
     }
   }
-
-  // These forms have no lease field (yet): send lease_id null so a correction never keeps a stale lease,
-  // which post_voucher would otherwise use to override the chosen property and tenant.
-  if (entry.type === 'rent' || entry.type === 'deposit') payload.lease_id = null
 
   // Cross-field rules (the database checks these too; this gives a friendlier message first).
   for (const f of entry.fields) {

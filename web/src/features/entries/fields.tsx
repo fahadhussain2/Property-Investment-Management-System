@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { NativeSelect } from '@/components/Field'
 import { accountKeys, fetchAccounts } from '@/features/accounts/api'
+import { fetchRentRoll, leaseKeys } from '@/features/leases/api'
+import { rentPosition } from '@/features/leases/rentRoll'
 import { useOrg } from '@/features/org/OrgProvider'
 import { createParty, fetchParties, partyKeys } from '@/features/parties/api'
 import { PartyFormDialog } from '@/features/parties/PartyFormDialog'
@@ -260,6 +262,60 @@ export function DirectionField({ name, label, defaultValue }: Base) {
         ))}
       </div>
     </fieldset>
+  )
+}
+
+type Picked = { label: string; error?: string; defaultValue?: string; unsoldOnly?: boolean; roles?: PartyRole[]; allowCreate?: boolean }
+
+/**
+ * Rent/deposit: pick the lease (which fixes the property and tenant), or "No lease" to pick them by hand.
+ * With a lease, hidden property_id/party_id inputs carry its property and tenant so the summary can name
+ * them; post_voucher takes them from the lease anyway.
+ */
+export function LeasePicker({ name, label, error, defaultValue, property, party }: Base & { property: Picked; party: Picked }) {
+  const { current } = useOrg()
+  const [value, setValue] = useState(defaultValue ?? '')
+  const roll = useQuery({ queryKey: leaseKeys.roll(current.id), queryFn: () => fetchRentRoll(current.id) })
+  const rows = roll.data ?? []
+  const chosen = rows.find((r) => r.lease_id === value)
+  const active = rows.filter((r) => r.status === 'active')
+  const others = rows.filter((r) => r.status !== 'active')
+  const option = (r: (typeof rows)[number]) => (
+    <option key={r.lease_id} value={r.lease_id}>
+      {r.property_code} · {r.tenant_name}
+      {r.status === 'active' ? '' : r.status === 'ended' ? ' (ended)' : ' (upcoming)'}
+    </option>
+  )
+  const hint = chosen
+    ? `${formatMoney(chosen.monthly_rent, current.currency)}/month · ${rentPosition(chosen, current.currency).label}`
+    : roll.isError
+      ? 'Could not load leases. You can still choose the property and tenant.'
+      : undefined
+  return (
+    <>
+      <Shell name={name} label={label} error={error} hint={hint}>
+        <NativeSelect {...aria(name, error, hint)} value={value} onChange={(e) => setValue(e.target.value)}>
+          <option value="">No lease: choose property &amp; tenant</option>
+          {/* Never let a stored lease silently drop while the list loads (or fails): keep it selectable. */}
+          {value && !chosen && <option value={value}>{roll.isPending ? 'Loading…' : 'Selected lease'}</option>}
+          {active.length > 0 && <optgroup label="Current leases">{active.map(option)}</optgroup>}
+          {others.length > 0 && <optgroup label="Other leases">{others.map(option)}</optgroup>}
+        </NativeSelect>
+      </Shell>
+      {value ? (
+        chosen && (
+          <>
+            <input type="hidden" name="property_id" value={chosen.property_id} />
+            <input type="hidden" name="party_id" value={chosen.party_id} />
+          </>
+        )
+      ) : (
+        <>
+          <PropertyPicker name="property_id" {...property} />
+          <PartyPicker name="party_id" {...party} />
+        </>
+      )}
+    </>
   )
 }
 

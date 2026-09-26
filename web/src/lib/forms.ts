@@ -43,6 +43,12 @@ export function friendlyError(e: unknown): string {
   if (msg.includes('bring it to zero')) return 'This account still has money in it. Move the balance out before hiding it.'
   if (msg.includes('system accounts')) return 'Built-in accounts can be renamed, but not hidden or deleted.'
   if (msg.includes('type cannot be changed')) return 'An account keeps its type. Add a new account instead.'
+  if (msg.includes('already has a lease for these dates'))
+    return 'This property already has a lease for these dates. End the current lease first, or change the dates.'
+  if (msg.includes('sold and cannot be rented')) return 'This property is sold, so it cannot be rented out.'
+  if (msg.includes('its property and tenant cannot change'))
+    return 'Rent or deposits are recorded against this lease, so its property and tenant cannot change. End it and add a new lease instead.'
+  if (msg.includes('leases_check')) return 'The dates are out of order: a lease cannot end before it starts.'
   if (msg.includes('properties_org_code_idx')) return 'Another property already uses this code.'
   if (msg.includes('violates foreign key constraint'))
     return 'This record has entries linked to it, so it cannot be deleted.'

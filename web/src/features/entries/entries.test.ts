@@ -95,6 +95,17 @@ describe('opening balances and journal', async () => {
     ])
   })
 
+  it('tags an opening receivable/payable with its property when one is chosen', () => {
+    const { lines } = buildOpeningLines(
+      { money: [], properties: [], owedToUs: [{ party_id: 'buyer', amount: '5', property_id: 'dp25' }], weOwe: [{ party_id: 'seller', amount: '7', property_id: '' }] },
+      sys,
+    )
+    expect(lines).toEqual([
+      { account_id: 'acc-1300', debit: '5.00', party_id: 'buyer', property_id: 'dp25' },
+      { account_id: 'acc-2000', credit: '7.00', party_id: 'seller' },
+    ])
+  })
+
   it('asks for the property/party when an amount is given, and for at least one amount', () => {
     const none = { money: [], properties: [], owedToUs: [], weOwe: [] }
     expect(buildOpeningLines({ ...none, properties: [{ property_id: '', cost: '5' }] }, sys).errors).toEqual({ 'properties.0': 'Choose the property' })
@@ -116,8 +127,25 @@ describe('M4 review regressions', async () => {
     expect(journalTotals([{ account_id: 'a', debit: '100', credit: '0' }, { account_id: 'b', debit: '0', credit: '100' }]).canSave).toBe(true)
     expect(journalTotals([{ account_id: 'a', debit: '0', credit: '0' }, { account_id: 'b', debit: '', credit: '' }]).canSave).toBe(false)
   })
-  it('rent/deposit corrections clear any stored lease', () => {
-    const r = buildPayload(entryType('rent')!, { date: '2026-01-05', property_id: 'p', party_id: 't', amount: '50000', account_id: 'a' })
+})
+
+describe('M6: rent and deposits against a lease', () => {
+  const rent = entryType('rent')!
+  it('with a lease, property and tenant are not asked for', () => {
+    const r = buildPayload(rent, { date: '2026-01-05', lease_id: 'L1', amount: '50000', account_id: 'a' })
+    expect(r.errors).toBeNull()
+    expect(r.payload).toMatchObject({ lease_id: 'L1', property_id: null, party_id: null, amount: '50000.00' })
+  })
+  it('without a lease, property and tenant are required, and lease_id is sent as null (a correction clears it)', () => {
+    expect(buildPayload(rent, { date: '2026-01-05', amount: '50000', account_id: 'a' }).errors).toMatchObject({
+      property_id: expect.any(String),
+      party_id: expect.any(String),
+    })
+    const r = buildPayload(rent, { date: '2026-01-05', property_id: 'p', party_id: 't', amount: '50000', account_id: 'a' })
     expect(r.payload).toHaveProperty('lease_id', null)
+  })
+  it('deposit keeps the lease and direction', () => {
+    const r = buildPayload(entryType('deposit')!, { date: '2026-01-05', lease_id: 'L1', direction: 'refunded', amount: '1000', account_id: 'a' })
+    expect(r.payload).toMatchObject({ lease_id: 'L1', direction: 'refunded' })
   })
 })

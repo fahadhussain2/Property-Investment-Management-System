@@ -52,7 +52,7 @@ class Ctx {
 async function setupOrg(ctx, key, spec, ownerKey) {
   await ctx.as(ownerKey)
   const { rows } = await ctx.q('select public.create_organization($1) as id', [`Eval ${key}`])
-  const org = { id: rows[0].id, accounts: {}, properties: {}, parties: {} }
+  const org = { id: rows[0].id, accounts: {}, properties: {}, parties: {}, leases: {} }
   ctx.orgs[key] = org
 
   const accts = await ctx.q('select id, code from public.accounts where org_id = $1', [org.id])
@@ -85,11 +85,12 @@ async function setupOrg(ctx, key, spec, ownerKey) {
     org.parties[p.name] = r.rows[0].id
   }
   for (const l of spec.leases ?? []) {
-    await ctx.q(
-      `insert into public.leases (org_id, property_id, party_id, start_date, end_date, monthly_rent)
-       values ($1, $2, $3, $4, $5, $6)`,
-      [org.id, org.properties[l.property], org.parties[l.party], l.start, l.end ?? null, l.monthly_rent],
+    const r = await ctx.q(
+      `insert into public.leases (org_id, property_id, party_id, start_date, end_date, monthly_rent, rent_due_day)
+       values ($1, $2, $3, $4, $5, $6, $7) returning id`,
+      [org.id, org.properties[l.property], org.parties[l.party], l.start, l.end ?? null, l.monthly_rent, l.rent_due_day ?? 1],
     )
+    if (l.key) org.leases[l.key] = r.rows[0].id
   }
   if (opening.length) {
     await ctx.q('select public.post_voucher($1, $2)', [
@@ -108,6 +109,7 @@ function toPayload(ctx, org, step) {
   }
   if (step.property) p.property_id = org.properties[step.property]
   if (step.party) p.party_id = org.parties[step.party]
+  if (step.lease) p.lease_id = org.leases[step.lease]
   const money = step.from ?? step.into
   if (money) p.account_id = ctx.account(org, money)
   if (step.type === 'transfer') p.to_account_id = ctx.account(org, step.to)
@@ -226,6 +228,20 @@ async function runSingleOrgCase(ctx, c, failures) {
     const { as_of, ...fields } = x.balance_sheet
     const { rows } = await ctx.q('select public.balance_sheet($1, $2) as r', [org.id, as_of])
     for (const [f, v] of Object.entries(fields)) check(failures, `balance_sheet.${f}`, rows[0].r[f], v)
+  }
+  if (x.rent_roll) {
+    const { as_of, ...byCode } = x.rent_roll
+    const { rows } = await ctx.q('select * from public.rent_roll($1, $2)', [org.id, as_of])
+    for (const [code, fields] of Object.entries(byCode)) {
+      const row = rows.find((r) => r.property_code === code)
+      for (const [f, v] of Object.entries(fields)) check(failures, `rent_roll.${code}.${f}`, row?.[f], v)
+    }
+  }
+  if (x.voucher_lease) {
+    for (const [id, key] of Object.entries(x.voucher_lease)) {
+      const { rows } = await ctx.q('select lease_id from public.vouchers where id = $1', [ctx.vouchers[id]])
+      check(failures, `voucher_lease.${id}`, rows[0]?.lease_id, org.leases[key])
+    }
   }
   if (x.trial_balance_difference !== undefined) {
     check(failures, 'trial_balance_difference', await tbDifference(ctx, org), x.trial_balance_difference)
