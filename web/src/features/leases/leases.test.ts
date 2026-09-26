@@ -35,6 +35,7 @@ const row = (over: Partial<Parameters<typeof toRollRow>[0]> = {}): RollRow =>
     last_rent_date: '2026-02-05',
     last_rent_amount: 50000,
     days_to_end: null,
+    rent_counted_from: null,
     ...over,
   })
 
@@ -102,6 +103,13 @@ describe('lease form', () => {
     })
     expect(defaultDueDay('2026-01-31')).toBe(28)
   })
+  it('counts rent from an optional date, never before the start', () => {
+    expect(leaseSchema.parse(base).rent_counted_from).toBeNull()
+    expect(leaseSchema.parse({ ...base, rent_counted_from: '2026-07-01' }).rent_counted_from).toBe('2026-07-01')
+    const bad = leaseSchema.safeParse({ ...base, rent_counted_from: '2025-12-01' })
+    expect(bad.error?.issues.map((i) => i.path[0])).toEqual(['rent_counted_from'])
+  })
+
   it('rejects an end before the start, a zero rent and a bad due day', () => {
     const paths = (v: Record<string, string>) =>
       leaseSchema.safeParse({ ...base, ...v }).error?.issues.map((i) => i.path[0])

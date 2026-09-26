@@ -53,6 +53,10 @@ export function friendlyError(e: unknown): string {
   if (msg.includes('violates foreign key constraint'))
     return 'This record has entries linked to it, so it cannot be deleted.'
   if (msg.includes('Invalid login credentials')) return 'Wrong email or password.'
+  if (msg.includes('Email not confirmed')) return 'Confirm your email first: open the link we sent you, then sign in.'
+  if (msg.includes('should be different from the old password')) return 'Choose a password different from your old one.'
+  if (msg.includes('For security purposes, you can only request this after') || msg.includes('rate limit'))
+    return 'Too many emails were requested. Wait a minute and try again.'
   if (msg.includes('User already registered')) return 'An account with this email already exists. Sign in instead.'
   return msg
 }

@@ -94,6 +94,15 @@ export function LeaseFormDialog({
             hint="Day of the month rent is due, 1 to 28. Used to count months unpaid."
           />
           <Field
+            label="Count rent from (optional)"
+            name="rent_counted_from"
+            type="date"
+            max="2100-12-31"
+            defaultValue={lease?.rent_counted_from ?? ''}
+            error={errors.rent_counted_from}
+            hint="For a lease that began before you started using this system: the first month whose rent is tracked here (usually your cut-over date). Pick an earlier month to carry rent still owed at cut-over."
+          />
+          <Field
             label="Notes (optional)"
             name="notes"
             autoComplete="off"

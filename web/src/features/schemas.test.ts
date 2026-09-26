@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { loginSchema, signupSchema } from './auth/schema'
+import { forgotPasswordSchema, loginSchema, resetPasswordSchema, signupSchema } from './auth/schema'
 import { inviteSchema } from './members/schema'
 import { onboardingSchema } from './org/schema'
 import { categorySchema, moneyAccountSchema } from './accounts/schema'
@@ -11,6 +11,14 @@ describe('form schemas', () => {
     expect(loginSchema.parse({ email: '  Fahad@Example.COM ', password: 'x' }).email).toBe('fahad@example.com')
     expect(loginSchema.safeParse({ email: 'not-an-email', password: 'x' }).success).toBe(false)
     expect(loginSchema.safeParse({ email: 'a@b.co', password: '' }).success).toBe(false)
+  })
+
+  it('password reset: valid email; new password 8+ characters and typed twice the same', () => {
+    expect(forgotPasswordSchema.parse({ email: ' A@B.co ' }).email).toBe('a@b.co')
+    expect(resetPasswordSchema.safeParse({ password: 'longenough', confirm: 'longenough' }).success).toBe(true)
+    expect(resetPasswordSchema.safeParse({ password: 'short', confirm: 'short' }).success).toBe(false)
+    const mismatch = resetPasswordSchema.safeParse({ password: 'longenough', confirm: 'different1' })
+    expect(mismatch.error?.issues[0].path).toEqual(['confirm'])
   })
 
   it('requires 8+ character passwords on signup; business name is optional (invites)', () => {

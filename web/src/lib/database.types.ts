@@ -224,6 +224,7 @@ export type Database = {
           org_id: string
           party_id: string
           property_id: string
+          rent_counted_from: string | null
           rent_due_day: number
           security_deposit: number
           start_date: string
@@ -238,6 +239,7 @@ export type Database = {
           org_id: string
           party_id: string
           property_id: string
+          rent_counted_from?: string | null
           rent_due_day?: number
           security_deposit?: number
           start_date: string
@@ -252,6 +254,7 @@ export type Database = {
           org_id?: string
           party_id?: string
           property_id?: string
+          rent_counted_from?: string | null
           rent_due_day?: number
           security_deposit?: number
           start_date?: string
@@ -842,6 +845,7 @@ export type Database = {
           voucher_type: Database["public"]["Enums"]["voucher_type"]
         }[]
       }
+      ping: { Args: never; Returns: string }
       post_voucher: { Args: { p: Json; p_org: string }; Returns: Json }
       preview_edit: {
         Args: { p_changes: Json; p_voucher: string }
@@ -900,6 +904,7 @@ export type Database = {
           property_id: string
           property_name: string
           received: number
+          rent_counted_from: string
           rent_due_day: number
           security_deposit: number
           start_date: string

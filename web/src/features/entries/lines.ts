@@ -26,8 +26,11 @@ export type OpeningInput = {
   /** property_id (optional) tags the balance to a property, so it shows in that property's history */
   owedToUs: { party_id: string; amount: string; property_id?: string }[]
   weOwe: { party_id: string; amount: string; property_id?: string }[]
+  /** Security deposits held for tenants, and token money received from buyers: both need party AND property */
+  deposits?: { party_id: string; property_id: string; amount: string }[]
+  advances?: { party_id: string; property_id: string; amount: string }[]
 }
-export type SystemAccounts = { properties: string; receivable: string; payable: string }
+export type SystemAccounts = { properties: string; receivable: string; payable: string; deposits: string; advances: string }
 
 /**
  * Opening balances -> journal lines. The database adds the balancing line to Opening Balance Equity.
@@ -44,7 +47,7 @@ export function buildOpeningLines(
     if (m === 'invalid') errors[`money.${i}`] = 'Enter an amount like 1,500,000'
     else if (m && compare(m, '0.00') > 0) lines.push({ account_id: r.account_id, debit: m })
   })
-  const rows: [keyof OpeningInput, string, 'debit' | 'credit', 'property_id' | 'party_id'][] = [
+  const rows: ['properties' | 'owedToUs' | 'weOwe', string, 'debit' | 'credit', 'property_id' | 'party_id'][] = [
     ['properties', sys.properties, 'debit', 'property_id'],
     ['owedToUs', sys.receivable, 'debit', 'party_id'],
     ['weOwe', sys.payable, 'credit', 'party_id'],
@@ -56,6 +59,24 @@ export function buildOpeningLines(
       else if (m && compare(m, '0.00') > 0) {
         if (!r[tag]) errors[`${section}.${i}`] = tag === 'property_id' ? 'Choose the property' : 'Choose the party'
         else lines.push({ account_id: account, [side]: m, [tag]: r[tag], ...(tag === 'party_id' && r.property_id ? { property_id: r.property_id } : {}) })
+      }
+    })
+  }
+  // Held for someone, tied to a property: a deposit belongs to a tenancy, token money to a pending sale
+  // (the sale applies it by property + buyer, and it marks the property Under agreement).
+  const held: ['deposits' | 'advances', string, string][] = [
+    ['deposits', sys.deposits, 'Choose the tenant'],
+    ['advances', sys.advances, 'Choose the buyer'],
+  ]
+  for (const [section, account, partyMessage] of held) {
+    ;(input[section] ?? []).forEach((r, i) => {
+      const key = `${section}.${i}`
+      const m = optionalAmount(r.amount)
+      if (m === 'invalid') errors[key] = 'Enter an amount like 1,500,000'
+      else if (m && compare(m, '0.00') > 0) {
+        if (!r.party_id) errors[key] = partyMessage
+        else if (!r.property_id) errors[key] = 'Choose the property'
+        else lines.push({ account_id: account, credit: m, party_id: r.party_id, property_id: r.property_id })
       }
     })
   }

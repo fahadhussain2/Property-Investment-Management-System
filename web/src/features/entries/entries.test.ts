@@ -74,7 +74,7 @@ describe('summaries and big numbers', () => {
 
 describe('opening balances and journal', async () => {
   const { buildOpeningLines, journalTotals } = await import('./lines')
-  const sys = { properties: 'acc-1200', receivable: 'acc-1300', payable: 'acc-2000' }
+  const sys = { properties: 'acc-1200', receivable: 'acc-1300', payable: 'acc-2000', deposits: 'acc-2200', advances: 'acc-2100' }
 
   it('turns the wizard into journal lines, skipping empty rows', () => {
     const { lines, errors } = buildOpeningLines(
@@ -104,6 +104,29 @@ describe('opening balances and journal', async () => {
       { account_id: 'acc-1300', debit: '5.00', party_id: 'buyer', property_id: 'dp25' },
       { account_id: 'acc-2000', credit: '7.00', party_id: 'seller' },
     ])
+  })
+
+  it('records deposits held and token money as amounts owed, tagged with party and property', () => {
+    const none = { money: [], properties: [], owedToUs: [], weOwe: [] }
+    const { lines, errors } = buildOpeningLines(
+      {
+        ...none,
+        deposits: [{ party_id: 'tenant', property_id: 'shop4', amount: '100,000' }, { party_id: '', property_id: '', amount: '' }],
+        advances: [{ party_id: 'buyer', property_id: 'plot9', amount: '500000' }],
+      },
+      sys,
+    )
+    expect(errors).toEqual({})
+    expect(lines).toEqual([
+      { account_id: 'acc-2200', credit: '100000.00', party_id: 'tenant', property_id: 'shop4' },
+      { account_id: 'acc-2100', credit: '500000.00', party_id: 'buyer', property_id: 'plot9' },
+    ])
+    expect(buildOpeningLines({ ...none, deposits: [{ party_id: 't', property_id: '', amount: '5' }] }, sys).errors).toEqual({
+      'deposits.0': 'Choose the property',
+    })
+    expect(buildOpeningLines({ ...none, advances: [{ party_id: '', property_id: 'p', amount: '5' }] }, sys).errors).toEqual({
+      'advances.0': 'Choose the buyer',
+    })
   })
 
   it('asks for the property/party when an amount is given, and for at least one amount', () => {

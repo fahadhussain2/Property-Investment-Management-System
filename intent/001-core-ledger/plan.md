@@ -2,7 +2,7 @@
 
 > Stage 3 artifact. Implements [`spec.md`](spec.md). Each milestone is one PR, and each
 > ends with a **verification gate** that Claude must pass before asking for human review.
-> Status: **APPROVED**, 2026-09-25 · M0 ✅ · M1 ✅ · M2 ✅ · M3 ✅ · M4 ✅ · M5 ✅ · M6 ✅ in review (146 pgTAP, 9/9 evals, 47 unit, 18 e2e) · next: M7
+> Status: **APPROVED**, 2026-09-25 · M0 ✅ · M1 ✅ · M2 ✅ · M3 ✅ · M4 ✅ · M5 ✅ · M6 ✅ · M7 🟡 code ready (159 pgTAP, 9/9 evals, 50 unit, 21 e2e), awaiting cloud setup + UAT per docs/go-live.md
 
 ## Repository layout (target)
 
@@ -78,6 +78,9 @@
 - Nightly backup workflow; keep-alive workflow.
 - Opening-balance wizard; enter the real register data as of the cut-over date.
 - **Gate:** the owner confirms that opening cash, bank and property balances match the registers (UAT sign-off).
+- As built: email = Supabase built-in mailer (delivers only to Supabase org team members; Resend later needs a
+  domain), region Mumbai. Added for go-live: forgot/reset password, business name kept through email confirmation,
+  opening deposits held and token money, per-lease "Count rent from" (cut-over), `public.ping()` for keep-alive.
 
 ## Working method (per the playbook)
 
