@@ -25,6 +25,7 @@ export type RollRow = {
   last_rent_date: string | null
   last_rent_amount: Money | null
   days_to_end: number | null
+  rent_counted_from: string | null
 }
 
 type Raw = Omit<

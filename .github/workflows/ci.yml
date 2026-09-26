@@ -37,7 +37,7 @@ jobs:
       - run: npm ci
       - run: npm ci
         working-directory: web
-      - run: npx supabase start -x edge-runtime,logflare,vector,imgproxy,supavisor,realtime,studio,storage-api,mailpit
+      - run: npx supabase start -x edge-runtime,logflare,vector,imgproxy,supavisor,realtime,studio,storage-api
       - name: pgTAP tests
         run: npx supabase test db
       - name: Acceptance evals

@@ -28,6 +28,12 @@ export function SignupPage() {
       const { data: auth, error } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
+        options: {
+          // Where the confirmation link lands (must be an allowed redirect URL in the hosted project).
+          emailRedirectTo: `${window.location.origin}/login`,
+          // Kept with the account so onboarding can fill it in after the email is confirmed.
+          data: data.businessName ? { business_name: data.businessName } : undefined,
+        },
       })
       if (error) throw error
       // Email confirmation is on (production): the business is created after the first sign-in.
@@ -54,7 +60,7 @@ export function SignupPage() {
     return (
       <AuthLayout title="Check your email">
         <p className="text-sm text-muted-foreground">
-          We sent a confirmation link. Open it, then{' '}
+          We sent a confirmation link. Open it on this device, then{' '}
           <Link to="/login" className="font-medium text-foreground underline underline-offset-4">
             sign in
           </Link>

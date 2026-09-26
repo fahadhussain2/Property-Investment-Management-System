@@ -2,7 +2,9 @@ import { createBrowserRouter } from 'react-router-dom'
 import { ComingSoon } from '@/components/ComingSoon'
 import { RedirectIfSignedIn, RequireAuth } from '@/features/auth/guards'
 import { RequireWrite } from '@/features/auth/RequireWrite'
+import { ForgotPasswordPage } from '@/features/auth/ForgotPasswordPage'
 import { LoginPage } from '@/features/auth/LoginPage'
+import { ResetPasswordPage } from '@/features/auth/ResetPasswordPage'
 import { SignupPage } from '@/features/auth/SignupPage'
 import { ChartOfAccountsPage } from '@/features/accounts/ChartOfAccountsPage'
 import { MoneyAccountsPage } from '@/features/accounts/MoneyAccountsPage'
@@ -39,6 +41,9 @@ import { RouteError } from './RouteError'
 export const router = createBrowserRouter([
   { path: '/login', element: <RedirectIfSignedIn><LoginPage /></RedirectIfSignedIn>, errorElement: <RouteError /> },
   { path: '/signup', element: <RedirectIfSignedIn><SignupPage /></RedirectIfSignedIn>, errorElement: <RouteError /> },
+  { path: '/forgot-password', element: <RedirectIfSignedIn><ForgotPasswordPage /></RedirectIfSignedIn>, errorElement: <RouteError /> },
+  // Not behind RedirectIfSignedIn: the reset link itself signs the user in (a recovery session).
+  { path: '/reset-password', element: <ResetPasswordPage />, errorElement: <RouteError /> },
   { path: '/onboarding', element: <RequireAuth><OnboardingPage /></RequireAuth>, errorElement: <RouteError /> },
   {
     path: '/',

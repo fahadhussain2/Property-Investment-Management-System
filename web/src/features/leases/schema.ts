@@ -37,6 +37,11 @@ export const leaseSchema = z
       .optional()
       .transform((v) => v || null)
       .refine((v) => v === null || DATE.test(v), 'Pick a date'),
+    rent_counted_from: z
+      .string()
+      .optional()
+      .transform((v) => v || null)
+      .refine((v) => v === null || DATE.test(v), 'Pick a date'),
     monthly_rent: money('Enter the monthly rent', { required: true }),
     security_deposit: money('', { required: false }),
     rent_due_day: z
@@ -55,6 +60,13 @@ export const leaseSchema = z
         code: 'custom',
         path: ['end_date'],
         message: 'The end date must be after the start date',
+      })
+    }
+    if (v.rent_counted_from && v.rent_counted_from < v.start_date) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['rent_counted_from'],
+        message: 'Pick a date on or after the start date',
       })
     }
   })

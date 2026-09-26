@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Field, NativeSelect } from '@/components/Field'
 import { AuthLayout } from '@/features/auth/AuthLayout'
+import { useAuth } from '@/features/auth/AuthProvider'
 import { friendlyError, parseForm, type FieldErrors } from '@/lib/forms'
 import { supabase } from '@/lib/supabase'
 import { createOrganization } from './api'
@@ -16,6 +17,8 @@ export function OnboardingPage() {
   const queryClient = useQueryClient()
   const [errors, setErrors] = useState<FieldErrors>({})
   const [busy, setBusy] = useState(false)
+  // Given at sign-up; with email confirmation on, the business is created here after the first sign-in.
+  const suggestedName = String(useAuth().session?.user.user_metadata?.business_name ?? '')
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -40,7 +43,7 @@ export function OnboardingPage() {
       description="Waiting for an invitation instead? Ask the owner to invite this email, then sign in again."
     >
       <form onSubmit={onSubmit} className="grid grid-cols-1 gap-4" noValidate>
-        <Field label="Business name" name="name" autoComplete="organization" error={errors.name} />
+        <Field label="Business name" name="name" autoComplete="organization" defaultValue={suggestedName} error={errors.name} />
         <Field
           label="Currency"
           name="currency"

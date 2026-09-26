@@ -35,6 +35,9 @@ export function LoginPage() {
           autoComplete="current-password"
           error={errors.password}
         />
+        <Link to="/forgot-password" className="-mt-2 justify-self-end text-sm text-muted-foreground underline-offset-4 hover:underline">
+          Forgot password?
+        </Link>
         {errors.form && (
           <p role="alert" className="text-sm text-destructive">
             {errors.form}

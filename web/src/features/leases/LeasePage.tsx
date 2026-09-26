@@ -126,6 +126,7 @@ export function LeasePage() {
     ['Started', roll.start_date],
     ['Ends', endLabel(roll)],
     ['Rent due', `Day ${roll.rent_due_day} of each month`],
+    ['Counted from', roll.rent_counted_from],
     [
       'Last rent',
       roll.last_rent_date && roll.last_rent_amount

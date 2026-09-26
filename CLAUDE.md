@@ -16,6 +16,10 @@ Source of truth for scope: `intent/*/spec.md`. Read the active spec before codin
 - `cd web && npm run dev`: frontend on :5173 (reads URL/key from `supabase status`; no .env needed)
 - `cd web && npm run check`: typecheck + lint + unit tests · `cd web && npm run e2e`: Playwright
 - db:test, evals, check and e2e must all pass before saying "done".
+- Production: merge to main → CI → `deploy.yml` (backup, `supabase db push`, build, Cloudflare Pages). Nightly
+  `backup.yml` and daily `keepalive.yml` (calls `public.ping()`). Setup and restore: `docs/go-live.md`.
+  Security headers/CSP live in `web/public/_headers`: a new external origin must be added there.
+- e2e may read auth emails from Mailpit (`http://127.0.0.1:54324`); CI keeps Mailpit running for this.
 - Local auth allows 1000 sign-ups/5 min (config.toml): each e2e run creates ~22 users, and the default 30
   likely caused intermittent sign-up failures on back-to-back runs. Keep e2e users unique per test.
 

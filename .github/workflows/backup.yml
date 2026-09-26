@@ -1,0 +1,34 @@
+name: Nightly backup
+
+# Supabase's free tier has no point-in-time recovery: keep our own encrypted dumps for 30 days.
+on:
+  schedule:
+    - cron: '30 21 * * *' # 02:30 in Pakistan (UTC+5)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - name: Dump and encrypt
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: bash scripts/backup.sh "nightly-$(date -u +%Y%m%d)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nightly-backup-${{ github.run_id }}
+          path: backups/
+          retention-days: 30
+          if-no-files-found: error
