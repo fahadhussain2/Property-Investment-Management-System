@@ -2,7 +2,7 @@
 
 > Stage 3 artifact. Implements [`spec.md`](spec.md). Each milestone is one PR, and each
 > ends with a **verification gate** that Claude must pass before asking for human review.
-> Status: **APPROVED**, 2026-09-25 · M0 ✅ · M1 ✅ · M2 ✅ · M3 ✅ · M4 ✅ · M5 ✅ in review (104 pgTAP, 8/8 evals, 38 unit, 15 e2e) · next: M6
+> Status: **APPROVED**, 2026-09-25 · M0 ✅ · M1 ✅ · M2 ✅ · M3 ✅ · M4 ✅ · M5 ✅ · M6 ✅ in review (146 pgTAP, 9/9 evals, 47 unit, 18 e2e) · next: M7
 
 ## Repository layout (target)
 
@@ -65,6 +65,10 @@
   opening receivables/payables may need a property tag for the per-property ledger (M5).
 - Lease CRUD, automatic RENTED/VACANT status, rent roll with months unpaid, and expiring leases.
 - **Gate:** pgTAP tests plus e2e for the lease lifecycle.
+- Rules as built: leases are master data guarded by a trigger (no overlap per property, not on a sold property,
+  property/tenant fixed once entries exist). Rent is due monthly on `rent_due_day` from the first such day on/after
+  the start; months unpaid = ceil((months due × rent − rent received) / rent). Rent entered without a lease counts
+  for the lease with the same property + tenant and a date inside it. "Ending soon" = within 60 days.
 
 ### M7 — Go-live
 - Supabase cloud project and Cloudflare Pages deploy (GitHub Actions).

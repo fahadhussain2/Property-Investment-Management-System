@@ -23,8 +23,9 @@ export function optionalAmount(raw: string | undefined): Money | null | 'invalid
 export type OpeningInput = {
   money: { account_id: string; amount: string }[]
   properties: { property_id: string; cost: string }[]
-  owedToUs: { party_id: string; amount: string }[]
-  weOwe: { party_id: string; amount: string }[]
+  /** property_id (optional) tags the balance to a property, so it shows in that property's history */
+  owedToUs: { party_id: string; amount: string; property_id?: string }[]
+  weOwe: { party_id: string; amount: string; property_id?: string }[]
 }
 export type SystemAccounts = { properties: string; receivable: string; payable: string }
 
@@ -54,7 +55,7 @@ export function buildOpeningLines(
       if (m === 'invalid') errors[`${section}.${i}`] = 'Enter an amount like 1,500,000'
       else if (m && compare(m, '0.00') > 0) {
         if (!r[tag]) errors[`${section}.${i}`] = tag === 'property_id' ? 'Choose the property' : 'Choose the party'
-        else lines.push({ account_id: account, [side]: m, [tag]: r[tag] })
+        else lines.push({ account_id: account, [side]: m, [tag]: r[tag], ...(tag === 'party_id' && r.property_id ? { property_id: r.property_id } : {}) })
       }
     })
   }

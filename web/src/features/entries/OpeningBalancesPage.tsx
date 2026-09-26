@@ -50,8 +50,8 @@ export function OpeningBalancesPage() {
     const input: OpeningInput = {
       money: money.map((a) => ({ account_id: a.id, amount: get(`money_${a.id}`) })),
       properties: rows.properties.map((k) => ({ property_id: get(`prop_${k}`), cost: get(`propcost_${k}`) })),
-      owedToUs: rows.owedToUs.map((k) => ({ party_id: get(`recv_${k}`), amount: get(`recvamt_${k}`) })),
-      weOwe: rows.weOwe.map((k) => ({ party_id: get(`pay_${k}`), amount: get(`payamt_${k}`) })),
+      owedToUs: rows.owedToUs.map((k) => ({ party_id: get(`recv_${k}`), amount: get(`recvamt_${k}`), property_id: get(`recvprop_${k}`) })),
+      weOwe: rows.weOwe.map((k) => ({ party_id: get(`pay_${k}`), amount: get(`payamt_${k}`), property_id: get(`payprop_${k}`) })),
     }
     const { lines, errors } = buildOpeningLines(input, {
       properties: sys('properties'),
@@ -162,7 +162,10 @@ export function OpeningBalancesPage() {
                 'owedToUs',
                 (k) => (
                   <>
-                    <PartyPicker name={`recv_${k}`} label="Buyer" roles={['buyer']} allowCreate />
+                    <div className="grid grid-cols-1 gap-2">
+                      <PartyPicker name={`recv_${k}`} label="Buyer" roles={['buyer']} allowCreate />
+                      <PropertyPicker name={`recvprop_${k}`} label="For property (optional)" optional />
+                    </div>
                     <AmountField name={`recvamt_${k}`} label="Amount owed" />
                   </>
                 ),
@@ -175,7 +178,10 @@ export function OpeningBalancesPage() {
                 'weOwe',
                 (k) => (
                   <>
-                    <PartyPicker name={`pay_${k}`} label="Seller" roles={['seller']} allowCreate />
+                    <div className="grid grid-cols-1 gap-2">
+                      <PartyPicker name={`pay_${k}`} label="Seller" roles={['seller']} allowCreate />
+                      <PropertyPicker name={`payprop_${k}`} label="For property (optional)" optional />
+                    </div>
                     <AmountField name={`payamt_${k}`} label="Amount you owe" />
                   </>
                 ),

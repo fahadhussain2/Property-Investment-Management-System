@@ -1,0 +1,29 @@
+{
+  "name": "Rent roll: months unpaid from the lease and receipts (with and without the lease picked), a corrected rent keeps its lease",
+  "setup": {
+    "banks": [{ "name": "Meezan", "opening": "0.00" }],
+    "cash_opening": "0.00",
+    "properties": [{ "code": "SHOP-4", "kind": "shop", "opening_cost": "3000000.00" }, { "code": "DP-25", "kind": "house", "opening_cost": "9000000.00" }],
+    "parties": [{ "name": "Tenant X", "roles": ["tenant"] }, { "name": "Tenant Y", "roles": ["tenant"] }],
+    "leases": [
+      { "key": "L-SHOP", "property": "SHOP-4", "party": "Tenant X", "start": "2026-01-01", "monthly_rent": "50000.00" },
+      { "key": "L-DP", "property": "DP-25", "party": "Tenant Y", "start": "2026-01-10", "monthly_rent": "80000.00", "rent_due_day": 10 }
+    ]
+  },
+  "steps": [
+    { "id": "jan", "type": "rent", "date": "2026-01-05", "lease": "L-SHOP", "amount": "50000.00", "into": "1000", "period": "2026-01" },
+    { "type": "rent", "date": "2026-02-05", "property": "SHOP-4", "party": "Tenant X", "amount": "50000.00", "into": "1000", "period": "2026-02" },
+    { "id": "jan2", "type": "edit", "voucher": "jan", "changes": { "amount": "55000.00" } },
+    { "type": "rent", "date": "2026-01-10", "lease": "L-DP", "amount": "320000.00", "into": "bank:Meezan", "period": "2026-01..2026-04" }
+  ],
+  "expect": {
+    "rent_roll": {
+      "as_of": "2026-03-20",
+      "SHOP-4": { "status": "active", "months_due": 3, "expected": "150000.00", "received": "105000.00", "arrears": "45000.00", "months_unpaid": 1, "paid_ahead": "0.00" },
+      "DP-25": { "status": "active", "months_due": 3, "expected": "240000.00", "received": "320000.00", "arrears": "0.00", "months_unpaid": 0, "paid_ahead": "80000.00" }
+    },
+    "voucher_lease": { "jan2": "L-SHOP" },
+    "income_statement": { "from": "2026-01-01", "to": "2026-12-31", "rent_income": "425000.00" },
+    "trial_balance_difference": "0.00"
+  }
+}

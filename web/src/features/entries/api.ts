@@ -92,7 +92,7 @@ export async function fetchEntries(orgId: string, f: EntryFilters) {
 /** Everything that shows balances or history must refresh after a post, edit or void. */
 export function invalidateAfterPosting(qc: QueryClient, orgId: string) {
   return Promise.all(
-    [['account-balances', orgId], ['accounts', orgId], ['properties', orgId], ['vouchers', orgId], ['entries', orgId], ['entry'], ['reports', orgId]].map(
+    [['account-balances', orgId], ['accounts', orgId], ['properties', orgId], ['vouchers', orgId], ['entries', orgId], ['entry'], ['reports', orgId], ['leases', orgId]].map(
       (queryKey) => qc.invalidateQueries({ queryKey }),
     ),
   )

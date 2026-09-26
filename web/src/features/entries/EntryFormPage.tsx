@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeftIcon } from 'lucide-react'
 import { Fragment, useRef, useState, type FormEvent } from 'react'
-import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -15,7 +15,7 @@ import { fetchPropertySummaries, propertyKeys } from '@/features/properties/api'
 import { friendlyError, type FieldErrors } from '@/lib/forms'
 import { today } from '@/lib/money'
 import { editVoucher, fetchEntry, invalidateAfterPosting, postVoucher, previewEdit, previewVoucher, type Preview } from './api'
-import { AmountField, CategoryPicker, DirectionField, MoneyAccountPicker, PartyPicker, PropertyPicker } from './fields'
+import { AmountField, CategoryPicker, DirectionField, LeasePicker, MoneyAccountPicker, PartyPicker, PropertyPicker } from './fields'
 import { buildPayload, payloadToValues, type FormValues, type Payload } from './payload'
 import { PreviewPanel } from './PreviewPanel'
 import { summarize } from './summary'
@@ -24,6 +24,7 @@ import { entryType, type EntryType, type FieldSpec } from './types'
 /** /new/:type (record) and /entries/:id/edit (correct an existing entry). */
 export function EntryFormPage() {
   const { type, id } = useParams()
+  const [params] = useSearchParams()
   // Own cache key (not under ['entry']), fetched once. After a correction is saved, the refresh of
   // ['entry'] must not reach this page: seeing its original now "voided", it would redirect back to it,
   // racing (and, under load, beating) the navigation to the corrected entry.
@@ -45,10 +46,13 @@ export function EntryFormPage() {
   }
   const config = entryType(type ?? '')
   if (!config) return <Navigate to="/new" replace />
-  return <EntryForm key={config.type} config={config} initial={{ date: today() }} />
+  // Links may prefill a new entry, e.g. "Record rent" on a lease: /new/rent?lease_id=…&amount=50000.00
+  const prefill = Object.fromEntries(config.fields.filter((f) => params.get(f.name)).map((f) => [f.name, params.get(f.name)!]))
+  return <EntryForm key={config.type} config={config} initial={{ date: today(), ...prefill }} />
 }
 
-function renderField(f: FieldSpec, values: FormValues, errors: FieldErrors) {
+function renderField(f: FieldSpec, values: FormValues, errors: FieldErrors, config: EntryType) {
+  if (f.inLease) return null // drawn by the lease picker
   const common = { name: f.name, label: f.label, hint: f.hint, error: errors[f.name], defaultValue: values[f.name] }
   switch (f.kind) {
     case 'date':
@@ -71,6 +75,13 @@ function renderField(f: FieldSpec, values: FormValues, errors: FieldErrors) {
       return <CategoryPicker {...common} categoryType={f.categoryType!} />
     case 'direction':
       return <DirectionField {...common} />
+    case 'lease': {
+      const picked = (name: string) => {
+        const s = config.fields.find((x) => x.name === name)!
+        return { label: s.label, error: errors[name], defaultValue: values[name], unsoldOnly: s.unsoldOnly, roles: s.roles, allowCreate: s.allowCreate }
+      }
+      return <LeasePicker {...common} property={picked('property_id')} party={picked('party_id')} />
+    }
   }
 }
 
@@ -149,7 +160,7 @@ function EntryForm({ config, initial, editing }: { config: EntryType; initial: F
           {/* The form stays mounted (hidden) during review, so "Back" keeps every value. */}
           <form ref={formRef} onSubmit={onReview} noValidate className={review ? 'hidden' : 'grid grid-cols-1 gap-4'}>
             {config.fields.map((f) => (
-              <Fragment key={f.name}>{renderField(f, initial, errors)}</Fragment>
+              <Fragment key={f.name}>{renderField(f, initial, errors, config)}</Fragment>
             ))}
             {errors.form && (
               <p role="alert" className="text-sm text-destructive">

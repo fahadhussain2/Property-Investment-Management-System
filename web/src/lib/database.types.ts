@@ -769,6 +769,18 @@ export type Database = {
         Args: { p_changes: Json; p_voucher: string }
         Returns: Json
       }
+      expiring_leases: {
+        Args: { p_as_of?: string; p_days?: number; p_org: string }
+        Returns: {
+          days_to_end: number
+          end_date: string
+          lease_id: string
+          monthly_rent: number
+          property_code: string
+          property_id: string
+          tenant_name: string
+        }[]
+      }
       has_role: {
         Args: {
           p_org: string
@@ -865,6 +877,34 @@ export type Database = {
           roi_pct: number
           sale_price: number
           status: Database["public"]["Enums"]["property_status"]
+        }[]
+      }
+      rent_roll: {
+        Args: { p_as_of?: string; p_org: string }
+        Returns: {
+          arrears: number
+          days_to_end: number
+          deposit_held: number
+          end_date: string
+          ended_on: string
+          expected: number
+          last_rent_amount: number
+          last_rent_date: string
+          lease_id: string
+          monthly_rent: number
+          months_due: number
+          months_unpaid: number
+          paid_ahead: number
+          party_id: string
+          property_code: string
+          property_id: string
+          property_name: string
+          received: number
+          rent_due_day: number
+          security_deposit: number
+          start_date: string
+          status: string
+          tenant_name: string
         }[]
       }
       require_role: {

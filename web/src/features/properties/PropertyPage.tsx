@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeftIcon, PencilIcon, TagIcon, Trash2Icon } from 'lucide-react'
+import { ArrowLeftIcon, FileSignatureIcon, PencilIcon, TagIcon, Trash2Icon } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -11,6 +11,9 @@ import { PageHeader } from '@/components/PageHeader'
 import { SectionError, SectionLoading } from '@/components/QueryState'
 import { PropertyStatusBadge } from '@/components/StatusBadge'
 import { VoucherList } from '@/components/VoucherList'
+import { createLease, fetchRentRoll, leaseKeys } from '@/features/leases/api'
+import { LeaseFormDialog } from '@/features/leases/LeaseFormDialog'
+import { RollList } from '@/features/leases/RollList'
 import { useOrg } from '@/features/org/OrgProvider'
 import { friendlyError } from '@/lib/forms'
 import { kindLabel } from '@/lib/labels'
@@ -27,6 +30,7 @@ export function PropertyPage() {
   const queryClient = useQueryClient()
   const [editing, setEditing] = useState(false)
   const [listing, setListing] = useState(false)
+  const [leasing, setLeasing] = useState(false)
 
   const detail = useQuery({
     queryKey: propertyKeys.detail(current.id, id),
@@ -36,6 +40,7 @@ export function PropertyPage() {
     queryKey: ['vouchers', current.id, 'property', id],
     queryFn: () => fetchVouchersFor(current.id, { property_id: id }),
   })
+  const roll = useQuery({ queryKey: leaseKeys.roll(current.id), queryFn: () => fetchRentRoll(current.id) })
   const refresh = () => queryClient.invalidateQueries({ queryKey: propertyKeys.all(current.id) })
   const money = (v: number | string) => formatMoney(toMoney(v), current.currency)
 
@@ -110,6 +115,11 @@ export function PropertyPage() {
         actions={
           canWrite && (
             <>
+              {!sold && (
+                <Button variant="outline" onClick={() => setLeasing(true)}>
+                  <FileSignatureIcon /> Add lease
+                </Button>
+              )}
               {!sold &&
                 (property.for_sale ? (
                   <Button variant="outline" onClick={removeFromSale}>
@@ -159,6 +169,18 @@ export function PropertyPage() {
               </div>
             ))}
           </dl>
+          <h2 className="mt-6 mb-2 text-sm font-semibold text-muted-foreground">Leases</h2>
+          {roll.isPending ? (
+            <SectionLoading label="Loading leases…" />
+          ) : roll.isError ? (
+            <SectionError error={roll.error} onRetry={() => roll.refetch()} />
+          ) : (
+            <RollList
+              rows={roll.data.filter((r) => r.property_id === property.id)}
+              currency={current.currency}
+              empty={sold ? 'This property was not rented out.' : 'Use “Add lease” when you rent it out.'}
+            />
+          )}
         </section>
         <section>
           <h2 className="mb-2 text-sm font-semibold text-muted-foreground">Entries</h2>
@@ -180,6 +202,18 @@ export function PropertyPage() {
           await updateProperty(current.id, property.id, input)
           await refresh()
           toast.success('Property updated')
+        }}
+      />
+      <LeaseFormDialog
+        open={leasing}
+        onOpenChange={setLeasing}
+        propertyId={property.id}
+        onSave={async (input) => {
+          const lease = await createLease(current.id, input)
+          toast.success('Lease added')
+          navigate(`/leases/${lease.id}`)
+          void queryClient.invalidateQueries({ queryKey: leaseKeys.all(current.id) })
+          void refresh()
         }}
       />
       <FormDialog

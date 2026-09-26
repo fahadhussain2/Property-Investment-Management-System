@@ -15,6 +15,7 @@ export type FieldKind =
   | 'optional_money'
   | 'period'
   | 'direction'
+  | 'lease'
   | 'memo'
 
 export type FieldSpec = {
@@ -34,6 +35,8 @@ export type FieldSpec = {
   categoryType?: 'expense' | 'income'
   /** money account picker is required only when this money field is > 0 */
   requiredIf?: string
+  /** property/party of a rent or deposit: drawn by the lease picker, and needed only when no lease is chosen */
+  inLease?: boolean
 }
 
 export type EntryType = {
@@ -50,6 +53,7 @@ const date: FieldSpec = { name: 'date', kind: 'date', label: 'Date' }
 const memo: FieldSpec = { name: 'memo', kind: 'memo', label: 'Note (optional)' }
 const from = (extra: Partial<FieldSpec> = {}): FieldSpec => ({ name: 'account_id', kind: 'money_account', label: 'Paid from', ...extra })
 const into = (extra: Partial<FieldSpec> = {}): FieldSpec => ({ name: 'account_id', kind: 'money_account', label: 'Received into', ...extra })
+const lease: FieldSpec = { name: 'lease_id', kind: 'lease', label: 'Lease' }
 const amount = (label = 'Amount'): FieldSpec => ({ name: 'amount', kind: 'money', label })
 
 export const ENTRY_TYPES: EntryType[] = [
@@ -125,8 +129,9 @@ export const ENTRY_TYPES: EntryType[] = [
     group: 'rent',
     fields: [
       date,
-      { name: 'property_id', kind: 'property', label: 'Property', unsoldOnly: true },
-      { name: 'party_id', kind: 'party', label: 'Tenant', roles: ['tenant'], allowCreate: true },
+      lease,
+      { name: 'property_id', kind: 'property', label: 'Property', unsoldOnly: true, inLease: true },
+      { name: 'party_id', kind: 'party', label: 'Tenant', roles: ['tenant'], allowCreate: true, inLease: true },
       { name: 'period', kind: 'period', label: 'For month (optional)' },
       amount('Rent received'),
       into(),
@@ -141,8 +146,9 @@ export const ENTRY_TYPES: EntryType[] = [
     fields: [
       date,
       { name: 'direction', kind: 'direction', label: 'Deposit was' },
-      { name: 'property_id', kind: 'property', label: 'Property' },
-      { name: 'party_id', kind: 'party', label: 'Tenant', roles: ['tenant'] },
+      lease,
+      { name: 'property_id', kind: 'property', label: 'Property', inLease: true },
+      { name: 'party_id', kind: 'party', label: 'Tenant', roles: ['tenant'], inLease: true },
       amount(),
       { name: 'account_id', kind: 'money_account', label: 'Cash or bank account' },
       memo,

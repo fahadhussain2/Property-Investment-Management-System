@@ -13,6 +13,8 @@ import { EntryPage } from '@/features/entries/EntryPage'
 import { JournalPage } from '@/features/entries/JournalPage'
 import { NewEntryPage } from '@/features/entries/NewEntryPage'
 import { OpeningBalancesPage } from '@/features/entries/OpeningBalancesPage'
+import { LeasePage } from '@/features/leases/LeasePage'
+import { LeasesPage } from '@/features/leases/LeasesPage'
 import { MembersPage } from '@/features/members/MembersPage'
 import { MoneyBookPage } from '@/features/money/MoneyBookPage'
 import { MoneyPage } from '@/features/money/MoneyPage'
@@ -70,7 +72,8 @@ export const router = createBrowserRouter([
       { path: 'reports/properties', element: <PropertyProfitabilityPage /> },
       { path: 'reports/parties', element: <PartyBalancesPage /> },
       { path: 'reports/ledger', element: <LedgerPage /> },
-      { path: 'leases', element: <ComingSoon title="Leases & Rent" milestone="M6" /> },
+      { path: 'leases', element: <LeasesPage /> },
+      { path: 'leases/:id', element: <LeasePage /> },
       { path: 'settings', element: <SettingsPage /> },
       { path: 'settings/members', element: <MembersPage /> },
       { path: 'settings/accounts', element: <ChartOfAccountsPage /> },
