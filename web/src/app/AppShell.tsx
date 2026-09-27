@@ -1,4 +1,4 @@
-import { Building2Icon, LogOutIcon, PlusIcon, UserIcon } from 'lucide-react'
+import { Building2Icon, LogOutIcon, MoonIcon, PlusIcon, SunIcon, UserIcon } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { buttonVariants } from '@/components/ui/button'
 import {
@@ -14,6 +14,7 @@ import { NativeSelect } from '@/components/Field'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { useOrg } from '@/features/org/OrgProvider'
 import { supabase } from '@/lib/supabase'
+import { useTheme } from '@/lib/theme'
 import { cn } from '@/lib/utils'
 import { bottomNav, sidebarNav } from './nav'
 
@@ -36,6 +37,23 @@ function OrgSwitcher() {
         </option>
       ))}
     </NativeSelect>
+  )
+}
+
+function ThemeToggle() {
+  const { theme, toggle } = useTheme()
+  const dark = theme === 'dark'
+  return (
+    <button
+      type="button"
+      aria-label="Dark theme"
+      aria-pressed={dark}
+      title={dark ? 'Switch to light theme' : 'Switch to dark theme'}
+      onClick={toggle}
+      className={buttonVariants({ variant: 'ghost', size: 'icon' })}
+    >
+      {dark ? <SunIcon className="size-5" /> : <MoonIcon className="size-5" />}
+    </button>
   )
 }
 
@@ -102,6 +120,7 @@ export function AppShell() {
             <OrgSwitcher />
           </div>
           <div className="hidden flex-1 md:block" />
+          <ThemeToggle />
           <UserMenu />
         </header>
         <main className="flex-1 px-4 pt-4 pb-24 md:px-8 md:pt-6 md:pb-8 print:p-0">

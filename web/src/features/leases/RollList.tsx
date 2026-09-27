@@ -7,8 +7,8 @@ import { cn } from '@/lib/utils'
 import { endLabel, rentPosition, type RollRow } from './rentRoll'
 
 const TONE = {
-  bad: 'bg-red-100 text-red-900',
-  good: 'bg-emerald-100 text-emerald-900',
+  bad: 'bg-red-100 text-red-900 dark:bg-red-500/15 dark:text-red-300',
+  good: 'bg-emerald-100 text-emerald-900 dark:bg-emerald-500/15 dark:text-emerald-300',
   neutral: 'bg-muted text-muted-foreground',
 }
 

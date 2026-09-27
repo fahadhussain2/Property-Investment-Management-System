@@ -214,7 +214,7 @@ export function LeasePage() {
             <CardHeader>
               <CardDescription>{k.label}</CardDescription>
               <CardTitle
-                className={cn('text-lg tabular-nums', k.bad && 'text-red-700')}
+                className={cn('text-lg tabular-nums', k.bad && 'text-red-700 dark:text-red-400')}
                 data-testid={k.testid}
               >
                 {k.value}

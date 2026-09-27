@@ -110,7 +110,7 @@ export function IncomeStatementPage() {
             {r!.expenses_by_account.length === 0 && <Row indent label={<span className="text-muted-foreground">No expenses in this period</span>} amount="" />}
             <Row strong label="Total expenses" amount={less(r!.total_expenses)} />
 
-            <tr className={cn('border-t-2 text-base font-bold', isNegative(r!.net_profit) ? 'text-red-700' : 'text-emerald-800')} data-testid="is-net">
+            <tr className={cn('border-t-2 text-base font-bold', isNegative(r!.net_profit) ? 'text-red-700 dark:text-red-400' : 'text-emerald-800 dark:text-emerald-400')} data-testid="is-net">
               <td className={cn(td, 'py-3')}>{isNegative(r!.net_profit) ? 'Net loss' : 'Net profit'}</td>
               <td className={cn(tdNum, 'py-3')}>{m(r!.net_profit)}</td>
             </tr>

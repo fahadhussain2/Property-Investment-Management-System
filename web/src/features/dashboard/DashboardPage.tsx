@@ -67,7 +67,7 @@ export function DashboardPage() {
     <Card>
       <CardHeader>
         <CardDescription>{label}</CardDescription>
-        <CardTitle className={cn('text-2xl tabular-nums', q.data && isNegative(q.data.net_profit) && 'text-red-700')} data-testid={testid}>
+        <CardTitle className={cn('text-2xl tabular-nums', q.data && isNegative(q.data.net_profit) && 'text-red-700 dark:text-red-400')} data-testid={testid}>
           {q.isPending ? '…' : q.isError || !q.data ? 'Could not load' : m(q.data.net_profit)}
         </CardTitle>
       </CardHeader>

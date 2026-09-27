@@ -6,6 +6,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { router } from '@/app/router'
 import { AuthProvider } from '@/features/auth/AuthProvider'
 import { supabase } from '@/lib/supabase'
+import { initTheme } from '@/lib/theme'
 import './index.css'
 
 const queryClient = new QueryClient({
@@ -16,6 +17,8 @@ const queryClient = new QueryClient({
 supabase.auth.onAuthStateChange((event) => {
   if (event === 'SIGNED_OUT') queryClient.clear()
 })
+
+initTheme()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

@@ -58,7 +58,9 @@ export function ProfitBanner({ profit, cost, currency }: { profit: string; cost?
       data-testid="sale-profit"
       className={cn(
         'flex items-center gap-3 rounded-lg p-4',
-        loss ? 'bg-red-50 text-red-900' : 'bg-emerald-50 text-emerald-900',
+        loss
+          ? 'bg-red-50 text-red-900 dark:bg-red-950/40 dark:text-red-200'
+          : 'bg-emerald-50 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200',
       )}
     >
       <Icon className="size-6 shrink-0" aria-hidden />
