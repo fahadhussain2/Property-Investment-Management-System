@@ -10,3 +10,5 @@ Rules:
 - Every production bug adds a new case before it is fixed.
 - Amounts are strings (decimal), never JSON numbers.
 - Accounts are referred to by seeded code (spec §4). `bank:Meezan` means the bank account named Meezan created in `setup`.
+- `monthly_performance` checks the dashboard RPC: `{ "as_of", "months", "rows": { "YYYY-MM": { column: amount } },
+  "totals": { column: sum over all months } }`. Always pin `as_of` so a case never depends on today's date.
