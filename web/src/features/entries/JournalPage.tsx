@@ -254,7 +254,7 @@ export function JournalPage() {
                 <span>Debits {formatMoney(totals.debit, current.currency)}</span>
                 <span>Credits {formatMoney(totals.credit, current.currency)}</span>
                 <span
-                  className={cn(difference === '0.00' ? 'text-emerald-700' : 'text-destructive')}
+                  className={cn(difference === '0.00' ? 'text-emerald-700 dark:text-emerald-400' : 'text-destructive')}
                 >
                   {difference === '0.00'
                     ? 'Balanced'

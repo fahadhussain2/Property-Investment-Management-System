@@ -98,7 +98,7 @@ export function LeasesPage() {
                 : ''}
             </CardDescription>
             <CardTitle
-              className={cn('text-xl tabular-nums', totals.owingCount > 0 && 'text-red-700')}
+              className={cn('text-xl tabular-nums', totals.owingCount > 0 && 'text-red-700 dark:text-red-400')}
               data-testid="roll-arrears"
             >
               {m(totals.arrears)}

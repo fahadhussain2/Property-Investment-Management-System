@@ -8,10 +8,10 @@ export type AccountType = Enums['account_type']
 
 /** Plain-language labels. The UI never shows raw enum values or accounting jargon in forms. */
 export const PROPERTY_STATUS: Record<PropertyStatus, { label: string; className: string }> = {
-  vacant: { label: 'Vacant', className: 'bg-amber-100 text-amber-900' },
-  rented: { label: 'Rented', className: 'bg-emerald-100 text-emerald-900' },
-  under_agreement: { label: 'Under agreement', className: 'bg-sky-100 text-sky-900' },
-  sold: { label: 'Sold', className: 'bg-zinc-200 text-zinc-700' },
+  vacant: { label: 'Vacant', className: 'bg-amber-100 text-amber-900 dark:bg-amber-500/15 dark:text-amber-300' },
+  rented: { label: 'Rented', className: 'bg-emerald-100 text-emerald-900 dark:bg-emerald-500/15 dark:text-emerald-300' },
+  under_agreement: { label: 'Under agreement', className: 'bg-sky-100 text-sky-900 dark:bg-sky-500/15 dark:text-sky-300' },
+  sold: { label: 'Sold', className: 'bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200' },
 }
 
 export const PROPERTY_KINDS: { value: PropertyKind; label: string }[] = [

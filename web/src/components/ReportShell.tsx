@@ -143,7 +143,9 @@ export function ReconcileBanner({ difference, currency }: { difference: Money; c
       data-testid="reconcile"
       className={cn(
         'mb-4 flex items-center gap-2 rounded-lg p-3 text-sm font-medium',
-        ok ? 'bg-emerald-50 text-emerald-900' : 'bg-red-50 text-red-900',
+        ok
+          ? 'bg-emerald-50 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200'
+          : 'bg-red-50 text-red-900 dark:bg-red-950/40 dark:text-red-200',
       )}
     >
       <Icon className="size-4" aria-hidden />

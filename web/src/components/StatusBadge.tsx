@@ -8,7 +8,7 @@ export function PropertyStatusBadge({ status, forSale }: { status: PropertyStatu
   return (
     <span className="inline-flex flex-wrap gap-1">
       <span className={cn(pill, s.className)}>{s.label}</span>
-      {forSale && status !== 'sold' && <span className={cn(pill, 'bg-violet-100 text-violet-900')}>For sale</span>}
+      {forSale && status !== 'sold' && <span className={cn(pill, 'bg-violet-100 text-violet-900 dark:bg-violet-500/15 dark:text-violet-300')}>For sale</span>}
     </span>
   )
 }

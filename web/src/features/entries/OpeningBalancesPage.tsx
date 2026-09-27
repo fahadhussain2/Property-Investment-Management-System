@@ -133,7 +133,7 @@ export function OpeningBalancesPage() {
         description="Carry over what your registers show on the day you start using this system. Leave anything you don't have empty."
       />
       {hasOpening && (
-        <div role="alert" className="mb-4 flex max-w-2xl items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+        <div role="alert" className="mb-4 flex max-w-2xl items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
           <AlertTriangleIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
           Opening balances were already recorded. Saving again adds to them. To change them, void the earlier entry first.
         </div>
