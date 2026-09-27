@@ -1,8 +1,9 @@
 import { expect, type Page, test } from '@playwright/test'
 import { choose, expectNoHorizontalScroll, newBusiness, openingBalances, review, save } from './helpers'
 
-// Local calendar dates (the app and the DB use the business's calendar, not UTC).
-const ymd = (d: Date) => d.toLocaleDateString('en-CA')
+// The org's calendar date (default timezone Asia/Karachi, see org_today()), not the test
+// runner's local/UTC clock: near midnight UTC the two disagree on "today" by a day.
+const ymd = (d: Date) => d.toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' })
 const daysFromToday = (n: number) => ymd(new Date(Date.now() + n * 86_400_000))
 /** The 1st of the month two months ago: rent due on the 1st gives exactly 3 months due today. */
 const twoMonthsBack = () => {
