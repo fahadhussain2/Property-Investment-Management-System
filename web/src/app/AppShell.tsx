@@ -4,6 +4,7 @@ import { buttonVariants } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -50,10 +51,12 @@ function UserMenu() {
         <UserIcon className="size-5" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-56">
-        <DropdownMenuLabel className="font-normal">
-          <div className="truncate text-sm font-medium">{session?.user.email}</div>
-          <div className="text-xs capitalize text-muted-foreground">{role}</div>
-        </DropdownMenuLabel>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="font-normal">
+            <div className="truncate text-sm font-medium">{session?.user.email}</div>
+            <div className="text-xs capitalize text-muted-foreground">{role}</div>
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => supabase.auth.signOut()}>
           <LogOutIcon /> Sign out
