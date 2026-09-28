@@ -181,6 +181,25 @@ async function runSingleOrgCase(ctx, c, failures) {
     const { rows } = await ctx.q('select public.income_statement($1, $2, $3) as r', [org.id, from, to])
     for (const [f, v] of Object.entries(fields)) check(failures, `income_statement.${f}`, rows[0].r[f], v)
   }
+  if (x.monthly_performance) {
+    const { as_of, months, rows: byMonth = {}, totals = {} } = x.monthly_performance
+    const { rows } = await ctx.q(
+      "select to_char(month_start, 'YYYY-MM') as month, * from public.monthly_performance($1, $2, $3)",
+      [org.id, months, as_of],
+    )
+    check(failures, 'monthly_performance.rows', rows.length, months)
+    for (const [month, fields] of Object.entries(byMonth)) {
+      const row = rows.find((r) => r.month === month)
+      for (const [f, v] of Object.entries(fields)) check(failures, `monthly_performance.${month}.${f}`, row?.[f], v)
+    }
+    for (const [f, v] of Object.entries(totals)) {
+      const { rows: t } = await ctx.q(
+        `select sum(${pg.escapeIdentifier(f)})::numeric(18,2)::text as s from public.monthly_performance($1, $2, $3)`,
+        [org.id, months, as_of],
+      )
+      check(failures, `monthly_performance.totals.${f}`, t[0].s, v)
+    }
+  }
   if (x.balances) {
     const { rows } = await ctx.q('select account_id, balance from public.account_balances($1)', [org.id])
     for (const [ref, v] of Object.entries(x.balances)) {

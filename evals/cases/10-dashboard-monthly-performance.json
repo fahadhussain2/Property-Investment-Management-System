@@ -1,0 +1,33 @@
+{
+  "name": "Dashboard: monthly figures put sale profit and rent in their own months and add up to the income statement",
+  "setup": {
+    "banks": [{ "name": "Meezan", "opening": "20000000.00" }],
+    "cash_opening": "1000000.00",
+    "properties": [{ "code": "DP-25", "kind": "house" }, { "code": "SHOP-4", "kind": "shop", "opening_cost": "3000000.00" }],
+    "parties": [{ "name": "Seller A", "roles": ["seller"] }, { "name": "Buyer B", "roles": ["buyer"] }, { "name": "Tenant X", "roles": ["tenant"] }],
+    "leases": [{ "property": "SHOP-4", "party": "Tenant X", "start": "2026-01-01", "monthly_rent": "50000.00" }]
+  },
+  "steps": [
+    { "type": "rent", "date": "2026-01-05", "property": "SHOP-4", "party": "Tenant X", "amount": "50000.00", "into": "1000", "period": "2026-01" },
+    { "type": "purchase", "date": "2026-01-10", "property": "DP-25", "party": "Seller A", "price": "10000000.00", "paid_now": "4000000.00", "from": "bank:Meezan" },
+    { "type": "property_cost", "date": "2026-01-15", "property": "DP-25", "amount": "200000.00", "from": "1000", "memo": "Transfer fee" },
+    { "type": "pay_seller", "date": "2026-02-01", "property": "DP-25", "party": "Seller A", "amount": "6000000.00", "from": "bank:Meezan" },
+    { "type": "rent", "date": "2026-02-05", "property": "SHOP-4", "party": "Tenant X", "amount": "50000.00", "into": "1000", "period": "2026-02" },
+    { "type": "sale", "date": "2026-02-20", "property": "DP-25", "party": "Buyer B", "price": "12500000.00", "received_now": "12500000.00", "into": "bank:Meezan" }
+  ],
+  "expect": {
+    "monthly_performance": {
+      "as_of": "2026-02-28",
+      "months": 3,
+      "rows": {
+        "2025-12": { "total_income": "0.00", "net_profit": "0.00", "closing_cash": "21000000.00" },
+        "2026-01": { "gross_trading_profit": "0.00", "rent_income": "50000.00", "total_expenses": "0.00", "net_profit": "50000.00", "closing_cash": "16850000.00" },
+        "2026-02": { "gross_trading_profit": "2300000.00", "rent_income": "50000.00", "total_income": "2350000.00", "net_profit": "2350000.00", "closing_cash": "23400000.00" }
+      },
+      "totals": { "net_profit": "2400000.00", "rent_income": "100000.00" }
+    },
+    "income_statement": { "from": "2025-12-01", "to": "2026-02-28", "gross_trading_profit": "2300000.00", "rent_income": "100000.00", "net_profit": "2400000.00" },
+    "balances": { "bank:Meezan": "22500000.00", "1000": "900000.00" },
+    "trial_balance_difference": "0.00"
+  }
+}

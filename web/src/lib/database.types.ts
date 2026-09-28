@@ -796,6 +796,20 @@ export type Database = {
         Returns: Json
       }
       is_member: { Args: { p_org: string }; Returns: boolean }
+      monthly_performance: {
+        Args: { p_as_of?: string; p_months?: number; p_org: string }
+        Returns: {
+          closing_cash: number
+          gross_trading_profit: number
+          month_end: string
+          month_start: string
+          net_profit: number
+          other_income: number
+          rent_income: number
+          total_expenses: number
+          total_income: number
+        }[]
+      }
       my_organizations: {
         Args: never
         Returns: {
