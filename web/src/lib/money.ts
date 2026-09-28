@@ -34,6 +34,19 @@ export function formatMoney(a: Money, currency = 'PKR'): string {
  */
 export const toMoney = (x: number | string | null | undefined): Money => new Decimal(x ?? 0).toFixed(2)
 
+/**
+ * GEOMETRY ONLY: a plain number for positioning a chart mark (bar height, point, bar width %).
+ * Never use it for a displayed figure or for arithmetic on money; format the Money string instead.
+ */
+export const toChartNumber = (a: Money): number => new Decimal(a).toNumber()
+
+/** GEOMETRY ONLY: |a| as a percentage (0–100) of |of|, for bar widths. 0 when `of` is zero. */
+export function sharePct(a: Money, of: Money): number {
+  const base = new Decimal(of).abs()
+  if (base.isZero()) return 0
+  return Decimal.min(new Decimal(a).abs().div(base).times(100), 100).toDecimalPlaces(2).toNumber()
+}
+
 /** "1.25 crore" / "1.5 lakh" for amounts of a lakh or more (how amounts are said in Pakistan). */
 export function inLakhCrore(a: Money): string | null {
   const d = new Decimal(a).abs()

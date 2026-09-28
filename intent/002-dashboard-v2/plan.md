@@ -3,7 +3,7 @@
 > Stage 3 artifact. Implements [`spec.md`](spec.md). Each milestone is one PR on its own branch
 > and ends with a **verification gate** that the `verifier` subagent must pass before asking for
 > human review.
-> Status: **APPROVED**, 2026-09-28 · D1 🟡 ready for PR (175 pgTAP, 10/10 evals, 53 unit, 23/23 e2e, 19–23 ms for 10k vouchers) · D2 ⬜ · D3 ⬜
+> Status: **APPROVED**, 2026-09-28 · D1 ✅ merged (PR #10) · D2 🟡 in review (175 pgTAP, 10/10 evals, 76 unit, e2e 24/25: the one failure is the pre-existing flaky lease-lifecycle test, 1 in 6 on main) · D3 ✅ in the D2 PR
 
 ## Milestones
 
@@ -70,6 +70,9 @@ Database only. There is no UI change, so it can merge on its own.
   the dashboard. With tabs, a new lease that already has rent due opens the "Rent overdue"
   tab first. Update that test to click the "Leases ending" tab first. This is the only
   intended change to an existing test's steps. No expected values change.
+  *As built:* `auth-and-members.spec.ts` (balances fail to load) also changed: each block that
+  uses balances now shows its own error, so it takes `.first()` and additionally checks that
+  `owed-to-us` is absent and that `profit-fy` (not balance-based) still loads.
 - **New e2e** `web/e2e/dashboard.spec.ts`: spec §6 e2e list (FY tile = income statement
   page, chart table view values, rent overdue tile + tab + row link, portfolio filters, range
   toggle survives reload, 375 px no horizontal scroll in light and dark).
@@ -77,6 +80,25 @@ Database only. There is no UI change, so it can merge on its own.
   Screenshots at 375 / 768 / 1280 px, light and dark, attached to the PR. Bundle report:
   the dashboard chunk and the main chunk size before and after (the main chunk must not grow
   by more than 5 kB gzip).
+
+### D2 as built (deviations, recorded for review)
+
+- No "+ New entry" button in the page header (spec §3.9): the app shell already shows
+  "New entry" on every screen size (sidebar button; "+" in the phone bottom bar), so it would
+  be a duplicate.
+- The small blocks share `Cards.tsx` instead of one file each; `parts.tsx` holds the shared
+  block, skeleton and bar pieces; the sparkline is `Sparkline.tsx`; the lazy Recharts piece is
+  `PerformanceChart.tsx` and its card (range, table view, empty state) is `PerformanceCard.tsx`.
+- `lib/money.ts` gained `toChartNumber` and `sharePct`, the only places money becomes a number
+  (geometry only).
+- Portfolio counts are an auto-fill grid (columns of at least 11rem) rather than a fixed 2-column
+  list (spec §3.4), so labels never truncate in a narrow card. The cash sparkline is hidden below
+  640 px so the tile's amount has room. Needs attention tabs show short labels (Overdue, Ending,
+  To pay) with count badges; their accessible names are the full ones.
+- Headline tiles are boxes with a stretched link (not a link around everything), so a block's
+  "Try again" retries in place (found in verifier review; covered in `auth-and-members.spec.ts`).
+- Bundle: main chunk 94.28 → 94.94 kB gzip (+0.66 kB). The lazy chart chunk is 105 kB gzip
+  (Recharts 3 bundles Redux Toolkit and d3 modules), twice the ~50 kB estimated below.
 
 ### D3 — Docs and close-out (in the D2 PR, not a separate PR)
 
@@ -91,7 +113,7 @@ Database only. There is no UI change, so it can merge on its own.
 | Risk | Mitigation |
 |---|---|
 | The chart's sums drift from the income statement if the classification changes later | The pgTAP test compares every column to `income_statement`, so a drift fails CI |
-| Recharts bundle weight (~50 kB gzip) | Lazy-loaded; only the dashboard pays for it; bundle numbers in the PR |
+| Recharts bundle weight (estimated ~50 kB gzip; measured 105 kB) | Lazy-loaded after the page renders; only the dashboard pays for it. A hand-drawn SVG chart (~3 kB) is the fallback if this matters |
 | Time-zone edge at month boundaries | `org_today` + the pgTAP time-zone case; e2e uses the org date (as in the flaky-test fix f62e114) |
 | Sale months spike and flatten the other bars | Accepted in intent (question 5). The tooltip and table view give exact values |
 | Recharts renders SVG in pixels, so it can overflow on phones | `ChartContainer` is responsive; the 375 px overflow check runs after the chart has rendered |

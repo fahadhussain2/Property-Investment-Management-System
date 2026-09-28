@@ -130,6 +130,8 @@ test('a lease ending soon shows on the dashboard; added from the property page',
   await expect(page.getByRole('heading', { name: 'FLAT-7 · Tenant Y' })).toBeVisible()
 
   await page.goto('/')
+  // Dashboard v2: leases ending are one tab of "Needs attention" (rent already due opens first).
+  await page.getByRole('tab', { name: /Leases ending/ }).click()
   await expect(page.getByTestId('expiring-leases')).toContainText('FLAT-7')
   await expect(page.getByTestId('expiring-leases')).toContainText('in 20 days')
 })

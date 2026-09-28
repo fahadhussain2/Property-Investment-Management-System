@@ -17,9 +17,18 @@ test('dashboard shows an error, never a fake zero, when balances fail to load', 
   )
   await signUp(page, `err-${unique()}@e2e.local`, `Error Estates ${unique()}`)
 
-  await expect(page.getByRole('alert')).toContainText('Could not load this', { timeout: 15_000 })
+  // Dashboard v2: every block that uses balances shows its own error (Cash tile, Cash by account, Who owes whom).
+  await expect(page.getByRole('alert').first()).toContainText('Could not load this', { timeout: 15_000 })
   await expect(page.getByTestId('total-cash')).toHaveCount(0)
-  await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible()
+  await expect(page.getByTestId('owed-to-us')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Try again' }).first()).toBeVisible()
+  // Blocks that do not depend on balances still load.
+  await expect(page.getByTestId('profit-fy')).toBeVisible()
+  // Retrying inside a tile retries in place; it must not follow the tile's link (review of D2).
+  const url = page.url()
+  await page.getByRole('button', { name: 'Try again' }).first().click()
+  await expect(page.getByRole('alert').first()).toContainText('Could not load this', { timeout: 15_000 })
+  expect(page.url()).toBe(url)
 })
 
 test('user without a business goes through onboarding', async ({ page }) => {
