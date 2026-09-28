@@ -3,7 +3,7 @@
 > Stage 3 artifact. Implements [`spec.md`](spec.md). Each milestone is one PR on its own branch
 > and ends with a **verification gate** that the `verifier` subagent must pass before asking for
 > human review.
-> Status: **APPROVED**, 2026-09-28 · D1 ✅ merged (PR #10) · D2 🟡 in review (175 pgTAP, 10/10 evals, 76 unit, e2e 24/25: the one failure is the pre-existing flaky lease-lifecycle test, 1 in 6 on main) · D3 ✅ in the D2 PR
+> Status: **DONE**, 2026-09-28 · D1 ✅ merged (PR #10) · D2 ✅ merged (PR #11: 175 pgTAP, 10/10 evals, 76 unit, e2e 24/25; the one failure is the pre-existing flaky lease-lifecycle test, 1 in 6 on main) · D3 ✅ (in PR #11)
 
 ## Milestones
 
