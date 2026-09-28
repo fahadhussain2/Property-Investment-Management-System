@@ -117,7 +117,7 @@ Users see a clean history, and the books stay provable.
 
 ## 6. Screens
 
-1. **Dashboard.** Cash in hand, each bank balance, total cash position; portfolio counts
+1. **Dashboard.** *Superseded by [spec 002](../002-dashboard-v2/spec.md) (dashboard v2).* Cash in hand, each bank balance, total cash position; portfolio counts
    (owned / rented / for sale / under agreement / vacant / sold); property investment at
    cost; profit this month and this year (trading profit, rent, other income, expenses);
    recent vouchers; leases expiring soon.

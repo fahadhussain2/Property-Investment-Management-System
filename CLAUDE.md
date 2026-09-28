@@ -62,6 +62,10 @@ sets `script-shell` to Git Bash, and `web/scripts/with-local-supabase.mjs` runs 
 - Dialogs can open inside other forms: `FormDialog` stops submit propagation (React bubbles through portals).
 - Reports use `ReportShell` (period/as-of kept in the URL, Print, CSV via `toCsv`, which neutralises formulas).
   Anything collapsible on screen must still print (see the income statement's rent breakdown).
+- Charts: shadcn `chart` (Recharts), lazy-loaded so only the page using it pays for it; colours come from the
+  `--chart-*` tokens in `index.css` (validated palette, light and dark). Money becomes a JS number only for
+  geometry (`toChartNumber`/`sharePct` in `lib/money.ts`); every figure a user reads is formatted from the Money
+  string. A chart needs a table view (accessible, and it is what prints).
 - Every page has one `<h1>` (`PageHeader`/`AuthLayout`); e2e tests find pages by heading.
 
 ## Definition of done
