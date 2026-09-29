@@ -1,7 +1,7 @@
 # Spec 003 — Vehicles, gold and silver ("holdings")
 
 > Stage 2 artifact. Derived from [`intent.md`](intent.md). Extends spec 001 (§2, §4, §5, §6) and spec 002 (§3).
-> Status: **DRAFT**, awaiting approval
+> Status: **APPROVED** by Fahad Hussain, 2026-09-29
 
 ## 1. Design principle: "a second register next to Properties"
 
@@ -179,4 +179,4 @@ revaluation entries are left for later versions.
 
 ## Approval
 
-- [ ] Product owner approves the spec → proceed to Stage 3 (build per `plan.md`)
+- [x] Product owner approves the spec → proceed to Stage 3 (build per `plan.md`)

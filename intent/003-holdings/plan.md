@@ -2,7 +2,7 @@
 
 > Stage 3 artifact. Implements [`spec.md`](spec.md). Each milestone is one PR on its own branch and ends
 > with a **verification gate** that the `verifier` subagent must pass before asking for human review.
-> Status: **DRAFT**, starts after the spec is approved.
+> Status: **IN PROGRESS** · H1 started 2026-09-29
 
 ## Milestones
 
