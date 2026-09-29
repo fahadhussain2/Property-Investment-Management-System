@@ -12,10 +12,14 @@ import { rentPosition } from '@/features/leases/rentRoll'
 import { useOrg } from '@/features/org/OrgProvider'
 import { createParty, fetchParties, partyKeys } from '@/features/parties/api'
 import { PartyFormDialog } from '@/features/parties/PartyFormDialog'
+import { createHolding, fetchHoldings, holdingKeys } from '@/features/holdings/api'
+import { HoldingFormDialog } from '@/features/holdings/HoldingFormDialog'
 import { createProperty, fetchPropertySummaries, propertyKeys } from '@/features/properties/api'
 import { PropertyFormDialog } from '@/features/properties/PropertyFormDialog'
-import type { PartyRole } from '@/lib/labels'
+import { HOLDING_CLASSES, purityLabel, type HoldingClass, type PartyRole } from '@/lib/labels'
 import { formatMoney, inLakhCrore, parseMoney } from '@/lib/money'
+import { formatWeight, isWeightUnit, parseWeight, toGrams, unitToGrams, WEIGHT_UNITS } from '@/lib/quantity'
+import type { HoldingFilter } from './types'
 
 type Base = { name: string; label: string; error?: string; hint?: string; defaultValue?: string }
 
@@ -331,6 +335,177 @@ export function LeasePicker({ name, label, error, defaultValue, property, party 
         </>
       )}
     </>
+  )
+}
+
+const CLASSES_FOR: Record<HoldingFilter, HoldingClass[]> = {
+  vehicle: ['vehicle'],
+  metal: ['gold', 'silver'],
+  any: ['vehicle', 'gold', 'silver'],
+}
+
+/** Input names of the weight controls; opening balances prefix them per row. */
+export type WeightNames = { cls: string; weight: string; unit: string; whole: string }
+const WEIGHT_NAMES: WeightNames = { cls: 'holding_class', weight: 'weight', unit: 'unit', whole: 'whole' }
+
+/**
+ * A vehicle, gold or silver item. For gold/silver it can also ask for the weight: bought, or sold (a weight,
+ * or "the whole item"). A hidden input carries the chosen item's class so the form knows whether a weight is
+ * needed. The weight is sent as typed with its unit; the database converts it to grams exactly.
+ */
+export function HoldingPicker({
+  name,
+  label,
+  error,
+  defaultValue,
+  holdingClass = 'any',
+  unsoldOnly,
+  optional,
+  allowCreate,
+  weight,
+  weightValues = {},
+  weightError,
+  weightLabel,
+  names = WEIGHT_NAMES,
+}: Base & {
+  holdingClass?: HoldingFilter
+  unsoldOnly?: boolean
+  optional?: boolean
+  allowCreate?: boolean
+  weight?: 'buy' | 'sell'
+  weightValues?: { weight?: string; unit?: string; whole?: string }
+  weightError?: string
+  weightLabel?: string
+  names?: WeightNames
+}) {
+  const { current } = useOrg()
+  const qc = useQueryClient()
+  const [value, setValue] = useState(defaultValue ?? '')
+  const [creating, setCreating] = useState(false)
+  const [whole, setWhole] = useState(weightValues.whole === 'true')
+  const { data = [], isPending } = useQuery({ queryKey: holdingKeys.all(current.id), queryFn: () => fetchHoldings(current.id) })
+  const classes = CLASSES_FOR[holdingClass]
+  const options = data.filter((h) => classes.includes(h.class) && (!unsoldOnly || h.status !== 'sold' || h.id === value))
+  const selected = data.find((h) => h.id === value)
+  const metal = selected && selected.class !== 'vehicle'
+  const held = selected ? formatWeight(toGrams(selected.weight_g), 'tola') : ''
+  const noun = holdingClass === 'vehicle' ? 'vehicle' : holdingClass === 'metal' ? 'gold or silver item' : 'vehicle or item'
+  return (
+    <>
+      <Shell
+        name={name}
+        label={label}
+        error={error}
+        hint={metal ? `${purityLabel(selected.class, selected.purity)} · ${held} held` : undefined}
+        action={
+          allowCreate && (
+            <Button type="button" variant="link" size="sm" className="h-auto p-0" onClick={() => setCreating(true)}>
+              <PlusIcon /> New {holdingClass === 'vehicle' ? 'vehicle' : 'item'}
+            </Button>
+          )
+        }
+      >
+        <NativeSelect {...aria(name, error)} value={value} onChange={(e) => setValue(e.target.value)}>
+          <option value="">{optional ? 'None' : `Choose a ${noun}…`}</option>
+          <KeepSelected value={value} ids={options.map((h) => h.id)} pending={isPending} label="Selected item" />
+          {classes.map((c) => {
+            const group = options.filter((h) => h.class === c)
+            return (
+              group.length > 0 && (
+                <optgroup key={c} label={HOLDING_CLASSES[c].label}>
+                  {group.map((h) => (
+                    <option key={h.id} value={h.id}>
+                      {h.code}
+                      {h.name ? ` · ${h.name}` : ''}
+                    </option>
+                  ))}
+                </optgroup>
+              )
+            )
+          })}
+        </NativeSelect>
+        <input type="hidden" name={names.cls} value={selected?.class ?? ''} />
+      </Shell>
+      {weight && metal && (
+        <>
+          {weight === 'sell' && (
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                name={names.whole}
+                value="true"
+                checked={whole}
+                onChange={(e) => setWhole(e.target.checked)}
+                className="accent-primary"
+              />
+              Sell the whole item ({held})
+            </label>
+          )}
+          {!(weight === 'sell' && whole) && (
+            <WeightInputs
+              names={names}
+              label={weightLabel ?? (weight === 'sell' ? 'Weight sold' : 'Weight bought')}
+              defaultWeight={weightValues.weight}
+              defaultUnit={weightValues.unit}
+              error={weightError}
+            />
+          )}
+        </>
+      )}
+      {allowCreate && (
+        <HoldingFormDialog
+          open={creating}
+          onOpenChange={setCreating}
+          classes={classes}
+          onSave={async (cls, input) => {
+            const created = await createHolding(current.id, cls, input)
+            await qc.invalidateQueries({ queryKey: holdingKeys.all(current.id) })
+            setValue(created.id)
+            toast.success(`${created.code} added`)
+          }}
+        />
+      )}
+    </>
+  )
+}
+
+/** Weight + unit, with a read-back in grams so a slip between tola and grams is caught before saving. */
+function WeightInputs({
+  names,
+  label,
+  defaultWeight,
+  defaultUnit,
+  error,
+}: {
+  names: WeightNames
+  label: string
+  defaultWeight?: string
+  defaultUnit?: string
+  error?: string
+}) {
+  const [qty, setQty] = useState(defaultWeight ?? '')
+  const [unit, setUnit] = useState(isWeightUnit(defaultUnit) ? defaultUnit : 'tola')
+  let readBack: string | undefined
+  try {
+    if (qty.trim() && unit !== 'g') readBack = `= ${formatWeight(unitToGrams(parseWeight(qty), unit), 'g')}`
+  } catch {
+    readBack = undefined
+  }
+  return (
+    <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,8rem)] gap-3">
+      <Shell name={names.weight} label={label} error={error} hint={readBack}>
+        <Input {...aria(names.weight, error, readBack)} inputMode="decimal" autoComplete="off" placeholder="0" value={qty} onChange={(e) => setQty(e.target.value)} />
+      </Shell>
+      <Shell name={names.unit} label="Unit">
+        <NativeSelect {...aria(names.unit)} value={unit} onChange={(e) => setUnit(e.target.value as typeof unit)}>
+          {WEIGHT_UNITS.map((u) => (
+            <option key={u.value} value={u.value}>
+              {u.label}
+            </option>
+          ))}
+        </NativeSelect>
+      </Shell>
+    </div>
   )
 }
 

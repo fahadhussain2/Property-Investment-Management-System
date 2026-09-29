@@ -172,3 +172,88 @@ describe('M6: rent and deposits against a lease', () => {
     expect(r.payload).toMatchObject({ lease_id: 'L1', direction: 'refunded' })
   })
 })
+
+describe('spec 003: vehicles, gold and silver', async () => {
+  const { buildOpeningLines } = await import('./lines')
+  const buy = entryType('holding_purchase')!
+  const sell = entryType('holding_sale')!
+  const base = { date: '2026-03-01', price: '2,000,000', paid_now: '2000000', account_id: 'a' }
+
+  it('gold needs a weight (sent as typed, with its unit); a vehicle sends none', () => {
+    expect(buildPayload(buy, { ...base, holding_id: 'g', holding_class: 'gold' }).errors).toEqual({ weight: 'Enter the weight' })
+    expect(buildPayload(buy, { ...base, holding_id: 'g', holding_class: 'gold', weight: '10.1234' }).errors?.weight).toMatch(/3 decimals/)
+    expect(buildPayload(buy, { ...base, holding_id: 'g', holding_class: 'gold', weight: '10', unit: 'tola' }).payload).toMatchObject({
+      holding_id: 'g', weight: '10', unit: 'tola', price: '2000000.00',
+    })
+    const car = buildPayload(buy, { ...base, holding_id: 'c', holding_class: 'vehicle', weight: '5' })
+    expect(car.errors).toBeNull()
+    expect(car.payload).toMatchObject({ weight: null, unit: null })
+    expect(car.payload).not.toHaveProperty('holding_class')
+  })
+
+  it('selling the whole item sends no weight; a correction to a weight clears "whole"', () => {
+    const s = { date: '2026-04-01', holding_id: 'g', holding_class: 'gold', price: '720000', received_now: '720000', account_id: 'a' }
+    expect(buildPayload(sell, { ...s, whole: 'true', weight: '3' }).payload).toMatchObject({ whole: 'true', weight: null, unit: null })
+    expect(buildPayload(sell, { ...s, weight: '3', unit: 'tola' }).payload).toMatchObject({ whole: null, weight: '3', unit: 'tola' })
+  })
+
+  it('seller only when part is owed; buyer only when part is still to come', () => {
+    expect(buildPayload(buy, { ...base, paid_now: '', holding_id: 'c', holding_class: 'vehicle' }).errors?.party_id).toMatch(/seller/)
+    const s = { date: '2026-04-01', holding_id: 'c', holding_class: 'vehicle', price: '100', account_id: 'a' }
+    expect(buildPayload(sell, { ...s, received_now: '100' }).errors).toBeNull()
+    expect(buildPayload(sell, { ...s, received_now: '40' }).errors?.party_id).toMatch(/buyer/)
+    expect(buildPayload(sell, { ...s, received_now: '400' }).errors?.received_now).toMatch(/more than/)
+  })
+
+  it('a seller/buyer balance is for a property or an item, exactly one', () => {
+    const pay = entryType('pay_seller')!
+    const p = { date: '2026-02-10', party_id: 's', amount: '600000', account_id: 'a' }
+    expect(buildPayload(pay, p).errors?.property_id).toMatch(/property, or/)
+    expect(buildPayload(pay, { ...p, holding_id: 'c' }).errors).toBeNull()
+    expect(buildPayload(pay, { ...p, property_id: 'x' }).errors).toBeNull()
+    expect(buildPayload(pay, { ...p, property_id: 'x', holding_id: 'c' }).errors?.holding_id).toMatch(/not both/)
+  })
+
+  it('describes holding entries in plain language', () => {
+    const p = buildPayload(buy, { ...base, holding_id: 'g', holding_class: 'gold', weight: '10', unit: 'tola' }).payload!
+    expect(summarize('holding_purchase', p, { holding: 'G-01', account: 'Meezan' })).toBe('Bought 10 tola of G-01 for Rs 2,000,000. Paid Rs 2,000,000 now from Meezan.')
+    const s = buildPayload(sell, { date: '2026-05-01', holding_id: 'g', holding_class: 'gold', whole: 'true', price: '1500000', account_id: 'a', received_now: '1000000', party_id: 'b' }).payload!
+    expect(summarize('holding_sale', s, { holding: 'G-01', party: 'Buyer B', account: 'Meezan' })).toBe(
+      'Sold all of G-01 to Buyer B for Rs 1,500,000. Received Rs 1,000,000 now into Meezan. The remaining Rs 500,000 is owed by the buyer.',
+    )
+    const e = buildPayload(entryType('expense')!, { date: '2026-03-01', category_account_id: 'fuel', amount: '20000', account_id: 'a', holding_id: 'c' }).payload!
+    expect(summarize('expense', e, { category: 'Fuel', account: 'Cash in Hand', holding: 'CAR-1' })).toBe('Paid Rs 20,000 for Fuel from Cash in Hand (CAR-1).')
+  })
+
+  it('opening balances carry vehicles at cost and gold/silver with their weight', () => {
+    const sys = {
+      properties: 'p', receivable: 'r', payable: 'y', deposits: 'd', advances: 'v',
+      holdings: { vehicle: 'acc-1400', gold: 'acc-1500', silver: 'acc-1510' },
+    }
+    const none = { money: [], properties: [], owedToUs: [], weOwe: [] }
+    const row = (h: Partial<{ holding_id: string; holding_class: string; cost: string; weight: string; unit: string }>) => ({
+      holding_id: '', holding_class: '', cost: '', weight: '', unit: 'tola', ...h,
+    })
+    const { lines, errors } = buildOpeningLines(
+      {
+        ...none,
+        holdings: [
+          row({ holding_id: 'car', holding_class: 'vehicle', cost: '3,000,000' }),
+          row({ holding_id: 'g', holding_class: 'gold', cost: '2000000', weight: '10' }),
+          row({}),
+        ],
+      },
+      sys,
+    )
+    expect(errors).toEqual({})
+    expect(lines).toEqual([
+      { account_id: 'acc-1400', debit: '3000000.00', holding_id: 'car' },
+      { account_id: 'acc-1500', debit: '2000000.00', holding_id: 'g', weight: '10', unit: 'tola' },
+    ])
+    expect(buildOpeningLines({ ...none, holdings: [row({ holding_id: 'g', holding_class: 'gold', cost: '5' })] }, sys).errors).toEqual({
+      'holdings.0': 'Enter the weight held, e.g. 10 (tola)',
+    })
+    expect(buildOpeningLines({ ...none, holdings: [row({ cost: '5' })] }, sys).errors).toEqual({ 'holdings.0': 'Choose the vehicle or item' })
+    expect(buildOpeningLines({ ...none, holdings: [row({ holding_id: 'g', holding_class: 'gold', weight: '10' })] }, sys).errors['holdings.0']).toMatch(/cost/)
+  })
+})

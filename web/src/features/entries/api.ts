@@ -12,6 +12,9 @@ export type PreviewLine = {
   property_code: string | null
   party_name: string | null
   memo: string | null
+  holding_code?: string | null
+  /** grams moved by a gold/silver line (signed) */
+  quantity_g?: string | null
 }
 export type Preview = { number: string; lines: PreviewLine[]; profit?: string; cost?: string }
 export type Posted = { id: string; number: string; profit?: string; cost?: string }
@@ -30,6 +33,7 @@ export type EntryDetail = {
   created_at: string
   created_by: string | null
   property: { id: string; code: string; name: string | null } | null
+  holding: { id: string; code: string; name: string | null; class: 'vehicle' | 'gold' | 'silver' } | null
   party: { id: string; name: string } | null
   reverses: Ref
   reversed_by: Ref
@@ -92,7 +96,7 @@ export async function fetchEntries(orgId: string, f: EntryFilters) {
 /** Everything that shows balances or history must refresh after a post, edit or void. */
 export function invalidateAfterPosting(qc: QueryClient, orgId: string) {
   return Promise.all(
-    [['account-balances', orgId], ['accounts', orgId], ['properties', orgId], ['vouchers', orgId], ['entries', orgId], ['entry'], ['reports', orgId], ['leases', orgId]].map(
+    [['account-balances', orgId], ['accounts', orgId], ['properties', orgId], ['vouchers', orgId], ['entries', orgId], ['entry'], ['reports', orgId], ['leases', orgId], ['holdings', orgId]].map(
       (queryKey) => qc.invalidateQueries({ queryKey }),
     ),
   )

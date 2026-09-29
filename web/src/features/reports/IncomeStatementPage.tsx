@@ -1,8 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
+import { Fragment } from 'react'
 import { MoneyTable, Row, td, tdNum } from '@/components/MoneyTable'
 import { SectionError, SectionLoading } from '@/components/QueryState'
 import { PeriodPicker, ReportShell, usePeriod } from '@/components/ReportShell'
 import { useOrg } from '@/features/org/OrgProvider'
+import { HOLDING_CLASSES, isHoldingClass } from '@/lib/labels'
 import { formatMoney, isNegative, sub } from '@/lib/money'
 import { describePeriod } from '@/lib/periods'
 import { cn } from '@/lib/utils'
@@ -24,6 +26,11 @@ export function IncomeStatementPage() {
     queryFn: () => fetchIncomeStatement(current.id, period.period),
   })
   const m = (x: string) => formatMoney(x, current.currency)
+  // Gain on Sale of Assets (4250) is split by what was sold: vehicles, gold, silver (spec 003 §7.7).
+  const gainsByClass = Object.entries(q.data?.asset_gains_by_class ?? {}).map(([c, amount]) => ({
+    label: isHoldingClass(c) ? HOLDING_CLASSES[c].label : c,
+    amount: amount!,
+  }))
   const less = (x: string) => (x === '0.00' ? m(x) : `(${m(x)})`)
   const r = q.data
 
@@ -36,7 +43,10 @@ export function IncomeStatementPage() {
       ['Property trading', 'Gross profit on property trading', r.gross_trading_profit],
       ...Object.entries(r.rent_income_by_property).map(([code, a]) => ['Rent income', code, a]),
       ['Rent income', 'Total rent income', r.rent_income],
-      ...r.other_income_by_account.map((o) => ['Other income', o.name, o.amount]),
+      ...r.other_income_by_account.flatMap((o) => [
+        ['Other income', o.name, o.amount],
+        ...(o.code === '4250' ? gainsByClass.map((g) => ['Other income', `  of which ${g.label}`, g.amount]) : []),
+      ]),
       ['Income', 'Total income', r.total_income],
       ...r.expenses_by_account.map((e) => ['Expenses', e.name, sub('0.00', e.amount)]),
       ['Expenses', 'Total expenses', sub('0.00', r.total_expenses)],
@@ -98,7 +108,18 @@ export function IncomeStatementPage() {
               <>
                 <tr><td colSpan={2} className={cn(td, 'pt-3 font-semibold')}>Other income</td></tr>
                 {r!.other_income_by_account.map((o) => (
-                  <Row key={o.code} indent label={o.name} amount={m(o.amount)} />
+                  <Fragment key={o.code}>
+                    <Row indent label={o.name} amount={m(o.amount)} testid={o.code === '4250' ? 'is-asset-gains' : undefined} />
+                    {o.code === '4250' &&
+                      gainsByClass.map((g) => (
+                        <Row
+                          key={g.label}
+                          indent
+                          label={<span className="pl-4 text-muted-foreground">of which {g.label}</span>}
+                          amount={<span className="text-muted-foreground">{m(g.amount)}</span>}
+                        />
+                      ))}
+                  </Fragment>
                 ))}
               </>
             )}

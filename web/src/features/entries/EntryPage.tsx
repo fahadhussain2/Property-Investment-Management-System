@@ -12,7 +12,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { SectionError, SectionLoading } from '@/components/QueryState'
 import { fetchMembers, memberKeys } from '@/features/members/api'
 import { useOrg } from '@/features/org/OrgProvider'
-import { VOUCHER_TYPES } from '@/lib/labels'
+import { HOLDING_CLASSES, VOUCHER_TYPES } from '@/lib/labels'
 import { formatMoney, sub } from '@/lib/money'
 import { cn } from '@/lib/utils'
 import { entryKeys, fetchEntry, invalidateAfterPosting, reverseVoucher } from './api'
@@ -63,7 +63,13 @@ export function EntryPage() {
   const editable = active && !!entryType(e.type) && !!e.payload
   // Cost of Properties Sold (code 5000; codes are immutable) carries the cost moved out on sale.
   // A property with no recorded cost has no such line: its cost is zero and the whole price is profit.
-  const cost = e.type === 'sale' ? (e.lines.find((l) => l.code === '5000' && l.debit !== '0.00')?.debit ?? '0.00') : undefined
+  // A holding sale relieves its cost as a credit on Vehicles / Gold / Silver at Cost (1400 / 1500 / 1510).
+  const cost =
+    e.type === 'sale'
+      ? (e.lines.find((l) => l.code === '5000' && l.debit !== '0.00')?.debit ?? '0.00')
+      : e.type === 'holding_sale'
+        ? (e.lines.find((l) => ['1400', '1500', '1510'].includes(l.code) && l.credit !== '0.00')?.credit ?? '0.00')
+        : undefined
   const profit = cost !== undefined ? sub(e.amount, cost) : undefined
 
   return (
@@ -116,6 +122,12 @@ export function EntryPage() {
                 <dd><Link className="underline" to={`/properties/${e.property.id}`}>{e.property.code}{e.property.name ? ` · ${e.property.name}` : ''}</Link></dd>
               </div>
             )}
+            {e.holding && (
+              <div className="flex gap-2">
+                <dt className="w-20 text-muted-foreground">{e.holding.class === 'vehicle' ? 'Vehicle' : 'Item'}</dt>
+                <dd><Link className="underline" to={`${HOLDING_CLASSES[e.holding.class].path}/${e.holding.id}`}>{e.holding.code}{e.holding.name ? ` · ${e.holding.name}` : ''}</Link></dd>
+              </div>
+            )}
             {e.party && (
               <div className="flex gap-2">
                 <dt className="w-20 text-muted-foreground">Party</dt>
@@ -123,7 +135,7 @@ export function EntryPage() {
               </div>
             )}
           </dl>
-          {profit !== undefined && active && <ProfitBanner profit={profit} cost={cost} currency={current.currency} />}
+          {profit !== undefined && active && <ProfitBanner profit={profit} cost={cost} costLabel={e.type === 'holding_sale' ? 'Cost of what was sold' : undefined} currency={current.currency} />}
           <section>
             <h2 className="mb-2 text-sm font-semibold text-muted-foreground">Accounting entries</h2>
             <LinesTable lines={e.lines} currency={current.currency} />

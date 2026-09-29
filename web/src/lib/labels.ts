@@ -26,6 +26,42 @@ export const kindLabel = (k: PropertyKind) => PROPERTY_KINDS.find((x) => x.value
 
 export const AREA_UNITS = ['marla', 'kanal', 'sq ft', 'sq yd', 'sq m'] as const
 
+/** Holdings (spec 003): vehicles, gold and silver items. "Holding" is the word in code; the UI says the class. */
+export type HoldingClass = 'vehicle' | 'gold' | 'silver'
+export type HoldingStatus = 'held' | 'partly_sold' | 'sold'
+export const HOLDING_CLASSES: Record<HoldingClass, { label: string; one: string; path: string }> = {
+  vehicle: { label: 'Vehicles', one: 'vehicle', path: '/vehicles' },
+  gold: { label: 'Gold', one: 'gold item', path: '/gold' },
+  silver: { label: 'Silver', one: 'silver item', path: '/silver' },
+}
+export const isHoldingClass = (c: unknown): c is HoldingClass => c === 'vehicle' || c === 'gold' || c === 'silver'
+
+export const HOLDING_STATUS: Record<HoldingStatus, { label: string; className: string }> = {
+  held: { label: 'Held', className: 'bg-emerald-100 text-emerald-900 dark:bg-emerald-500/15 dark:text-emerald-300' },
+  partly_sold: { label: 'Partly sold', className: 'bg-sky-100 text-sky-900 dark:bg-sky-500/15 dark:text-sky-300' },
+  sold: { label: 'Sold', className: 'bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200' },
+}
+
+/** Purity presets (fraction of pure metal). The rate is always for pure gold (24K) / pure silver. */
+export const PURITIES: Record<'gold' | 'silver', { value: string; label: string }[]> = {
+  gold: [
+    { value: '1.0000', label: '24K' },
+    { value: '0.9167', label: '22K' },
+    { value: '0.8750', label: '21K' },
+    { value: '0.7500', label: '18K' },
+  ],
+  silver: [
+    { value: '0.9990', label: '999 (pure)' },
+    { value: '0.9250', label: '925 (sterling)' },
+  ],
+}
+/** "22K", "999 (pure)", or a percentage for anything else. */
+export function purityLabel(cls: string, purity: number | string | null | undefined): string {
+  if (purity == null || (cls !== 'gold' && cls !== 'silver')) return ''
+  const v = Number(purity).toFixed(4)
+  return PURITIES[cls].find((p) => p.value === v)?.label ?? `${(Number(purity) * 100).toFixed(2)}%`
+}
+
 export const PARTY_ROLES = [
   { value: 'seller', label: 'Seller' },
   { value: 'buyer', label: 'Buyer' },

@@ -11,6 +11,7 @@ import { supabase, unwrap } from '@/lib/supabase'
 import { dashboardKeys, fetchMonthlyPerformance } from './api'
 import { CashAccountsBody, LatestEntriesBody, OwedBody, PortfolioBody, ProfitMixBody } from './Cards'
 import { HeadlineTiles } from './HeadlineTiles'
+import { HoldingsCard } from './HoldingsCard'
 import { attention, cashAccounts, formatDate, mapQuery, owed, portfolio, profitMix, rentOverdue, type QueryLike } from './model'
 import { NeedsAttention } from './NeedsAttention'
 import { Block, Loaded, Skeleton } from './parts'
@@ -109,6 +110,8 @@ export function DashboardPage() {
             </Loaded>
           </Block>
         </div>
+
+        <HoldingsCard orgId={org} currency={currency} />
       </div>
     </>
   )

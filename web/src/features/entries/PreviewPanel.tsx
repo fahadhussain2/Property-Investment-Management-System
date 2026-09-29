@@ -1,15 +1,19 @@
 import { TrendingDownIcon, TrendingUpIcon } from 'lucide-react'
 import { formatMoney, isNegative } from '@/lib/money'
+import { formatWeight } from '@/lib/quantity'
 import { cn } from '@/lib/utils'
 import type { PreviewLine } from './api'
 
 /** The accounting behind an entry, for whoever wants to check it. Table on wider screens, list on phones. */
 export function LinesTable({ lines, currency }: { lines: PreviewLine[]; currency: string }) {
   const m = (x: string) => (x === '0.00' ? '' : formatMoney(x, currency))
-  const tags = (l: PreviewLine) =>
-    (l.property_code || l.party_name) && (
-      <span className="block text-xs text-muted-foreground">{[l.property_code, l.party_name].filter(Boolean).join(' · ')}</span>
-    )
+  // Weight moved by a gold/silver line, signed like the line: + in (debit), − out (credit).
+  const weight = (l: PreviewLine) =>
+    l.quantity_g && l.quantity_g !== '0' ? `${l.quantity_g.startsWith('-') ? '−' : '+'}${formatWeight(l.quantity_g.replace('-', ''), 'g')}` : null
+  const tags = (l: PreviewLine) => {
+    const t = [l.property_code, l.holding_code, weight(l), l.party_name].filter(Boolean)
+    return t.length > 0 && <span className="block text-xs text-muted-foreground">{t.join(' · ')}</span>
+  }
   return (
     <div data-testid="entry-lines">
       <ul className="divide-y rounded-md border text-sm sm:hidden">
@@ -50,7 +54,17 @@ export function LinesTable({ lines, currency }: { lines: PreviewLine[]; currency
   )
 }
 
-export function ProfitBanner({ profit, cost, currency }: { profit: string; cost?: string; currency: string }) {
+export function ProfitBanner({
+  profit,
+  cost,
+  costLabel = 'Total cost of the property',
+  currency,
+}: {
+  profit: string
+  cost?: string
+  costLabel?: string
+  currency: string
+}) {
   const loss = isNegative(profit)
   const Icon = loss ? TrendingDownIcon : TrendingUpIcon
   return (
@@ -71,7 +85,7 @@ export function ProfitBanner({ profit, cost, currency }: { profit: string; cost?
         </div>
         {cost && (
           <div className="text-sm opacity-80">
-            Total cost of the property: <span className="whitespace-nowrap">{formatMoney(cost, currency)}</span>
+            {costLabel}: <span className="whitespace-nowrap">{formatMoney(cost, currency)}</span>
           </div>
         )}
       </div>
@@ -85,6 +99,7 @@ export function PreviewPanel({
   lines,
   profit,
   cost,
+  costLabel,
   currency,
 }: {
   summary: string
@@ -92,6 +107,7 @@ export function PreviewPanel({
   lines: PreviewLine[]
   profit?: string
   cost?: string
+  costLabel?: string
   currency: string
 }) {
   return (
@@ -99,7 +115,7 @@ export function PreviewPanel({
       <p className="text-base" data-testid="entry-summary">
         {summary}
       </p>
-      {profit !== undefined && <ProfitBanner profit={profit} cost={cost} currency={currency} />}
+      {profit !== undefined && <ProfitBanner profit={profit} cost={cost} costLabel={costLabel} currency={currency} />}
       <details className="text-sm">
         <summary className="cursor-pointer text-muted-foreground">Accounting entries (will be {number})</summary>
         <div className="mt-2">

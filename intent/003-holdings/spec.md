@@ -84,7 +84,8 @@ Changes to existing vouchers:
 
 - **Pay seller balance (V3) / Receive buyer balance (V6):** take a property **or** a holding (exactly one).
 - **Expense (V9):** optional vehicle (`holding_id` of class `vehicle`) in addition to the optional property.
-  The form offers the vehicle picker for `vehicle_expense` categories.
+  The form always offers an optional vehicle picker (clarified at Stage 3, H2: simpler than showing it only for
+  `vehicle_expense` heads, and a repair can be booked under any head).
 - **Other income (V10):** 4250 is not a valid category (it is posted only by H3).
 - **Opening balances (V13) / journal (V14):** each line may carry `holding_id`, and lines on 1500/1510
   carry the weight. This is how gold and vehicles already owned at go-live are entered.
@@ -137,8 +138,9 @@ Journal line rules (database-enforced):
      by Vehicles / Gold / Silver. "Vehicle expenses" is a new expense group between property and
      selling expenses.
    - Balance sheet: 1400–1510 appear as asset rows (no data change).
-   - New **Holdings report** (`ReportShell`, as-of date): all items at cost and at market value, by class,
-     with totals, print and CSV.
+   - New **Holdings report** (`ReportShell`): all items at cost and at market value, by class, with totals,
+     print and CSV. As of today (clarified at Stage 3, H2): valuing each item at a past date needs another SQL
+     function; `holdings_valuation(org, as_of)` already gives past totals by class if that is wanted later.
 8. **Dashboard (amends spec 002 §3):** a "Vehicles, gold & silver" card after Portfolio: vehicles at
    cost; gold and silver weight held, cost and market value; links to each register. It is hidden when
    the organization has no holdings. The four headline tiles don't change.

@@ -13,11 +13,11 @@ import { useOrg } from '@/features/org/OrgProvider'
 import { friendlyError } from '@/lib/forms'
 import { today } from '@/lib/money'
 import { entryKeys, fetchEntries, invalidateAfterPosting, postVoucher, previewVoucher, type Preview } from './api'
-import { AmountField, PartyPicker, PropertyPicker } from './fields'
+import { AmountField, HoldingPicker, PartyPicker, PropertyPicker } from './fields'
 import { buildOpeningLines, type JournalLine, type OpeningInput } from './lines'
 import { LinesTable } from './PreviewPanel'
 
-type Section = 'properties' | 'owedToUs' | 'weOwe' | 'deposits' | 'advances'
+type Section = 'properties' | 'holdings' | 'owedToUs' | 'weOwe' | 'deposits' | 'advances'
 let nextKey = 1
 
 /** One screen to carry your registers' balances into the system on a cut-over date. */
@@ -28,6 +28,7 @@ export function OpeningBalancesPage() {
   const formRef = useRef<HTMLFormElement>(null)
   const [rows, setRows] = useState<Record<Section, number[]>>({
     properties: [nextKey++],
+    holdings: [nextKey++],
     owedToUs: [nextKey++],
     weOwe: [nextKey++],
     deposits: [nextKey++],
@@ -56,6 +57,13 @@ export function OpeningBalancesPage() {
     const input: OpeningInput = {
       money: money.map((a) => ({ account_id: a.id, amount: get(`money_${a.id}`) })),
       properties: rows.properties.map((k) => ({ property_id: get(`prop_${k}`), cost: get(`propcost_${k}`) })),
+      holdings: rows.holdings.map((k) => ({
+        holding_id: get(`hold_${k}`),
+        holding_class: get(`holdcls_${k}`),
+        cost: get(`holdcost_${k}`),
+        weight: get(`holdw_${k}`),
+        unit: get(`holdu_${k}`),
+      })),
       owedToUs: rows.owedToUs.map((k) => ({ party_id: get(`recv_${k}`), amount: get(`recvamt_${k}`), property_id: get(`recvprop_${k}`) })),
       weOwe: rows.weOwe.map((k) => ({ party_id: get(`pay_${k}`), amount: get(`payamt_${k}`), property_id: get(`payprop_${k}`) })),
       deposits: rows.deposits.map((k) => ({ party_id: get(`dep_${k}`), property_id: get(`depprop_${k}`), amount: get(`depamt_${k}`) })),
@@ -67,6 +75,7 @@ export function OpeningBalancesPage() {
       payable: sys('payable_sellers'),
       deposits: sys('deposits_held'),
       advances: sys('advances_buyers'),
+      holdings: { vehicle: sys('vehicles'), gold: sys('gold'), silver: sys('silver') },
     })
     if (!/^\d{4}-\d{2}-\d{2}$/.test(get('date'))) errors.date = 'Pick the cut-over date'
     if (Object.keys(errors).length) return setErrors(errors)
@@ -164,6 +173,30 @@ export function OpeningBalancesPage() {
                   </>
                 ),
                 'Add property',
+              )}
+            </section>
+            <section className="grid grid-cols-1 gap-3">
+              <h2 className="font-semibold">Vehicles, gold &amp; silver you already own</h2>
+              <p className="-mt-2 text-sm text-muted-foreground">What each cost you, and for gold or silver the weight you hold.</p>
+              {rowList(
+                'holdings',
+                (k) => (
+                  <>
+                    <div className="grid grid-cols-1 gap-2">
+                      <HoldingPicker
+                        name={`hold_${k}`}
+                        label="Vehicle or item"
+                        unsoldOnly
+                        allowCreate
+                        weight="buy"
+                        weightLabel="Weight held"
+                        names={{ cls: `holdcls_${k}`, weight: `holdw_${k}`, unit: `holdu_${k}`, whole: `holdwh_${k}` }}
+                      />
+                    </div>
+                    <AmountField name={`holdcost_${k}`} label="Total cost so far" />
+                  </>
+                ),
+                'Add vehicle or item',
               )}
             </section>
             <section className="grid grid-cols-1 gap-3">

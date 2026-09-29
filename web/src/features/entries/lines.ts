@@ -1,4 +1,6 @@
+import type { HoldingClass } from '@/lib/labels'
 import { add, compare, parseMoney, type Money } from '@/lib/money'
+import { isWeightUnit, parseWeight } from '@/lib/quantity'
 
 export type JournalLine = {
   account_id: string
@@ -6,6 +8,10 @@ export type JournalLine = {
   credit?: Money
   property_id?: string
   party_id?: string
+  /** a vehicle / gold / silver item; gold and silver lines also carry the weight as typed, with its unit */
+  holding_id?: string
+  weight?: string
+  unit?: string
 }
 
 /** Parses an optional amount: '' -> null, invalid or negative -> 'invalid'. */
@@ -29,8 +35,18 @@ export type OpeningInput = {
   /** Security deposits held for tenants, and token money received from buyers: both need party AND property */
   deposits?: { party_id: string; property_id: string; amount: string }[]
   advances?: { party_id: string; property_id: string; amount: string }[]
+  /** Vehicles, gold and silver already owned: cost, and for gold/silver the weight held */
+  holdings?: { holding_id: string; holding_class: string; cost: string; weight: string; unit: string }[]
 }
-export type SystemAccounts = { properties: string; receivable: string; payable: string; deposits: string; advances: string }
+export type SystemAccounts = {
+  properties: string
+  receivable: string
+  payable: string
+  deposits: string
+  advances: string
+  /** Vehicles / Gold / Silver at Cost */
+  holdings?: Record<HoldingClass, string>
+}
 
 /**
  * Opening balances -> journal lines. The database adds the balancing line to Opening Balance Equity.
@@ -80,6 +96,24 @@ export function buildOpeningLines(
       }
     })
   }
+  // Vehicles, gold and silver: cost on the class's "at Cost" account; gold/silver bring their weight in with it.
+  ;(input.holdings ?? []).forEach((r, i) => {
+    const key = `holdings.${i}`
+    const m = optionalAmount(r.cost)
+    const cls = r.holding_class as HoldingClass
+    const metal = cls === 'gold' || cls === 'silver'
+    if (m === 'invalid') errors[key] = 'Enter an amount like 1,500,000'
+    else if (!m || compare(m, '0.00') === 0) {
+      if (r.weight?.trim()) errors[key] = 'Enter its total cost too: weight is carried in with its cost'
+    } else if (!r.holding_id || !sys.holdings?.[cls]) errors[key] = 'Choose the vehicle or item'
+    else if (metal) {
+      try {
+        lines.push({ account_id: sys.holdings[cls], debit: m, holding_id: r.holding_id, weight: parseWeight(r.weight ?? ''), unit: isWeightUnit(r.unit) ? r.unit : 'tola' })
+      } catch {
+        errors[key] = 'Enter the weight held, e.g. 10 (tola)'
+      }
+    } else lines.push({ account_id: sys.holdings[cls], debit: m, holding_id: r.holding_id })
+  })
   if (!lines.length && !Object.keys(errors).length) errors.form = 'Enter at least one opening amount'
   return { lines, errors }
 }

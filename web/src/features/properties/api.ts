@@ -42,10 +42,10 @@ export async function deleteProperty(orgId: string, id: string) {
   requireOneRow(unwrap(await supabase.from('properties').delete().eq('org_id', orgId).eq('id', id).select('id')))
 }
 
-/** Entries (vouchers) that mention a property, party or lease, newest first. */
+/** Entries (vouchers) that mention a property, party, lease or holding, newest first. */
 export async function fetchVouchersFor(
   orgId: string,
-  filter: { property_id: string } | { party_id: string } | { lease_id: string },
+  filter: { property_id: string } | { party_id: string } | { lease_id: string } | { holding_id: string },
 ) {
   const [column, value] = Object.entries(filter)[0]
   return unwrap(

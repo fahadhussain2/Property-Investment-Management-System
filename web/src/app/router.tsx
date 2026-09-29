@@ -10,6 +10,8 @@ import { ChartOfAccountsPage } from '@/features/accounts/ChartOfAccountsPage'
 import { MoneyAccountsPage } from '@/features/accounts/MoneyAccountsPage'
 import { DashboardPage } from '@/features/dashboard/DashboardPage'
 import { EntriesPage } from '@/features/entries/EntriesPage'
+import { HoldingPage } from '@/features/holdings/HoldingPage'
+import { HoldingsPage } from '@/features/holdings/HoldingsPage'
 import { EntryFormPage } from '@/features/entries/EntryFormPage'
 import { EntryPage } from '@/features/entries/EntryPage'
 import { JournalPage } from '@/features/entries/JournalPage'
@@ -21,6 +23,7 @@ import { MembersPage } from '@/features/members/MembersPage'
 import { MoneyBookPage } from '@/features/money/MoneyBookPage'
 import { MoneyPage } from '@/features/money/MoneyPage'
 import { BalanceSheetPage } from '@/features/reports/BalanceSheetPage'
+import { HoldingsReportPage } from '@/features/reports/HoldingsReportPage'
 import { IncomeStatementPage } from '@/features/reports/IncomeStatementPage'
 import { LedgerPage } from '@/features/reports/LedgerPage'
 import { PartyBalancesPage } from '@/features/reports/PartyBalancesPage'
@@ -59,6 +62,13 @@ export const router = createBrowserRouter([
       { index: true, element: <DashboardPage /> },
       { path: 'properties', element: <PropertiesPage /> },
       { path: 'properties/:id', element: <PropertyPage /> },
+      // One register component per class; the key resets its filters when moving between them.
+      { path: 'vehicles', element: <HoldingsPage key="vehicle" cls="vehicle" /> },
+      { path: 'vehicles/:id', element: <HoldingPage key="vehicle" cls="vehicle" /> },
+      { path: 'gold', element: <HoldingsPage key="gold" cls="gold" /> },
+      { path: 'gold/:id', element: <HoldingPage key="gold" cls="gold" /> },
+      { path: 'silver', element: <HoldingsPage key="silver" cls="silver" /> },
+      { path: 'silver/:id', element: <HoldingPage key="silver" cls="silver" /> },
       { path: 'parties', element: <PartiesPage /> },
       { path: 'parties/:id', element: <PartyPage /> },
       { path: 'new', element: <RequireWrite><NewEntryPage /></RequireWrite> },
@@ -76,6 +86,7 @@ export const router = createBrowserRouter([
       { path: 'reports/trial-balance', element: <TrialBalancePage /> },
       { path: 'reports/properties', element: <PropertyProfitabilityPage /> },
       { path: 'reports/parties', element: <PartyBalancesPage /> },
+      { path: 'reports/holdings', element: <HoldingsReportPage /> },
       { path: 'reports/ledger', element: <LedgerPage /> },
       { path: 'leases', element: <LeasesPage /> },
       { path: 'leases/:id', element: <LeasePage /> },
