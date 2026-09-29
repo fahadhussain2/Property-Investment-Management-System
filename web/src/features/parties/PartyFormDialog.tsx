@@ -31,7 +31,7 @@ export function PartyFormDialog({
       {(errors) => (
         <>
           <Field label="Name" name="name" defaultValue={party?.name} autoComplete="off" error={errors.name} />
-          <fieldset className="grid grid-cols-1 gap-1.5">
+          <fieldset className="grid grid-cols-1 content-start gap-1.5">
             <legend className="text-sm font-medium">Roles</legend>
             <div className="flex flex-wrap gap-x-4 gap-y-2" aria-describedby={errors.roles ? 'roles-error' : undefined}>
               {PARTY_ROLES.map((r) => (

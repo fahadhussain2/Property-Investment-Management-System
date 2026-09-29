@@ -27,7 +27,8 @@ type Base = { name: string; label: string; error?: string; hint?: string; defaul
 function Shell({ name, label, error, hint, action, children }: Base & { action?: React.ReactNode; children: React.ReactNode }) {
   const id = `field-${name}`
   return (
-    <div className="grid grid-cols-1 gap-1.5">
+    // content-start: keeps the label and control at the top when a neighbouring field's message makes the row taller.
+    <div className="grid grid-cols-1 content-start gap-1.5">
       <div className="flex items-center justify-between gap-2">
         <Label htmlFor={id}>{label}</Label>
         {action}
@@ -267,7 +268,7 @@ export function CategoryPicker({ name, label, error, defaultValue, categoryType 
 
 export function DirectionField({ name, label, defaultValue }: Base) {
   return (
-    <fieldset className="grid grid-cols-1 gap-1.5">
+    <fieldset className="grid grid-cols-1 content-start gap-1.5">
       <legend className="text-sm font-medium">{label}</legend>
       <div className="flex gap-4 text-sm">
         {[
