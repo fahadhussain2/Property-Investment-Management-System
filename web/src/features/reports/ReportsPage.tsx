@@ -1,10 +1,11 @@
-import { BookOpenIcon, Building2Icon, ChevronRightIcon, HandCoinsIcon, ScaleIcon, TrendingUpIcon, WalletIcon } from 'lucide-react'
+import { BookOpenIcon, Building2Icon, CarIcon, ChevronRightIcon, HandCoinsIcon, ScaleIcon, TrendingUpIcon, WalletIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { PageHeader } from '@/components/PageHeader'
 
 const REPORTS = [
   { to: '/reports/income-statement', icon: TrendingUpIcon, title: 'Income statement', help: 'Profit for a period: trading profit, rent by property, other income, expenses' },
   { to: '/reports/properties', icon: Building2Icon, title: 'Property profitability', help: 'Each property’s cost, rent, expenses, sale and net profit' },
+  { to: '/reports/holdings', icon: CarIcon, title: 'Vehicles, gold & silver', help: 'Everything held besides property and money, at cost and at today’s gold and silver rates' },
   { to: '/reports/parties', icon: HandCoinsIcon, title: 'Who owes whom', help: 'Money others owe you and money you owe, by party' },
   { to: '/money', icon: WalletIcon, title: 'Cash book & bank books', help: 'Every movement of money, with running balances' },
   { to: '/reports/balance-sheet', icon: ScaleIcon, title: 'Balance sheet', help: 'What the business owns and owes on a date' },

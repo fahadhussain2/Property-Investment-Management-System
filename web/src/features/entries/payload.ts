@@ -1,4 +1,5 @@
 import { compare, parseMoney } from '@/lib/money'
+import { isWeightUnit, parseWeight } from '@/lib/quantity'
 import type { FieldErrors } from '@/lib/forms'
 import type { EntryType } from './types'
 
@@ -12,7 +13,13 @@ const PICK_MESSAGE: Partial<Record<string, string>> = {
   to_account: 'Choose a cash or bank account',
   category: 'Choose a head of account',
   property: 'Choose the property',
+  holding: 'Choose the vehicle or item',
 }
+
+/** Paid/received in full needs no seller/buyer; only a balance left owing does (checked below). */
+const PARTY_OPTIONAL = ['purchase', 'holding_purchase', 'holding_sale']
+/** A seller/buyer balance belongs to a property OR a vehicle / gold / silver item (checked below). */
+const PROPERTY_OR_ITEM = ['pay_seller', 'receive_buyer']
 
 /**
  * Validates entry form values and builds the post_voucher payload.
@@ -60,10 +67,37 @@ export function buildPayload(
       case 'lease':
         payload[f.name] = raw || null
         break
+      case 'holding': {
+        payload[f.name] = raw || null
+        if (!raw && !f.optional) errors[f.name] = PICK_MESSAGE.holding
+        if (!f.weight) break
+        // Gold/silver only (the picker sends the chosen item's class). Every key is always present, so a
+        // correction that switches from a weight to "the whole item" clears the old weight (edit merges).
+        payload.weight = null
+        payload.unit = null
+        if (f.weight === 'sell') payload.whole = null
+        const metal = v('holding_class') === 'gold' || v('holding_class') === 'silver'
+        if (!metal) break
+        if (f.weight === 'sell' && v('whole') === 'true') {
+          payload.whole = 'true'
+          break
+        }
+        try {
+          payload.weight = parseWeight(v('weight'))
+        } catch {
+          errors.weight = v('weight') ? 'Enter a weight like 10 or 2.5 (up to 3 decimals)' : 'Enter the weight'
+        }
+        payload.unit = isWeightUnit(v('unit')) ? v('unit') : 'tola'
+        break
+      }
       default: {
         // pickers: property, party, money_account, to_account, category
         payload[f.name] = raw || null
-        const optional = f.optional || (f.kind === 'party' && entry.type === 'purchase') || (f.inLease && !!v('lease_id'))
+        const optional =
+          f.optional ||
+          (f.kind === 'party' && PARTY_OPTIONAL.includes(entry.type)) ||
+          (f.kind === 'property' && PROPERTY_OR_ITEM.includes(entry.type)) ||
+          (f.inLease && !!v('lease_id'))
         const conditional = f.requiredIf !== undefined
         if (!raw && !optional && !conditional) errors[f.name] = PICK_MESSAGE[f.kind] ?? `Choose the ${f.label.toLowerCase()}`
       }
@@ -77,14 +111,22 @@ export function buildPayload(
       if (m && isPositive(m) && !payload[f.name]) errors[f.name] = 'Choose a cash or bank account'
     }
   }
-  if (entry.type === 'purchase' && payload.price && !errors.paid_now) {
+  if ((entry.type === 'purchase' || entry.type === 'holding_purchase') && payload.price && !errors.paid_now) {
     const paid = payload.paid_now ?? '0.00'
     if (compare(paid, payload.price) > 0) errors.paid_now = 'Paid now can’t be more than the price'
     else if (compare(paid, payload.price) < 0 && !payload.party_id)
       errors.party_id = 'Choose the seller: part of the price is still owed'
   }
-  if (entry.type === 'sale' && payload.price && payload.received_now && compare(payload.received_now, payload.price) > 0) {
+  if ((entry.type === 'sale' || entry.type === 'holding_sale') && payload.price && payload.received_now && compare(payload.received_now, payload.price) > 0) {
     errors.received_now = 'Received now can’t be more than the sale price'
+  }
+  if (entry.type === 'holding_sale' && payload.price && !errors.received_now && !payload.party_id &&
+      compare(payload.received_now ?? '0.00', payload.price) < 0) {
+    errors.party_id = 'Choose the buyer: part of the price is still to be received'
+  }
+  if (PROPERTY_OR_ITEM.includes(entry.type)) {
+    if (!payload.property_id && !payload.holding_id) errors.property_id = 'Choose the property, or the vehicle / gold / silver item'
+    else if (payload.property_id && payload.holding_id) errors.holding_id = 'Choose a property or an item, not both'
   }
   if (entry.type === 'transfer' && payload.account_id && payload.account_id === payload.to_account_id) {
     errors.to_account_id = 'Pick a different account'

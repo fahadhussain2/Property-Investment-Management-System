@@ -17,6 +17,7 @@ export type FieldKind =
   | 'direction'
   | 'lease'
   | 'memo'
+  | 'holding'
 
 export type FieldSpec = {
   name: string
@@ -37,18 +38,27 @@ export type FieldSpec = {
   requiredIf?: string
   /** property/party of a rent or deposit: drawn by the lease picker, and needed only when no lease is chosen */
   inLease?: boolean
+  /** holding picker: which classes it offers ('metal' = gold and silver) */
+  holdingClass?: HoldingFilter
+  /** holding picker: also asks for the weight of a gold/silver item (bought, or sold / "the whole item") */
+  weight?: 'buy' | 'sell'
 }
+
+export type HoldingFilter = 'vehicle' | 'metal' | 'any'
+
+/** A menu entry that opens the same form narrowed to vehicles or to gold/silver (/new/<type>?class=…). */
+export type EntryVariant = { class: 'vehicle' | 'metal'; action: string; help: string; holdingLabel: string }
 
 export type EntryType = {
   type: FormVoucherType
   action: string
   help: string
-  group: 'property' | 'rent' | 'money'
+  group: 'property' | 'holdings' | 'rent' | 'money'
   fields: FieldSpec[]
+  variants?: EntryVariant[]
 }
 
-// Holding entries (spec 003) get their forms in H2.
-export type FormVoucherType = Exclude<VoucherType, 'opening' | 'journal' | 'holding_purchase' | 'holding_cost' | 'holding_sale'>
+export type FormVoucherType = Exclude<VoucherType, 'opening' | 'journal'>
 
 const date: FieldSpec = { name: 'date', kind: 'date', label: 'Date' }
 const memo: FieldSpec = { name: 'memo', kind: 'memo', label: 'Note (optional)' }
@@ -56,6 +66,8 @@ const from = (extra: Partial<FieldSpec> = {}): FieldSpec => ({ name: 'account_id
 const into = (extra: Partial<FieldSpec> = {}): FieldSpec => ({ name: 'account_id', kind: 'money_account', label: 'Received into', ...extra })
 const lease: FieldSpec = { name: 'lease_id', kind: 'lease', label: 'Lease' }
 const amount = (label = 'Amount'): FieldSpec => ({ name: 'amount', kind: 'money', label })
+/** Seller/buyer balances: a property, or else a vehicle / gold / silver item (exactly one). */
+const orItem: FieldSpec = { name: 'holding_id', kind: 'holding', label: 'Or vehicle / gold / silver item', optional: true, holdingClass: 'any' }
 
 export const ENTRY_TYPES: EntryType[] = [
   {
@@ -83,9 +95,9 @@ export const ENTRY_TYPES: EntryType[] = [
   {
     type: 'pay_seller',
     action: 'Paid the seller a balance',
-    help: 'A later payment against a property bought partly on credit.',
+    help: 'A later payment against a property, vehicle or gold/silver bought partly on credit.',
     group: 'property',
-    fields: [date, { name: 'property_id', kind: 'property', label: 'Property' }, { name: 'party_id', kind: 'party', label: 'Seller', roles: ['seller'] }, amount(), from(), memo],
+    fields: [date, { name: 'property_id', kind: 'property', label: 'Property', optional: true }, orItem, { name: 'party_id', kind: 'party', label: 'Seller', roles: ['seller'] }, amount(), from(), memo],
   },
   {
     type: 'buyer_advance',
@@ -119,9 +131,60 @@ export const ENTRY_TYPES: EntryType[] = [
   {
     type: 'receive_buyer',
     action: 'Received a balance from a buyer',
-    help: 'A later payment for a property sold partly on credit.',
+    help: 'A later payment for a property, vehicle or gold/silver sold partly on credit.',
     group: 'property',
-    fields: [date, { name: 'property_id', kind: 'property', label: 'Property' }, { name: 'party_id', kind: 'party', label: 'Buyer', roles: ['buyer'] }, amount(), into(), memo],
+    fields: [date, { name: 'property_id', kind: 'property', label: 'Property', optional: true }, orItem, { name: 'party_id', kind: 'party', label: 'Buyer', roles: ['buyer'] }, amount(), into(), memo],
+  },
+  {
+    type: 'holding_purchase',
+    action: 'Bought a vehicle, gold or silver',
+    help: 'Record the full price (and for gold or silver, the weight). If you paid only part now, the rest is tracked as owed to the seller.',
+    group: 'holdings',
+    variants: [
+      { class: 'vehicle', action: 'Bought a vehicle', help: 'Record the full price. If you paid only part now, the rest is tracked as owed to the seller.', holdingLabel: 'Vehicle' },
+      { class: 'metal', action: 'Bought gold or silver', help: 'Record the weight and the full price. Buying more of the same item adds to its weight.', holdingLabel: 'Item' },
+    ],
+    fields: [
+      date,
+      { name: 'holding_id', kind: 'holding', label: 'Vehicle or item', holdingClass: 'any', unsoldOnly: true, allowCreate: true, weight: 'buy' },
+      { name: 'party_id', kind: 'party', label: 'Seller', roles: ['seller'], allowCreate: true },
+      { name: 'price', kind: 'money', label: 'Purchase price' },
+      { name: 'paid_now', kind: 'optional_money', label: 'Paid now', hint: 'Leave empty if nothing was paid yet' },
+      from({ requiredIf: 'paid_now' }),
+      memo,
+    ],
+  },
+  {
+    type: 'holding_cost',
+    action: 'Paid a cost on a vehicle, gold or silver item',
+    help: 'Registration transfer, modifications, making charges: added to its cost (not to running expenses).',
+    group: 'holdings',
+    fields: [
+      date,
+      { name: 'holding_id', kind: 'holding', label: 'Vehicle or item', holdingClass: 'any', unsoldOnly: true },
+      amount(),
+      from(),
+      { ...memo, label: 'What for?' },
+    ],
+  },
+  {
+    type: 'holding_sale',
+    action: 'Sold a vehicle, gold or silver',
+    help: 'The gain is worked out automatically: sale price minus what it cost you (for part of a gold or silver item, its share of the cost).',
+    group: 'holdings',
+    variants: [
+      { class: 'vehicle', action: 'Sold a vehicle', help: 'The gain is worked out automatically: sale price minus everything the vehicle cost you.', holdingLabel: 'Vehicle' },
+      { class: 'metal', action: 'Sold gold or silver', help: 'Sell a whole item or part of its weight. Part of an item takes its share of the cost.', holdingLabel: 'Item' },
+    ],
+    fields: [
+      date,
+      { name: 'holding_id', kind: 'holding', label: 'Vehicle or item', holdingClass: 'any', unsoldOnly: true, weight: 'sell' },
+      { name: 'party_id', kind: 'party', label: 'Buyer', roles: ['buyer'], allowCreate: true },
+      { name: 'price', kind: 'money', label: 'Sale price' },
+      { name: 'received_now', kind: 'optional_money', label: 'Received now', hint: 'Leave empty if payment comes later' },
+      into({ requiredIf: 'received_now' }),
+      memo,
+    ],
   },
   {
     type: 'rent',
@@ -158,7 +221,7 @@ export const ENTRY_TYPES: EntryType[] = [
   {
     type: 'expense',
     action: 'Paid an expense',
-    help: 'Repairs, bills, taxes, salaries… Pick a property if the expense belongs to one.',
+    help: 'Repairs, bills, fuel, taxes, salaries… Pick a property or vehicle if the expense belongs to one.',
     group: 'money',
     fields: [
       date,
@@ -166,6 +229,7 @@ export const ENTRY_TYPES: EntryType[] = [
       amount(),
       from(),
       { name: 'property_id', kind: 'property', label: 'For property (optional)', optional: true },
+      { name: 'holding_id', kind: 'holding', label: 'For vehicle (optional)', optional: true, holdingClass: 'vehicle' },
       memo,
     ],
   },
@@ -216,6 +280,7 @@ export const entryType = (t: string) => ENTRY_TYPES.find((e) => e.type === t)
 
 export const GROUPS: { key: EntryType['group']; label: string }[] = [
   { key: 'property', label: 'Properties' },
+  { key: 'holdings', label: 'Vehicles, gold & silver' },
   { key: 'rent', label: 'Rent' },
   { key: 'money', label: 'Money in & out' },
 ]

@@ -20,17 +20,24 @@ export function NewEntryPage() {
               {g.label}
             </h2>
             <ul className="divide-y rounded-lg border">
-              {ENTRY_TYPES.filter((e) => e.group === g.key).map((e) => (
-                <li key={e.type}>
-                  <Link to={`/new/${e.type}`} className={row}>
-                    <span className="min-w-0 flex-1">
-                      <span className="block font-medium">{e.action}</span>
-                      <span className="block truncate text-sm text-muted-foreground">{e.help}</span>
-                    </span>
-                    <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-                  </Link>
-                </li>
-              ))}
+              {ENTRY_TYPES.filter((e) => e.group === g.key)
+                // "Bought a vehicle" and "Bought gold or silver" are one form narrowed by ?class=.
+                .flatMap((e) =>
+                  e.variants
+                    ? e.variants.map((v) => ({ key: `${e.type}-${v.class}`, to: `/new/${e.type}?class=${v.class}`, action: v.action, help: v.help }))
+                    : [{ key: e.type, to: `/new/${e.type}`, action: e.action, help: e.help }],
+                )
+                .map((e) => (
+                  <li key={e.key}>
+                    <Link to={e.to} className={row}>
+                      <span className="min-w-0 flex-1">
+                        <span className="block font-medium">{e.action}</span>
+                        <span className="block truncate text-sm text-muted-foreground">{e.help}</span>
+                      </span>
+                      <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                    </Link>
+                  </li>
+                ))}
             </ul>
           </section>
         ))}
@@ -45,7 +52,7 @@ export function NewEntryPage() {
                 <span className="min-w-0 flex-1">
                   <span className="block font-medium">Opening balances</span>
                   <span className="block truncate text-sm text-muted-foreground">
-                    Starting from your registers: cash, bank, properties held, money owed
+                    Starting from your registers: cash, bank, properties, vehicles, gold, money owed
                   </span>
                 </span>
                 <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />

@@ -50,6 +50,18 @@ export function friendlyError(e: unknown): string {
     return 'Rent or deposits are recorded against this lease, so its property and tenant cannot change. End it and add a new lease instead.'
   if (msg.includes('leases_check')) return 'The dates are out of order: a lease cannot end before it starts.'
   if (msg.includes('properties_org_code_idx')) return 'Another property already uses this code.'
+  // Vehicles, gold and silver (spec 003)
+  if (msg.includes('holdings_org_code_idx')) return 'Another vehicle or item already uses this code.'
+  if (msg.includes('is already recorded as bought')) return 'This vehicle’s purchase is already recorded. To change it, correct that entry.'
+  if (msg.includes('is more than the weight held')) return 'You can’t sell more than the weight held. Tick “Sell the whole item” to sell all of it.'
+  if (msg.includes('cannot go below zero')) return 'That would take out more weight than the item holds.'
+  if (/reverse the sale of .+ first/.test(msg))
+    return 'This item has a sale recorded. Void the sale first, then change its purchase or costs.'
+  if (msg.includes('no cost is recorded for this sale')) return 'Record what this item cost you first (its purchase or opening balance).'
+  if (/record the purchase of .+ first/.test(msg)) return 'Record the purchase of this item first.'
+  if (msg.includes('only a vehicle can be tagged')) return 'Only a vehicle can be picked for an expense.'
+  if (msg.includes('not both')) return 'Choose a property or a vehicle / gold / silver item, not both.'
+  if (/ is already sold/.test(msg)) return 'This is already sold.'
   if (msg.includes('violates foreign key constraint'))
     return 'This record has entries linked to it, so it cannot be deleted.'
   if (msg.includes('Invalid login credentials')) return 'Wrong email or password.'

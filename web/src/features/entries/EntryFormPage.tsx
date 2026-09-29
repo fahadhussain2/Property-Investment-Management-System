@@ -9,6 +9,7 @@ import { Field } from '@/components/Field'
 import { PageHeader } from '@/components/PageHeader'
 import { SectionError, SectionLoading } from '@/components/QueryState'
 import { accountKeys, fetchAccounts } from '@/features/accounts/api'
+import { fetchHoldings, holdingKeys } from '@/features/holdings/api'
 import { fetchRentRoll, leaseKeys } from '@/features/leases/api'
 import { useOrg } from '@/features/org/OrgProvider'
 import { fetchParties, partyKeys } from '@/features/parties/api'
@@ -16,11 +17,21 @@ import { fetchPropertySummaries, propertyKeys } from '@/features/properties/api'
 import { friendlyError, type FieldErrors } from '@/lib/forms'
 import { today } from '@/lib/money'
 import { editVoucher, fetchEntry, invalidateAfterPosting, postVoucher, previewEdit, previewVoucher, type Preview } from './api'
-import { AmountField, CategoryPicker, DirectionField, LeasePicker, MoneyAccountPicker, PartyPicker, PropertyPicker } from './fields'
+import { AmountField, CategoryPicker, DirectionField, HoldingPicker, LeasePicker, MoneyAccountPicker, PartyPicker, PropertyPicker } from './fields'
 import { buildPayload, payloadToValues, type FormValues, type Payload } from './payload'
 import { PreviewPanel } from './PreviewPanel'
 import { summarize } from './summary'
-import { entryType, type EntryType, type FieldSpec } from './types'
+import { entryType, type EntryType, type EntryVariant, type FieldSpec } from './types'
+
+/** "Bought a vehicle" / "Bought gold or silver": the same form, its item picker narrowed to that class. */
+function withVariant(config: EntryType, v: EntryVariant): EntryType {
+  return {
+    ...config,
+    action: v.action,
+    help: v.help,
+    fields: config.fields.map((f) => (f.kind === 'holding' ? { ...f, holdingClass: v.class, label: v.holdingLabel } : f)),
+  }
+}
 
 /** /new/:type (record) and /entries/:id/edit (correct an existing entry). */
 export function EntryFormPage() {
@@ -45,11 +56,13 @@ export function EntryFormPage() {
     if (!e || !config || e.status !== 'posted' || e.reverses) return <Navigate to={`/entries/${id}`} replace />
     return <EntryForm config={config} initial={payloadToValues(e.payload)} editing={{ id: e.id, number: e.number }} />
   }
-  const config = entryType(type ?? '')
-  if (!config) return <Navigate to="/new" replace />
+  const base = entryType(type ?? '')
+  if (!base) return <Navigate to="/new" replace />
+  const variant = base.variants?.find((v) => v.class === params.get('class'))
+  const config = variant ? withVariant(base, variant) : base
   // Links may prefill a new entry, e.g. "Record rent" on a lease: /new/rent?lease_id=…&amount=50000.00
   const prefill = Object.fromEntries(config.fields.filter((f) => params.get(f.name)).map((f) => [f.name, params.get(f.name)!]))
-  return <EntryForm key={config.type} config={config} initial={{ date: today(), ...prefill }} />
+  return <EntryForm key={`${config.type}-${variant?.class ?? ''}`} config={config} initial={{ date: today(), ...prefill }} />
 }
 
 function renderField(f: FieldSpec, values: FormValues, errors: FieldErrors, config: EntryType) {
@@ -76,6 +89,19 @@ function renderField(f: FieldSpec, values: FormValues, errors: FieldErrors, conf
       return <CategoryPicker {...common} categoryType={f.categoryType!} />
     case 'direction':
       return <DirectionField {...common} />
+    case 'holding':
+      return (
+        <HoldingPicker
+          {...common}
+          holdingClass={f.holdingClass}
+          unsoldOnly={f.unsoldOnly}
+          optional={f.optional}
+          allowCreate={f.allowCreate}
+          weight={f.weight}
+          weightValues={{ weight: values.weight, unit: values.unit, whole: values.whole }}
+          weightError={errors.weight}
+        />
+      )
     case 'lease': {
       const picked = (name: string) => {
         const s = config.fields.find((x) => x.name === name)!
@@ -101,10 +127,13 @@ function EntryForm({ config, initial, editing }: { config: EntryType; initial: F
   const accounts = useQuery({ queryKey: accountKeys.all(current.id), queryFn: () => fetchAccounts(current.id) })
   const hasLease = config.fields.some((f) => f.kind === 'lease')
   const leases = useQuery({ queryKey: leaseKeys.roll(current.id), queryFn: () => fetchRentRoll(current.id), enabled: hasLease })
+  const hasHolding = config.fields.some((f) => f.kind === 'holding')
+  const holdings = useQuery({ queryKey: holdingKeys.all(current.id), queryFn: () => fetchHoldings(current.id), enabled: hasHolding })
   // Review reads the form and names things in its summary, so wait until these have arrived (or failed:
   // an error is not "loading"). Before this, a quick click on a slow connection was rejected with
   // "Choose a cash or bank account" while the saved account was visibly selected.
-  const loading = properties.isPending || parties.isPending || accounts.isPending || (hasLease && leases.isPending)
+  const loading =
+    properties.isPending || parties.isPending || accounts.isPending || (hasLease && leases.isPending) || (hasHolding && holdings.isPending)
 
   async function onReview(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -151,6 +180,7 @@ function EntryForm({ config, initial, editing }: { config: EntryType; initial: F
     account: accounts.data?.find((x) => x.id === p.account_id)?.name,
     toAccount: accounts.data?.find((x) => x.id === p.to_account_id)?.name,
     category: accounts.data?.find((x) => x.id === p.category_account_id)?.name,
+    holding: holdings.data?.find((x) => x.id === p.holding_id)?.code,
   })
 
   return (
@@ -188,6 +218,7 @@ function EntryForm({ config, initial, editing }: { config: EntryType; initial: F
                 lines={review.preview.lines}
                 profit={review.preview.profit}
                 cost={review.preview.cost}
+                costLabel={config.type === 'holding_sale' ? 'Cost of what was sold' : undefined}
                 currency={current.currency}
               />
               <div className="flex justify-end gap-2">
