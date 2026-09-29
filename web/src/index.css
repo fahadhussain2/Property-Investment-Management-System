@@ -149,6 +149,14 @@
   html {
     @apply font-sans;
     }
+  /* A native <select>'s list is drawn by the browser. With a transparent select, recent Chrome/Edge on
+     Windows paint the list white while the options inherit the dark theme's near-white text, so nothing
+     is readable. Give options explicit theme colours so the list never depends on the browser default. */
+  select option,
+  select optgroup {
+    background-color: var(--popover);
+    color: var(--popover-foreground);
+  }
 }
 /* Paper: A4, no app chrome (the shell marks it print:hidden), readable black on white. */
 @media print {

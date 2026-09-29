@@ -16,7 +16,9 @@ export function Field({ label, name, error, hint, children, className, ...inputP
   const id = `field-${name}`
   const describedBy = error ? `${id}-error` : hint ? `${id}-hint` : undefined
   return (
-    <div className={cn('grid gap-1.5', className)}>
+    // content-start: in a row of fields, a neighbour's hint or error makes the row taller; without it this
+    // grid would stretch its label and control rows to fill that height and the control would drop out of line.
+    <div className={cn('grid content-start gap-1.5', className)}>
       <Label htmlFor={id}>{label}</Label>
       {children ?? (
         <Input id={id} name={name} aria-invalid={!!error} aria-describedby={describedBy} {...inputProps} />
@@ -39,7 +41,8 @@ export function NativeSelect({ className, ...props }: ComponentProps<'select'>) 
   return (
     <select
       className={cn(
-        'h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none',
+        // Same height, radius, padding and dark fill as Input, so selects and inputs line up side by side.
+        'h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none dark:bg-input/30',
         'focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50',
         'disabled:cursor-not-allowed disabled:opacity-50',
         className,
