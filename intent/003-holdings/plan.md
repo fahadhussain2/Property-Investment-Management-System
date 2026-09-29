@@ -2,7 +2,7 @@
 
 > Stage 3 artifact. Implements [`spec.md`](spec.md). Each milestone is one PR on its own branch and ends
 > with a **verification gate** that the `verifier` subagent must pass before asking for human review.
-> Status: **IN PROGRESS** · H1 ✅ merged (PR #16: 221 pgTAP, 13/13 evals) · H2 built 2026-09-29, awaiting review
+> Status: **DONE**, 2026-09-29 · H1 ✅ merged (PR #16: 221 pgTAP, 13/13 evals) · H2 ✅ merged (PR #17: 89 unit, e2e 29/29) · H3 ✅ (this close-out)
 
 ## Milestones
 
