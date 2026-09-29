@@ -9,6 +9,7 @@ import { Field } from '@/components/Field'
 import { PageHeader } from '@/components/PageHeader'
 import { SectionError, SectionLoading } from '@/components/QueryState'
 import { accountKeys, fetchAccounts } from '@/features/accounts/api'
+import { fetchRentRoll, leaseKeys } from '@/features/leases/api'
 import { useOrg } from '@/features/org/OrgProvider'
 import { fetchParties, partyKeys } from '@/features/parties/api'
 import { fetchPropertySummaries, propertyKeys } from '@/features/properties/api'
@@ -98,6 +99,12 @@ function EntryForm({ config, initial, editing }: { config: EntryType; initial: F
   const properties = useQuery({ queryKey: propertyKeys.all(current.id), queryFn: () => fetchPropertySummaries(current.id) })
   const parties = useQuery({ queryKey: partyKeys.all(current.id), queryFn: () => fetchParties(current.id) })
   const accounts = useQuery({ queryKey: accountKeys.all(current.id), queryFn: () => fetchAccounts(current.id) })
+  const hasLease = config.fields.some((f) => f.kind === 'lease')
+  const leases = useQuery({ queryKey: leaseKeys.roll(current.id), queryFn: () => fetchRentRoll(current.id), enabled: hasLease })
+  // Review reads the form and names things in its summary, so wait until these have arrived (or failed:
+  // an error is not "loading"). Before this, a quick click on a slow connection was rejected with
+  // "Choose a cash or bank account" while the saved account was visibly selected.
+  const loading = properties.isPending || parties.isPending || accounts.isPending || (hasLease && leases.isPending)
 
   async function onReview(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -168,7 +175,7 @@ function EntryForm({ config, initial, editing }: { config: EntryType; initial: F
               </p>
             )}
             <div className="flex justify-end">
-              <Button type="submit" disabled={busy}>
+              <Button type="submit" disabled={busy || loading} aria-busy={loading}>
                 {busy ? 'Checking…' : 'Review'}
               </Button>
             </div>
