@@ -97,6 +97,68 @@ export type Database = {
           },
         ]
       }
+      holdings: {
+        Row: {
+          chassis_no: string | null
+          class: string
+          code: string
+          colour: string | null
+          created_at: string
+          engine_no: string | null
+          id: string
+          make: string | null
+          model: string | null
+          name: string | null
+          notes: string | null
+          org_id: string
+          purity: number | null
+          registration_no: string | null
+          year: number | null
+        }
+        Insert: {
+          chassis_no?: string | null
+          class: string
+          code: string
+          colour?: string | null
+          created_at?: string
+          engine_no?: string | null
+          id?: string
+          make?: string | null
+          model?: string | null
+          name?: string | null
+          notes?: string | null
+          org_id: string
+          purity?: number | null
+          registration_no?: string | null
+          year?: number | null
+        }
+        Update: {
+          chassis_no?: string | null
+          class?: string
+          code?: string
+          colour?: string | null
+          created_at?: string
+          engine_no?: string | null
+          id?: string
+          make?: string | null
+          model?: string | null
+          name?: string | null
+          notes?: string | null
+          org_id?: string
+          purity?: number | null
+          registration_no?: string | null
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "holdings_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invitations: {
         Row: {
           accepted_at: string | null
@@ -144,11 +206,13 @@ export type Database = {
           credit: number
           debit: number
           entry_date: string
+          holding_id: string | null
           id: number
           memo: string | null
           org_id: string
           party_id: string | null
           property_id: string | null
+          quantity_g: number | null
           voucher_id: string
         }
         Insert: {
@@ -156,11 +220,13 @@ export type Database = {
           credit?: number
           debit?: number
           entry_date: string
+          holding_id?: string | null
           id?: never
           memo?: string | null
           org_id: string
           party_id?: string | null
           property_id?: string | null
+          quantity_g?: number | null
           voucher_id: string
         }
         Update: {
@@ -168,11 +234,13 @@ export type Database = {
           credit?: number
           debit?: number
           entry_date?: string
+          holding_id?: string | null
           id?: never
           memo?: string | null
           org_id?: string
           party_id?: string | null
           property_id?: string | null
+          quantity_g?: number | null
           voucher_id?: string
         }
         Relationships: [
@@ -181,6 +249,20 @@ export type Database = {
             columns: ["org_id", "account_id"]
             isOneToOne: false
             referencedRelation: "accounts"
+            referencedColumns: ["org_id", "id"]
+          },
+          {
+            foreignKeyName: "journal_lines_org_id_holding_id_fkey"
+            columns: ["org_id", "holding_id"]
+            isOneToOne: false
+            referencedRelation: "holdings"
+            referencedColumns: ["org_id", "id"]
+          },
+          {
+            foreignKeyName: "journal_lines_org_id_holding_id_fkey"
+            columns: ["org_id", "holding_id"]
+            isOneToOne: false
+            referencedRelation: "holdings_overview"
             referencedColumns: ["org_id", "id"]
           },
           {
@@ -312,6 +394,44 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "memberships_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      metal_rates: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          metal: string
+          org_id: string
+          rate_date: string
+          rate_per_tola: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          metal: string
+          org_id: string
+          rate_date: string
+          rate_per_tola: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          metal?: string
+          org_id?: string
+          rate_date?: string
+          rate_per_tola?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "metal_rates_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -484,6 +604,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           date: string
+          holding_id: string | null
           id: string
           lease_id: string | null
           memo: string | null
@@ -502,6 +623,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           date: string
+          holding_id?: string | null
           id?: string
           lease_id?: string | null
           memo?: string | null
@@ -520,6 +642,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           date?: string
+          holding_id?: string | null
           id?: string
           lease_id?: string | null
           memo?: string | null
@@ -540,6 +663,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vouchers_org_id_holding_id_fkey"
+            columns: ["org_id", "holding_id"]
+            isOneToOne: false
+            referencedRelation: "holdings"
+            referencedColumns: ["org_id", "id"]
+          },
+          {
+            foreignKeyName: "vouchers_org_id_holding_id_fkey"
+            columns: ["org_id", "holding_id"]
+            isOneToOne: false
+            referencedRelation: "holdings_overview"
+            referencedColumns: ["org_id", "id"]
           },
           {
             foreignKeyName: "vouchers_org_id_lease_id_fkey"
@@ -587,6 +724,46 @@ export type Database = {
       }
     }
     Views: {
+      holdings_overview: {
+        Row: {
+          chassis_no: string | null
+          class: string | null
+          code: string | null
+          colour: string | null
+          cost: number | null
+          cost_relieved: number | null
+          created_at: string | null
+          engine_no: string | null
+          id: string | null
+          make: string | null
+          market_value: number | null
+          model: string | null
+          name: string | null
+          notes: string | null
+          org_id: string | null
+          purity: number | null
+          rate_date: string | null
+          rate_per_tola: number | null
+          realized_gain: number | null
+          registration_no: string | null
+          running_expenses: number | null
+          sale_price: number | null
+          status: string | null
+          total_cost: number | null
+          unrealized_gain: number | null
+          weight_g: number | null
+          year: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "holdings_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       properties_overview: {
         Row: {
           address: string | null
@@ -653,58 +830,162 @@ export type Database = {
         Args: { k: string; p: Json; p_required?: boolean }
         Returns: number
       }
-      _is_sold: { Args: { p_org: string; p_prop: string }; Returns: boolean }
-      _line: {
-        Args: {
-          p_account: string
-          p_credit: number
-          p_debit: number
-          p_memo?: string
-          p_party?: string
-          p_property?: string
-          v: Database["public"]["Tables"]["vouchers"]["Row"]
-        }
-        Returns: undefined
-      }
-      _money_account: { Args: { p_id: string; p_org: string }; Returns: string }
-      _new_voucher: {
-        Args: {
-          p_amount: number
-          p_date: string
-          p_lease: string
-          p_memo: string
-          p_org: string
-          p_party: string
-          p_payload: Json
-          p_property: string
-          p_reverses: string
-          p_type: Database["public"]["Enums"]["voucher_type"]
-        }
+      _holding: {
+        Args: { p_id: string; p_org: string }
         Returns: {
-          amount: number
+          chassis_no: string | null
+          class: string
+          code: string
+          colour: string | null
           created_at: string
-          created_by: string | null
-          date: string
+          engine_no: string | null
           id: string
-          lease_id: string | null
-          memo: string | null
-          number: string
+          make: string | null
+          model: string | null
+          name: string | null
+          notes: string | null
           org_id: string
-          party_id: string | null
-          payload: Json | null
-          property_id: string | null
-          replaced_by_id: string | null
-          reverses_id: string | null
-          status: Database["public"]["Enums"]["voucher_status"]
-          type: Database["public"]["Enums"]["voucher_type"]
+          purity: number | null
+          registration_no: string | null
+          year: number | null
         }
         SetofOptions: {
           from: "*"
-          to: "vouchers"
+          to: "holdings"
           isOneToOne: true
           isSetofReturn: false
         }
       }
+      _holding_account: {
+        Args: { p_class: string; p_org: string }
+        Returns: string
+      }
+      _holding_cost: {
+        Args: { p_holding: string; p_org: string }
+        Returns: number
+      }
+      _holding_has_sale: {
+        Args: { p_holding: string; p_org: string }
+        Returns: boolean
+      }
+      _holding_sold: {
+        Args: { p_holding: string; p_org: string }
+        Returns: boolean
+      }
+      _holding_weight: {
+        Args: { p_holding: string; p_org: string }
+        Returns: number
+      }
+      _is_sold: { Args: { p_org: string; p_prop: string }; Returns: boolean }
+      _line:
+        | {
+            Args: {
+              p_account: string
+              p_credit: number
+              p_debit: number
+              p_memo?: string
+              p_party?: string
+              p_property?: string
+              v: Database["public"]["Tables"]["vouchers"]["Row"]
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              p_account: string
+              p_credit: number
+              p_debit: number
+              p_holding: string
+              p_memo: string
+              p_party: string
+              p_property: string
+              p_quantity: number
+              v: Database["public"]["Tables"]["vouchers"]["Row"]
+            }
+            Returns: undefined
+          }
+      _money_account: { Args: { p_id: string; p_org: string }; Returns: string }
+      _new_voucher:
+        | {
+            Args: {
+              p_amount: number
+              p_date: string
+              p_lease: string
+              p_memo: string
+              p_org: string
+              p_party: string
+              p_payload: Json
+              p_property: string
+              p_reverses: string
+              p_type: Database["public"]["Enums"]["voucher_type"]
+            }
+            Returns: {
+              amount: number
+              created_at: string
+              created_by: string | null
+              date: string
+              holding_id: string | null
+              id: string
+              lease_id: string | null
+              memo: string | null
+              number: string
+              org_id: string
+              party_id: string | null
+              payload: Json | null
+              property_id: string | null
+              replaced_by_id: string | null
+              reverses_id: string | null
+              status: Database["public"]["Enums"]["voucher_status"]
+              type: Database["public"]["Enums"]["voucher_type"]
+            }
+            SetofOptions: {
+              from: "*"
+              to: "vouchers"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
+        | {
+            Args: {
+              p_amount: number
+              p_date: string
+              p_holding: string
+              p_lease: string
+              p_memo: string
+              p_org: string
+              p_party: string
+              p_payload: Json
+              p_property: string
+              p_reverses: string
+              p_type: Database["public"]["Enums"]["voucher_type"]
+            }
+            Returns: {
+              amount: number
+              created_at: string
+              created_by: string | null
+              date: string
+              holding_id: string | null
+              id: string
+              lease_id: string | null
+              memo: string | null
+              number: string
+              org_id: string
+              party_id: string | null
+              payload: Json | null
+              property_id: string | null
+              replaced_by_id: string | null
+              reverses_id: string | null
+              status: Database["public"]["Enums"]["voucher_status"]
+              type: Database["public"]["Enums"]["voucher_type"]
+            }
+            SetofOptions: {
+              from: "*"
+              to: "vouchers"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
+      _seed_holding_accounts: { Args: { p_org: string }; Returns: undefined }
       _uuid: {
         Args: { k: string; p: Json; p_required?: boolean }
         Returns: string
@@ -713,6 +994,7 @@ export type Database = {
         Args: { t: Database["public"]["Enums"]["voucher_type"] }
         Returns: string
       }
+      _weight: { Args: { k?: string; p: Json; u?: string }; Returns: number }
       accept_invitations: { Args: never; Returns: number }
       account_balances: {
         Args: { p_as_of?: string; p_org: string }
@@ -790,6 +1072,30 @@ export type Database = {
           p_roles: Database["public"]["Enums"]["member_role"][]
         }
         Returns: boolean
+      }
+      holding_breakdown: {
+        Args: { p_holding: string; p_org: string }
+        Returns: {
+          amount: number
+          label: string
+          section: string
+        }[]
+      }
+      holding_status: {
+        Args: { p_holding: string; p_org: string }
+        Returns: string
+      }
+      holdings_valuation: {
+        Args: { p_as_of?: string; p_org: string }
+        Returns: {
+          class: string
+          cost: number
+          items: number
+          market_value: number
+          rate_date: string
+          rate_per_tola: number
+          weight_g: number
+        }[]
       }
       income_statement: {
         Args: { p_from: string; p_org: string; p_to: string }
@@ -948,6 +1254,10 @@ export type Database = {
           type: Database["public"]["Enums"]["account_type"]
         }[]
       }
+      unit_to_grams: {
+        Args: { p_qty: number; p_unit: string }
+        Returns: number
+      }
       voucher_detail: { Args: { p_voucher: string }; Returns: Json }
     }
     Enums: {
@@ -978,6 +1288,9 @@ export type Database = {
         | "drawing"
         | "opening"
         | "journal"
+        | "holding_purchase"
+        | "holding_cost"
+        | "holding_sale"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1126,6 +1439,9 @@ export const Constants = {
         "drawing",
         "opening",
         "journal",
+        "holding_purchase",
+        "holding_cost",
+        "holding_sale",
       ],
     },
   },

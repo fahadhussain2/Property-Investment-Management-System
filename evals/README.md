@@ -12,3 +12,7 @@ Rules:
 - Accounts are referred to by seeded code (spec §4). `bank:Meezan` means the bank account named Meezan created in `setup`.
 - `monthly_performance` checks the dashboard RPC: `{ "as_of", "months", "rows": { "YYYY-MM": { column: amount } },
   "totals": { column: sum over all months } }`. Always pin `as_of` so a case never depends on today's date.
+- Holdings (spec 003): `setup.holdings` (`code`, `class`, `purity`), `setup.metal_rates` (`metal`, `date`,
+  `rate_per_tola`); steps take `holding`, `weight`, `unit` (`g`/`kg`/`tola`) and `whole`. `holdings_overview`
+  checks rows by code; `holdings_valuation` is `{ "as_of", "<class>": { column: value } }`. The overview values at
+  the latest rate up to today, so give rates past dates.

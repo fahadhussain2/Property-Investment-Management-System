@@ -1,0 +1,31 @@
+{
+  "name": "Gold and silver valued at the latest rate (books stay at cost); kg and tola add up in grams",
+  "setup": {
+    "banks": [{ "name": "Meezan", "opening": "5000000.00" }],
+    "holdings": [
+      { "code": "G-01", "class": "gold", "purity": "0.9167" },
+      { "code": "S-01", "class": "silver", "purity": "0.999" }
+    ],
+    "metal_rates": [
+      { "metal": "gold", "date": "2026-02-01", "rate_per_tola": "240000.00" },
+      { "metal": "gold", "date": "2026-03-01", "rate_per_tola": "250000.00" }
+    ]
+  },
+  "steps": [
+    { "type": "holding_purchase", "date": "2026-02-10", "holding": "G-01", "price": "2000000.00", "paid_now": "2000000.00", "weight": "10", "unit": "tola", "from": "bank:Meezan" },
+    { "type": "holding_purchase", "date": "2026-02-10", "holding": "S-01", "price": "300000.00", "paid_now": "300000.00", "weight": "1", "unit": "kg", "from": "bank:Meezan" },
+    { "type": "holding_purchase", "date": "2026-02-11", "holding": "S-01", "price": "20000.00", "paid_now": "20000.00", "weight": "5", "unit": "tola", "from": "bank:Meezan" }
+  ],
+  "expect": {
+    "holdings_valuation": {
+      "as_of": "2026-12-31",
+      "gold": { "items": 1, "weight_g": "116.638038", "cost": "2000000.00", "rate_per_tola": "250000.00", "market_value": "2291750.00" },
+      "silver": { "items": 1, "weight_g": "1058.319019", "cost": "320000.00", "rate_per_tola": null, "market_value": null },
+      "vehicle": { "items": 0, "market_value": null }
+    },
+    "holdings_overview": { "G-01": { "status": "held", "rate_per_tola": "250000.00", "market_value": "2291750.00", "unrealized_gain": "291750.00" } },
+    "balance_sheet": { "as_of": "2026-12-31", "total_assets": "5000000.00", "difference": "0.00" },
+    "balances": { "1500": "2000000.00", "1510": "320000.00" },
+    "trial_balance_difference": "0.00"
+  }
+}

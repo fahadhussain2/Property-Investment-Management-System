@@ -15,7 +15,7 @@ const OPENING_DATE = '2025-12-31'
 class Ctx {
   constructor(client) {
     this.client = client
-    this.orgs = {} // key -> { id, accounts: {code|bank:Name -> id}, properties: {code -> id}, parties: {name -> id} }
+    this.orgs = {} // key -> { id, accounts: {code|bank:Name -> id}, properties: {code -> id}, holdings: {code -> id}, parties: {name -> id} }
     this.users = {} // key -> uuid
     this.vouchers = {} // step id -> voucher id
   }
@@ -52,7 +52,7 @@ class Ctx {
 async function setupOrg(ctx, key, spec, ownerKey) {
   await ctx.as(ownerKey)
   const { rows } = await ctx.q('select public.create_organization($1) as id', [`Eval ${key}`])
-  const org = { id: rows[0].id, accounts: {}, properties: {}, parties: {}, leases: {} }
+  const org = { id: rows[0].id, accounts: {}, properties: {}, holdings: {}, parties: {}, leases: {} }
   ctx.orgs[key] = org
 
   const accts = await ctx.q('select id, code from public.accounts where org_id = $1', [org.id])
@@ -76,6 +76,18 @@ async function setupOrg(ctx, key, spec, ownerKey) {
     if (p.opening_cost) {
       opening.push({ account_id: org.accounts['1200'], debit: p.opening_cost, property_id: r.rows[0].id })
     }
+  }
+  for (const h of spec.holdings ?? []) {
+    const r = await ctx.q(
+      'insert into public.holdings (org_id, class, code, name, purity) values ($1, $2, $3, $4, $5) returning id',
+      [org.id, h.class, h.code, h.name ?? null, h.purity ?? null],
+    )
+    org.holdings[h.code] = r.rows[0].id
+  }
+  for (const r of spec.metal_rates ?? []) {
+    await ctx.q('insert into public.metal_rates (org_id, metal, rate_date, rate_per_tola) values ($1, $2, $3, $4)', [
+      org.id, r.metal, r.date, r.rate_per_tola,
+    ])
   }
   for (const p of spec.parties ?? []) {
     const r = await ctx.q(
@@ -104,10 +116,11 @@ async function setupOrg(ctx, key, spec, ownerKey) {
 // Scenario step (human-friendly refs) -> post_voucher payload (ids).
 function toPayload(ctx, org, step) {
   const p = { type: step.type }
-  for (const k of ['date', 'memo', 'period', 'price', 'paid_now', 'received_now', 'amount', 'direction']) {
+  for (const k of ['date', 'memo', 'period', 'price', 'paid_now', 'received_now', 'amount', 'direction', 'weight', 'unit', 'whole']) {
     if (step[k] !== undefined) p[k] = step[k]
   }
   if (step.property) p.property_id = org.properties[step.property]
+  if (step.holding) p.holding_id = org.holdings[step.holding]
   if (step.party) p.party_id = org.parties[step.party]
   if (step.lease) p.lease_id = org.leases[step.lease]
   const money = step.from ?? step.into
@@ -260,6 +273,21 @@ async function runSingleOrgCase(ctx, c, failures) {
     for (const [id, key] of Object.entries(x.voucher_lease)) {
       const { rows } = await ctx.q('select lease_id from public.vouchers where id = $1', [ctx.vouchers[id]])
       check(failures, `voucher_lease.${id}`, rows[0]?.lease_id, org.leases[key])
+    }
+  }
+  if (x.holdings_overview) {
+    const { rows } = await ctx.q('select * from public.holdings_overview where org_id = $1', [org.id])
+    for (const [code, fields] of Object.entries(x.holdings_overview)) {
+      const row = rows.find((r) => r.code === code)
+      for (const [f, v] of Object.entries(fields)) check(failures, `holdings_overview.${code}.${f}`, row?.[f], v)
+    }
+  }
+  if (x.holdings_valuation) {
+    const { as_of, ...byClass } = x.holdings_valuation
+    const { rows } = await ctx.q('select * from public.holdings_valuation($1, $2)', [org.id, as_of])
+    for (const [cls, fields] of Object.entries(byClass)) {
+      const row = rows.find((r) => r.class === cls)
+      for (const [f, v] of Object.entries(fields)) check(failures, `holdings_valuation.${cls}.${f}`, row?.[f], v)
     }
   }
   if (x.trial_balance_difference !== undefined) {

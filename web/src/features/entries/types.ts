@@ -47,7 +47,8 @@ export type EntryType = {
   fields: FieldSpec[]
 }
 
-export type FormVoucherType = Exclude<VoucherType, 'opening' | 'journal'>
+// Holding entries (spec 003) get their forms in H2.
+export type FormVoucherType = Exclude<VoucherType, 'opening' | 'journal' | 'holding_purchase' | 'holding_cost' | 'holding_sale'>
 
 const date: FieldSpec = { name: 'date', kind: 'date', label: 'Date' }
 const memo: FieldSpec = { name: 'memo', kind: 'memo', label: 'Note (optional)' }

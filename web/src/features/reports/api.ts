@@ -13,8 +13,11 @@ export type IncomeStatement = {
   rent_income_by_property: Record<string, Money>
   other_income: Money
   other_income_by_account: { code: string; name: string; amount: Money }[]
+  asset_gains: Money
+  asset_gains_by_class: Partial<Record<'vehicle' | 'gold' | 'silver', Money>>
   total_income: Money
   property_expenses: Money
+  vehicle_expenses: Money
   selling_expenses: Money
   general_expenses: Money
   expenses_by_account: { code: string; name: string; subtype: string; amount: Money }[]

@@ -53,6 +53,9 @@ export const VOUCHER_TYPES: Record<VoucherType, string> = {
   drawing: 'Owner drawing',
   opening: 'Opening balance',
   journal: 'Journal entry',
+  holding_purchase: 'Vehicle / gold / silver purchase',
+  holding_cost: 'Vehicle / gold / silver cost',
+  holding_sale: 'Vehicle / gold / silver sale',
 }
 
 export const ACCOUNT_TYPES: { value: AccountType; label: string }[] = [
@@ -66,6 +69,7 @@ export const ACCOUNT_TYPES: { value: AccountType; label: string }[] = [
 /** Heads of account a user can add (see add_category_account). */
 export const CATEGORY_KINDS = [
   { value: 'property_expense', label: 'Property expense (repairs, bills, taxes…)' },
+  { value: 'vehicle_expense', label: 'Vehicle expense (fuel, repairs, token tax…)' },
   { value: 'general_expense', label: 'Office / general expense' },
   { value: 'selling_expense', label: 'Selling expense (brokerage…)' },
   { value: 'income', label: 'Other income' },

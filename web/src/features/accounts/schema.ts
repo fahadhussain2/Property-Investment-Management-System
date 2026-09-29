@@ -16,7 +16,7 @@ export const moneyAccountSchema = z.object({
 export type MoneyAccountInput = z.infer<typeof moneyAccountSchema>
 
 export const categorySchema = z.object({
-  kind: z.enum(['property_expense', 'general_expense', 'selling_expense', 'income']),
+  kind: z.enum(['property_expense', 'vehicle_expense', 'general_expense', 'selling_expense', 'income']),
   name: z.string().trim().min(2, 'Enter a name, e.g. Generator fuel').max(60),
 })
 

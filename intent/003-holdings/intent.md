@@ -1,7 +1,7 @@
 # Intent 003 — Vehicles, gold and silver
 
 > Stage 1 artifact (AI-Native SDLC). Written from the business owner's own words.
-> Status: **DRAFT**, awaiting approval
+> Status: **APPROVED** by Fahad Hussain, 2026-09-29
 > Owner: Fahad Hussain · Date: 2026-09-29 (discussed with the family owner the same morning)
 
 ## Problem
@@ -62,4 +62,4 @@ read-only.
 
 ## Approval
 
-- [ ] Product owner approves this intent → proceed to `spec.md` review
+- [x] Product owner approves this intent → proceed to `spec.md` review

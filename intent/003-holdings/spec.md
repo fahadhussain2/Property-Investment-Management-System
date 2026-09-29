@@ -1,7 +1,7 @@
 # Spec 003 — Vehicles, gold and silver ("holdings")
 
 > Stage 2 artifact. Derived from [`intent.md`](intent.md). Extends spec 001 (§2, §4, §5, §6) and spec 002 (§3).
-> Status: **DRAFT**, awaiting approval
+> Status: **APPROVED** by Fahad Hussain, 2026-09-29
 
 ## 1. Design principle: "a second register next to Properties"
 
@@ -57,15 +57,16 @@ Seeded for new organizations **and** added to existing ones by the migration.
 | 1400 | Vehicles at Cost | Asset | `holding` | `vehicles` |
 | 1500 | Gold at Cost | Asset | `holding` | `gold` |
 | 1510 | Silver at Cost | Asset | `holding` | `silver` |
-| 4300 | Gain on Sale of Assets | Income | `asset_gain` | `asset_gain` |
+| 4250 | Gain on Sale of Assets | Income | `asset_gain` | `asset_gain` |
 | 6200 | Fuel | Expense | `vehicle_expense` | — |
 | 6210 | Vehicle Repairs & Maintenance | Expense | `vehicle_expense` | — |
 | 6220 | Token Tax & Insurance | Expense | `vehicle_expense` | — |
 
-A loss on sale is a debit to 4300, so the account can show a negative income. Users can add further
+A loss on sale is a debit to 4250, so the account can show a negative income. Users can add further
 vehicle expense categories (`add_category_account`, kind `vehicle_expense`).
-If an existing organization already uses one of these codes, the migration takes the next free code
-in the same hundred.
+None of these codes is in a range users can add accounts in, so they never clash with an existing
+organization's accounts. (4250, not 4300 as first drafted: 4300–4899 is the range for user-added income
+heads; changed at Stage 3, H1.) Users can add vehicle expense heads in 6230–6299.
 
 ## 5. Vouchers
 
@@ -84,7 +85,7 @@ Changes to existing vouchers:
 - **Pay seller balance (V3) / Receive buyer balance (V6):** take a property **or** a holding (exactly one).
 - **Expense (V9):** optional vehicle (`holding_id` of class `vehicle`) in addition to the optional property.
   The form offers the vehicle picker for `vehicle_expense` categories.
-- **Other income (V10):** 4300 is not a valid category (it is posted only by H3).
+- **Other income (V10):** 4250 is not a valid category (it is posted only by H3).
 - **Opening balances (V13) / journal (V14):** each line may carry `holding_id`, and lines on 1500/1510
   carry the weight. This is how gold and vehicles already owned at go-live are entered.
 - **Reversal / edit:** the reversal copies `holding_id` and negates `quantity_g`. The purchase or a cost
@@ -96,6 +97,9 @@ Journal line rules (database-enforced):
   a `holding_id` and a `quantity_g` (0 for cost-only lines such as H2).
 - `holding_id` on a class-specific account must match the class (a gold item can't be on 1400).
 - Weight held per item never goes below zero.
+- A line that moves weight must also move money (every journal line has a debit or a credit). So an item
+  received at zero cost can't be recorded, and a sale whose share of cost rounds to 0.00 is rejected
+  (clarified at Stage 3, H1).
 
 ## 6. Weights and rates
 
@@ -179,4 +183,4 @@ revaluation entries are left for later versions.
 
 ## Approval
 
-- [ ] Product owner approves the spec → proceed to Stage 3 (build per `plan.md`)
+- [x] Product owner approves the spec → proceed to Stage 3 (build per `plan.md`)
