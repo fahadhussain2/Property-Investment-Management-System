@@ -77,6 +77,17 @@ export function AmountField({ name, label, error, hint, defaultValue }: Base) {
   )
 }
 
+/**
+ * While an option list loads (or if loading fails), the stored value is not among the options, and a
+ * <select> whose value has no matching <option> reports '' to FormData: the saved choice silently drops and
+ * the form is rejected ('Choose a cash or bank account' with the account visibly chosen). So keep the stored
+ * value selectable until its option arrives, like LeasePicker does for a lease.
+ */
+function KeepSelected({ value, ids, pending, label }: { value: string; ids: string[]; pending: boolean; label: string }) {
+  if (!value || ids.includes(value)) return null
+  return <option value={value}>{pending ? 'Loading…' : label}</option>
+}
+
 export function PropertyPicker({
   name,
   label,
@@ -90,7 +101,7 @@ export function PropertyPicker({
   const qc = useQueryClient()
   const [value, setValue] = useState(defaultValue ?? '')
   const [creating, setCreating] = useState(false)
-  const { data = [] } = useQuery({ queryKey: propertyKeys.all(current.id), queryFn: () => fetchPropertySummaries(current.id) })
+  const { data = [], isPending } = useQuery({ queryKey: propertyKeys.all(current.id), queryFn: () => fetchPropertySummaries(current.id) })
   // Keep the current selection visible when editing an old entry, even if it no longer qualifies.
   const options = data.filter((p) => !unsoldOnly || p.status !== 'sold' || p.property_id === value)
   return (
@@ -108,6 +119,7 @@ export function PropertyPicker({
     >
       <NativeSelect {...aria(name, error)} value={value} onChange={(e) => setValue(e.target.value)}>
         <option value="">{optional ? 'None' : 'Choose a property…'}</option>
+        <KeepSelected value={value} ids={options.map((p) => p.property_id)} pending={isPending} label="Selected property" />
         {options.map((p) => (
           <option key={p.property_id} value={p.property_id}>
             {p.code}
@@ -143,7 +155,7 @@ export function PartyPicker({
   const qc = useQueryClient()
   const [value, setValue] = useState(defaultValue ?? '')
   const [creating, setCreating] = useState(false)
-  const { data = [] } = useQuery({ queryKey: partyKeys.all(current.id), queryFn: () => fetchParties(current.id) })
+  const { data = [], isPending } = useQuery({ queryKey: partyKeys.all(current.id), queryFn: () => fetchParties(current.id) })
   const matching = data.filter((p) => roles.some((r) => p.roles.includes(r)))
   const others = data.filter((p) => !matching.includes(p))
   return (
@@ -161,6 +173,7 @@ export function PartyPicker({
     >
       <NativeSelect {...aria(name, error)} value={value} onChange={(e) => setValue(e.target.value)}>
         <option value="">Choose…</option>
+        <KeepSelected value={value} ids={data.map((p) => p.id)} pending={isPending} label="Selected party" />
         {matching.length > 0 && (
           <optgroup label={`${label}s`}>
             {matching.map((p) => (
@@ -206,12 +219,13 @@ function useAccounts() {
 export function MoneyAccountPicker({ name, label, error, hint, defaultValue }: Base) {
   const { current } = useOrg()
   const [value, setValue] = useState(defaultValue ?? '')
-  const { data = [] } = useAccounts()
+  const { data = [], isPending } = useAccounts()
   const options = data.filter((a) => (a.subtype === 'cash' || a.subtype === 'bank') && (a.is_active || a.id === value))
   return (
     <Shell name={name} label={label} error={error} hint={hint}>
       <NativeSelect {...aria(name, error, hint)} value={value} onChange={(e) => setValue(e.target.value)}>
         <option value="">Choose cash or bank…</option>
+        <KeepSelected value={value} ids={options.map((a) => a.id)} pending={isPending} label="Selected account" />
         {options.map((a) => (
           <option key={a.id} value={a.id}>
             {a.name} ({formatMoney(a.balance, current.currency)})
@@ -225,7 +239,7 @@ export function MoneyAccountPicker({ name, label, error, hint, defaultValue }: B
 /** Expense or income heads a user may post to (never sales, rent or cost of sales: those have their own entries). */
 export function CategoryPicker({ name, label, error, defaultValue, categoryType }: Base & { categoryType: 'expense' | 'income' }) {
   const [value, setValue] = useState(defaultValue ?? '')
-  const { data = [] } = useAccounts()
+  const { data = [], isPending } = useAccounts()
   const options = data.filter(
     (a) =>
       a.type === categoryType &&
@@ -236,6 +250,7 @@ export function CategoryPicker({ name, label, error, defaultValue, categoryType 
     <Shell name={name} label={label} error={error} hint="Add your own heads in Settings → Chart of accounts">
       <NativeSelect {...aria(name, error)} value={value} onChange={(e) => setValue(e.target.value)}>
         <option value="">Choose…</option>
+        <KeepSelected value={value} ids={options.map((a) => a.id)} pending={isPending} label="Selected head" />
         {options.map((a) => (
           <option key={a.id} value={a.id}>
             {a.name}

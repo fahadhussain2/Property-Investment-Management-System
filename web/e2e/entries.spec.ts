@@ -230,3 +230,39 @@ test.describe('mobile', () => {
     await expectNoHorizontalScroll(page, '/entries')
   })
 })
+
+// Regression (flaky lease lifecycle, seen on main): on a fresh page load the account list arrives after the
+// form renders. The saved account must stay selected meanwhile, and a quick click on Review must not be
+// rejected with "Choose a cash or bank account".
+test('correction form keeps the saved account and waits for slow lists before Review', async ({ page }) => {
+  test.slow()
+  await newBusiness(page, 'slow')
+  await openingBalances(page, { 'Cash in Hand': '100,000' })
+  await page.goto('/new/capital')
+  await page.getByLabel('Amount').fill('1000')
+  await choose(page.getByLabel('Received into'), 'Cash in Hand')
+  await review(page)
+  await save(page)
+  const entryUrl = page.url()
+
+  // A full reload empties the cache; hold the accounts request back for a few seconds.
+  await page.route('**/rest/v1/accounts?*', async (route) => {
+    await new Promise((r) => setTimeout(r, 3_000))
+    await route.continue()
+  })
+  await page.goto(`${entryUrl}/edit`)
+  await expect(page.getByRole('heading', { name: /^Correct / })).toBeVisible()
+
+  // While the list is still loading, the saved account is still the selected value (not ""). A one-shot read:
+  // toHaveValue would retry until the list arrives and hide the bug.
+  expect(await page.getByLabel('Received into').inputValue()).toMatch(/^[0-9a-f-]{36}$/)
+  await expect(page.getByRole('button', { name: 'Review' })).toBeDisabled()
+
+  // Once the list arrives Review works, with no spurious account error.
+  await page.getByLabel('Amount').fill('2000')
+  await review(page)
+  await expect(page.getByText('Choose a cash or bank account')).toHaveCount(0)
+  await expect(page.getByTestId('entry-summary')).toContainText('Cash in Hand')
+  await save(page, 'Save correction')
+  await expect(page.getByRole('heading', { name: /CAP-/ }).first()).toBeVisible()
+})
