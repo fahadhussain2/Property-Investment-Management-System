@@ -34,9 +34,12 @@ sets `script-shell` to Git Bash, and `web/scripts/with-local-supabase.mjs` runs 
 2. **Every voucher balances.** Σdebit = Σcredit, enforced by a deferred trigger. Never disable it.
 3. **Every table has `org_id` and an RLS policy.** A new table without RLS is a bug. Add a cross-org pgTAP test.
 4. **Money is `numeric(18,2)` in SQL and a decimal string in TS.** Never JS `number` arithmetic on money; use the `lib/money.ts` helpers.
+   Weights (gold/silver) follow the same rule: grams `numeric(24,10)` in SQL, decimal strings in TS (`lib/quantity.ts`).
+   Entries send the weight as typed plus its unit; SQL converts (`unit_to_grams`, 1 tola = 11.6638038 g).
 5. **Balances are computed from `journal_lines`.** Do not add stored balance columns.
 6. **Posted vouchers are immutable.** Edit = reverse + repost (`edit_voucher`). Void = reverse.
-7. **Status is derived, not stored.** Use `property_status()`/`properties_overview`; never add a status column.
+7. **Status is derived, not stored.** Use `property_status()`/`properties_overview` (and `holding_status()`/`holdings_overview`
+   for vehicles, gold, silver); never add a status column. Weight held is Σ `journal_lines.quantity_g`, never stored.
 8. **Business dates use the organization's calendar, never the DB clock.** The DB runs in UTC; Pakistan is
    UTC+5. Use `org_today(org)` (organizations.timezone) for "today"; never `current_date` in business logic.
 9. **Merged migrations are append-only.** Write a new migration; never edit an old one.
@@ -44,10 +47,13 @@ sets `script-shell` to Git Bash, and `web/scripts/with-local-supabase.mjs` runs 
 
 ## Naming
 - "Organization" (`org_id`) = SaaS customer. "Tenant" = a renter (a `party` with role `tenant`). Never mix these up.
-- Voucher types: `purchase, property_cost, pay_seller, buyer_advance, sale, receive_buyer, rent, deposit, expense, income, transfer, capital, drawing, opening, journal`.
+- Voucher types: `purchase, property_cost, pay_seller, buyer_advance, sale, receive_buyer, rent, deposit, expense, income, transfer, capital, drawing, opening, journal, holding_purchase, holding_cost, holding_sale`.
+  A new enum value goes in its own migration file (it can't be used in the transaction that adds it).
+- "Holding" (code only) = a vehicle, gold item or silver item (`holdings.class`); the UI says Vehicles / Gold / Silver.
+  Journal lines carry `holding_id` next to `property_id`. Books stay at cost; market value (`metal_rates`) is display only.
 - Frontend features: `web/src/features/<feature>/` with `api.ts` (queries), pages, `schema.ts` (zod).
   Pure logic goes in files that do not import `lib/supabase` (so unit tests need no env).
-- API `numeric` values arrive as JSON numbers: convert with `toMoney()` immediately.
+- API `numeric` values arrive as JSON numbers: convert with `toMoney()` (weights: `toGrams()`) immediately.
 - Current org/role: `useOrg()` (`canWrite` hides write actions for viewers; the DB enforces it anyway).
 - Never render a fallback number (e.g. Rs 0) for data that failed to load: use `SectionError`.
 - Grids: always `grid-cols-1` (or `minmax(0,…)` tracks). A bare `grid` or `1fr` track grows to its longest
