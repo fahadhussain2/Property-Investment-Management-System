@@ -2,7 +2,7 @@
 
 > Stage 3 artifact. Implements [`spec.md`](spec.md). Each milestone is one PR on its own branch and ends
 > with a **verification gate** that the `verifier` subagent must pass before asking for human review.
-> Status: **IN PROGRESS** · H1 started 2026-09-29
+> Status: **IN PROGRESS** · H1 built 2026-09-29 (221 pgTAP, 13/13 evals, 77 unit), awaiting review
 
 ## Milestones
 
@@ -37,7 +37,7 @@ Database only. Can merge on its own.
 - `npm run db:types`.
 - pgTAP `supabase/tests/11_holdings.sql`: posting shapes for H1–H3; partial-sale relief and exact final
   relief; weight can't go negative; quantity/class line rules; reversal restores weight and cost; no
-  costs/sales on a sold holding; V10 rejects 4300; income statement fields reconcile with
+  costs/sales on a sold holding; V10 rejects 4250; income statement fields reconcile with
   `monthly_performance`; cross-org isolation on `holdings`, `metal_rates` and the new RPCs; seed and backfill
   create the new accounts once.
 - Evals: `11-vehicle-buy-cost-sell.json`, `12-gold-partial-then-full-sale.json`, `13-metal-valuation-and-units.json`

@@ -236,14 +236,14 @@ export function MoneyAccountPicker({ name, label, error, hint, defaultValue }: B
   )
 }
 
-/** Expense or income heads a user may post to (never sales, rent or cost of sales: those have their own entries). */
+/** Expense or income heads a user may post to (never sales, rent, cost of sales or asset gains: those have their own entries). */
 export function CategoryPicker({ name, label, error, defaultValue, categoryType }: Base & { categoryType: 'expense' | 'income' }) {
   const [value, setValue] = useState(defaultValue ?? '')
   const { data = [], isPending } = useAccounts()
   const options = data.filter(
     (a) =>
       a.type === categoryType &&
-      !['cogs', 'sales', 'rent'].includes(a.subtype) &&
+      !['cogs', 'sales', 'rent', 'asset_gain'].includes(a.subtype) &&
       (a.is_active || a.id === value),
   )
   return (

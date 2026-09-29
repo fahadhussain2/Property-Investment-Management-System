@@ -10,6 +10,7 @@ import { fetchIncomeStatement, reportKeys } from './api'
 
 const SUBTYPE_LABEL: Record<string, string> = {
   property_expense: 'Property expenses',
+  vehicle_expense: 'Vehicle expenses',
   selling_expense: 'Selling expenses',
   general_expense: 'Office & general',
 }

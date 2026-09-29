@@ -22,7 +22,7 @@ with i as (insert into public.parties (org_id, name, roles)
 select set_config('t.party', (select id::text from i), true);
 
 select is((select count(*)::int from public.accounts where org_id = current_setting('t.org')::uuid),
-          27, 'chart of accounts is seeded');
+          34, 'chart of accounts is seeded (27 + 7 for vehicles, gold and silver)');
 
 -- A purchase partly on credit produces 3 balanced lines.
 select set_config('t.v', (public.post_voucher(current_setting('t.org')::uuid, jsonb_build_object(

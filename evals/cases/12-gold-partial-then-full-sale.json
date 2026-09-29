@@ -1,0 +1,18 @@
+{
+  "name": "Gold: buy 10 tola 22K, sell 3 tola (3/10 of the cost), then sell the rest (all remaining cost)",
+  "setup": {
+    "banks": [{ "name": "Meezan", "opening": "5000000.00" }],
+    "holdings": [{ "code": "G-01", "class": "gold", "name": "Bar", "purity": "0.9167" }]
+  },
+  "steps": [
+    { "type": "holding_purchase", "date": "2026-03-01", "holding": "G-01", "price": "2000000.00", "paid_now": "2000000.00", "weight": "10", "unit": "tola", "from": "bank:Meezan" },
+    { "type": "holding_sale", "date": "2026-04-01", "holding": "G-01", "price": "720000.00", "received_now": "720000.00", "weight": "3", "unit": "tola", "into": "bank:Meezan" },
+    { "type": "holding_sale", "date": "2026-05-01", "holding": "G-01", "price": "1500000.00", "received_now": "1500000.00", "whole": true, "into": "bank:Meezan" }
+  ],
+  "expect": {
+    "holdings_overview": { "G-01": { "status": "sold", "weight_g": "0", "cost": "0.00", "cost_relieved": "2000000.00", "sale_price": "2220000.00", "realized_gain": "220000.00" } },
+    "income_statement": { "from": "2026-01-01", "to": "2026-12-31", "asset_gains": "220000.00", "asset_gains_by_class": { "gold": "220000.00" }, "net_profit": "220000.00" },
+    "balances": { "1500": "0.00", "bank:Meezan": "5220000.00" },
+    "trial_balance_difference": "0.00"
+  }
+}

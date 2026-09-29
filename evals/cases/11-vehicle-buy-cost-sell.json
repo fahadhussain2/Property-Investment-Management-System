@@ -1,0 +1,22 @@
+{
+  "name": "Vehicle: buy CAR-1, add registration cost, fuel tagged to it, sell at a gain",
+  "setup": {
+    "banks": [{ "name": "Meezan", "opening": "5000000.00" }],
+    "cash_opening": "5000000.00",
+    "holdings": [{ "code": "CAR-1", "class": "vehicle", "name": "Corolla 2022" }],
+    "parties": [{ "name": "Buyer B", "roles": ["buyer"] }]
+  },
+  "steps": [
+    { "type": "holding_purchase", "date": "2026-02-01", "holding": "CAR-1", "price": "3000000.00", "paid_now": "3000000.00", "from": "bank:Meezan" },
+    { "type": "holding_cost", "date": "2026-02-05", "holding": "CAR-1", "amount": "50000.00", "from": "1000", "memo": "Registration transfer" },
+    { "type": "expense", "date": "2026-03-01", "holding": "CAR-1", "account": "6200", "amount": "20000.00", "from": "1000" },
+    { "type": "holding_sale", "date": "2026-06-01", "holding": "CAR-1", "party": "Buyer B", "price": "3200000.00", "received_now": "3200000.00", "into": "bank:Meezan" }
+  ],
+  "expect": {
+    "holdings_overview": { "CAR-1": { "status": "sold", "cost": "0.00", "total_cost": "3050000.00", "running_expenses": "20000.00", "sale_price": "3200000.00", "realized_gain": "150000.00" } },
+    "income_statement": { "from": "2026-01-01", "to": "2026-12-31", "asset_gains": "150000.00", "vehicle_expenses": "20000.00", "total_expenses": "20000.00", "net_profit": "130000.00" },
+    "monthly_performance": { "as_of": "2026-12-31", "months": 12, "totals": { "net_profit": "130000.00" } },
+    "balances": { "1400": "0.00", "4250": "150000.00", "bank:Meezan": "5200000.00", "1000": "4930000.00" },
+    "trial_balance_difference": "0.00"
+  }
+}

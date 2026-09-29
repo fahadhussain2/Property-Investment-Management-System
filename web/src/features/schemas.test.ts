@@ -73,6 +73,7 @@ describe('M3 master-data schemas', () => {
 
   it('accounts: only user-creatable kinds', () => {
     expect(categorySchema.safeParse({ kind: 'property_expense', name: 'Generator fuel' }).success).toBe(true)
+    expect(categorySchema.safeParse({ kind: 'vehicle_expense', name: 'Car wash' }).success).toBe(true)
     expect(categorySchema.safeParse({ kind: 'sales', name: 'Fake' }).success).toBe(false)
     expect(moneyAccountSchema.parse({ kind: 'bank', name: 'Meezan', bank_name: '' }).bank_name).toBeNull()
   })
