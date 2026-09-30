@@ -18,6 +18,7 @@ import { FormDialog } from '@/components/FormDialog'
 import { PageHeader } from '@/components/PageHeader'
 import { SectionError, SectionLoading } from '@/components/QueryState'
 import { VoucherList } from '@/components/VoucherList'
+import { DocumentsSection } from '@/features/documents/DocumentsSection'
 import { useOrg } from '@/features/org/OrgProvider'
 import { fetchVouchersFor, propertyKeys } from '@/features/properties/api'
 import { friendlyError } from '@/lib/forms'
@@ -235,6 +236,9 @@ export function LeasePage() {
               </div>
             ))}
           </dl>
+          <div className="mt-6">
+            <DocumentsSection link={{ lease_id: lease.id }} recordLabel={`the lease of ${roll.property_code} to ${roll.tenant_name}`} defaultCategory="rent_agreement" />
+          </div>
         </section>
         <section>
           <h2 className="mb-2 text-sm font-semibold text-muted-foreground">

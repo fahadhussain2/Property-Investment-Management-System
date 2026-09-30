@@ -11,6 +11,7 @@ import { FormDialog } from '@/components/FormDialog'
 import { PageHeader } from '@/components/PageHeader'
 import { SectionError, SectionLoading } from '@/components/QueryState'
 import { fetchMembers, memberKeys } from '@/features/members/api'
+import { DocumentsSection } from '@/features/documents/DocumentsSection'
 import { useOrg } from '@/features/org/OrgProvider'
 import { HOLDING_CLASSES, VOUCHER_TYPES } from '@/lib/labels'
 import { formatMoney, sub } from '@/lib/money'
@@ -21,7 +22,7 @@ import { entryType } from './types'
 
 const voidSchema = z.object({ reason: z.string().trim().min(3, 'Say briefly why, e.g. "entered twice"').max(200) })
 
-const ACTIONS: Record<string, string> = { post: 'Recorded', reverse: 'Voided', edit: 'Corrected' }
+const ACTIONS: Record<string, string> = { post: 'Recorded', reverse: 'Voided', edit: 'Corrected', document_deleted: 'Document deleted' }
 
 export function EntryPage() {
   const { id = '' } = useParams()
@@ -140,6 +141,8 @@ export function EntryPage() {
             <h2 className="mb-2 text-sm font-semibold text-muted-foreground">Accounting entries</h2>
             <LinesTable lines={e.lines} currency={current.currency} />
           </section>
+          {/* A reversal carries no documents: they stay on the entry it voids (spec 004 §5). */}
+          {!isReversal && <DocumentsSection link={{ voucher_id: e.id }} recordLabel={e.number} defaultCategory="receipt" />}
         </div>
         <section>
           <h2 className="mb-2 text-sm font-semibold text-muted-foreground">History</h2>
@@ -150,6 +153,7 @@ export function EntryPage() {
                 <div className="text-xs text-muted-foreground">
                   {new Date(h.at).toLocaleString()} · {email(h.user_id)}
                   {typeof h.details?.reason === 'string' && h.details.reason ? ` · “${h.details.reason}”` : ''}
+                  {h.action === 'document_deleted' && typeof h.details?.title === 'string' ? ` · “${h.details.title}”` : ''}
                 </div>
               </li>
             ))}

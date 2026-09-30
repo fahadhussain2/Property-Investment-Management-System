@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { PageHeader } from '@/components/PageHeader'
 import { SectionError, SectionLoading } from '@/components/QueryState'
 import { VoucherList } from '@/components/VoucherList'
+import { DocumentsSection } from '@/features/documents/DocumentsSection'
 import { useOrg } from '@/features/org/OrgProvider'
 import { fetchVouchersFor } from '@/features/properties/api'
 import { friendlyError } from '@/lib/forms'
@@ -111,6 +112,9 @@ export function PartyPage() {
           ) : (
             <p className="text-sm text-muted-foreground">No contact details yet.</p>
           )}
+          <div className="mt-6">
+            <DocumentsSection link={{ party_id: p.id }} recordLabel={p.name} defaultCategory="id_card" />
+          </div>
         </section>
         <section>
           <h2 className="mb-2 text-sm font-semibold text-muted-foreground">Entries</h2>

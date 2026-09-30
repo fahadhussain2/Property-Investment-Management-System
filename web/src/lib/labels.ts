@@ -111,3 +111,16 @@ export const CATEGORY_KINDS = [
   { value: 'income', label: 'Other income' },
 ] as const
 export type CategoryKind = (typeof CATEGORY_KINDS)[number]['value']
+
+/** Documents (spec 004): what a paper is. Order is the order in pickers. */
+export type DocumentCategory = Enums['document_category']
+export const DOCUMENT_CATEGORIES: { value: DocumentCategory; label: string }[] = [
+  { value: 'registry', label: 'Registry / title deed' },
+  { value: 'sale_agreement', label: 'Sale agreement' },
+  { value: 'rent_agreement', label: 'Rent agreement' },
+  { value: 'receipt', label: 'Receipt' },
+  { value: 'id_card', label: 'ID card (CNIC)' },
+  { value: 'photo', label: 'Photo' },
+  { value: 'other', label: 'Other' },
+]
+export const categoryLabel = (c: string) => DOCUMENT_CATEGORIES.find((x) => x.value === c)?.label ?? c

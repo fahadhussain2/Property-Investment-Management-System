@@ -62,8 +62,16 @@ export function friendlyError(e: unknown): string {
   if (msg.includes('only a vehicle can be tagged')) return 'Only a vehicle can be picked for an expense.'
   if (msg.includes('not both')) return 'Choose a property or a vehicle / gold / silver item, not both.'
   if (/ is already sold/.test(msg)) return 'This is already sold.'
+  if (msg.includes('violates foreign key constraint') && msg.includes('on table "documents"'))
+    return 'This record has documents attached. Delete them first (in its Documents section).'
   if (msg.includes('violates foreign key constraint'))
     return 'This record has entries linked to it, so it cannot be deleted.'
+  // Documents (spec 004): Storage's own limits, then add_document's checks
+  if (msg.includes('exceeded the maximum allowed size')) return 'This file is over the 10 MB limit.'
+  if (/mime type .* is not supported/.test(msg)) return 'This type of file can’t be kept. Use PDF, JPG, PNG, WebP or HEIC.'
+  if (msg.includes('The resource already exists')) return 'This file was already uploaded. Try again.'
+  if (msg.includes('linked record not found')) return 'The record this document belongs to no longer exists.'
+  if (msg.includes('file not uploaded')) return 'The upload did not finish. Try again.'
   if (msg.includes('Invalid login credentials')) return 'Wrong email or password.'
   if (msg.includes('Email not confirmed')) return 'Confirm your email first: open the link we sent you, then sign in.'
   if (msg.includes('should be different from the old password')) return 'Choose a password different from your old one.'
