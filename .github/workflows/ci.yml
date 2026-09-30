@@ -37,7 +37,8 @@ jobs:
       - run: npm ci
       - run: npm ci
         working-directory: web
-      - run: npx supabase start -x edge-runtime,logflare,vector,imgproxy,supavisor,realtime,studio,storage-api
+      # storage-api stays on: documents (spec 004) are uploaded to Supabase Storage in the tests and e2e.
+      - run: npx supabase start -x edge-runtime,logflare,vector,imgproxy,supavisor,realtime,studio
       - name: pgTAP tests
         run: npx supabase test db
       - name: Acceptance evals

@@ -1,0 +1,24 @@
+{
+  "name": "A receipt attached to a rent entry follows the entry when it is edited (spec 004 §9.8)",
+  "setup": {
+    "cash_opening": "0.00",
+    "properties": [{ "code": "SHOP-4", "kind": "shop", "opening_cost": "3000000.00" }],
+    "parties": [{ "name": "Tenant X", "roles": ["tenant"] }]
+  },
+  "steps": [
+    { "type": "attach", "document": "deed", "to": { "property": "SHOP-4" }, "file": "registry.pdf", "size": 250000, "category": "registry", "title": "Registry of Shop 4" },
+    { "id": "r1", "type": "rent", "date": "2026-01-05", "property": "SHOP-4", "party": "Tenant X", "amount": "50000.00", "into": "1000" },
+    { "type": "attach", "document": "receipt", "to": { "voucher": "r1" }, "file": "receipt.jpg", "size": 180000, "mime": "image/jpeg", "category": "receipt" },
+    { "id": "r2", "type": "edit", "voucher": "r1", "changes": { "amount": "55000.00" } }
+  ],
+  "expect": {
+    "documents": {
+      "deed": { "record_type": "property", "record_label": "SHOP-4", "title": "Registry of Shop 4", "size_bytes": "250000" },
+      "receipt": { "record_type": "entry", "voucher": "r2", "title": "receipt.jpg", "mime_type": "image/jpeg" }
+    },
+    "storage_used": "430000",
+    "voucher_status": { "r1": "reversed" },
+    "property_summary": { "SHOP-4": { "rent_income": "55000.00" } },
+    "trial_balance_difference": "0.00"
+  }
+}

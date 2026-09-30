@@ -97,6 +97,117 @@ export type Database = {
           },
         ]
       }
+      documents: {
+        Row: {
+          category: Database["public"]["Enums"]["document_category"]
+          created_at: string
+          file_name: string
+          holding_id: string | null
+          id: string
+          lease_id: string | null
+          mime_type: string
+          org_id: string
+          party_id: string | null
+          property_id: string | null
+          size_bytes: number
+          storage_path: string
+          title: string
+          uploaded_by: string
+          voucher_id: string | null
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["document_category"]
+          created_at?: string
+          file_name: string
+          holding_id?: string | null
+          id?: string
+          lease_id?: string | null
+          mime_type: string
+          org_id: string
+          party_id?: string | null
+          property_id?: string | null
+          size_bytes: number
+          storage_path: string
+          title: string
+          uploaded_by?: string
+          voucher_id?: string | null
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["document_category"]
+          created_at?: string
+          file_name?: string
+          holding_id?: string | null
+          id?: string
+          lease_id?: string | null
+          mime_type?: string
+          org_id?: string
+          party_id?: string | null
+          property_id?: string | null
+          size_bytes?: number
+          storage_path?: string
+          title?: string
+          uploaded_by?: string
+          voucher_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_org_id_holding_id_fkey"
+            columns: ["org_id", "holding_id"]
+            isOneToOne: false
+            referencedRelation: "holdings"
+            referencedColumns: ["org_id", "id"]
+          },
+          {
+            foreignKeyName: "documents_org_id_holding_id_fkey"
+            columns: ["org_id", "holding_id"]
+            isOneToOne: false
+            referencedRelation: "holdings_overview"
+            referencedColumns: ["org_id", "id"]
+          },
+          {
+            foreignKeyName: "documents_org_id_lease_id_fkey"
+            columns: ["org_id", "lease_id"]
+            isOneToOne: false
+            referencedRelation: "leases"
+            referencedColumns: ["org_id", "id"]
+          },
+          {
+            foreignKeyName: "documents_org_id_party_id_fkey"
+            columns: ["org_id", "party_id"]
+            isOneToOne: false
+            referencedRelation: "parties"
+            referencedColumns: ["org_id", "id"]
+          },
+          {
+            foreignKeyName: "documents_org_id_property_id_fkey"
+            columns: ["org_id", "property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["org_id", "id"]
+          },
+          {
+            foreignKeyName: "documents_org_id_property_id_fkey"
+            columns: ["org_id", "property_id"]
+            isOneToOne: false
+            referencedRelation: "properties_overview"
+            referencedColumns: ["org_id", "id"]
+          },
+          {
+            foreignKeyName: "documents_org_id_voucher_id_fkey"
+            columns: ["org_id", "voucher_id"]
+            isOneToOne: false
+            referencedRelation: "vouchers"
+            referencedColumns: ["org_id", "id"]
+          },
+        ]
+      }
       holdings: {
         Row: {
           chassis_no: string | null
@@ -724,6 +835,86 @@ export type Database = {
       }
     }
     Views: {
+      documents_overview: {
+        Row: {
+          category: Database["public"]["Enums"]["document_category"] | null
+          created_at: string | null
+          file_name: string | null
+          holding_id: string | null
+          id: string | null
+          lease_id: string | null
+          mime_type: string | null
+          org_id: string | null
+          party_id: string | null
+          property_id: string | null
+          record_id: string | null
+          record_label: string | null
+          record_type: string | null
+          size_bytes: number | null
+          storage_path: string | null
+          title: string | null
+          uploaded_by: string | null
+          voucher_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_org_id_holding_id_fkey"
+            columns: ["org_id", "holding_id"]
+            isOneToOne: false
+            referencedRelation: "holdings"
+            referencedColumns: ["org_id", "id"]
+          },
+          {
+            foreignKeyName: "documents_org_id_holding_id_fkey"
+            columns: ["org_id", "holding_id"]
+            isOneToOne: false
+            referencedRelation: "holdings_overview"
+            referencedColumns: ["org_id", "id"]
+          },
+          {
+            foreignKeyName: "documents_org_id_lease_id_fkey"
+            columns: ["org_id", "lease_id"]
+            isOneToOne: false
+            referencedRelation: "leases"
+            referencedColumns: ["org_id", "id"]
+          },
+          {
+            foreignKeyName: "documents_org_id_party_id_fkey"
+            columns: ["org_id", "party_id"]
+            isOneToOne: false
+            referencedRelation: "parties"
+            referencedColumns: ["org_id", "id"]
+          },
+          {
+            foreignKeyName: "documents_org_id_property_id_fkey"
+            columns: ["org_id", "property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["org_id", "id"]
+          },
+          {
+            foreignKeyName: "documents_org_id_property_id_fkey"
+            columns: ["org_id", "property_id"]
+            isOneToOne: false
+            referencedRelation: "properties_overview"
+            referencedColumns: ["org_id", "id"]
+          },
+          {
+            foreignKeyName: "documents_org_id_voucher_id_fkey"
+            columns: ["org_id", "voucher_id"]
+            isOneToOne: false
+            referencedRelation: "vouchers"
+            referencedColumns: ["org_id", "id"]
+          },
+        ]
+      }
       holdings_overview: {
         Row: {
           chassis_no: string | null
@@ -1028,6 +1219,18 @@ export type Database = {
         Args: { p_kind: string; p_name: string; p_org: string }
         Returns: string
       }
+      add_document: {
+        Args: {
+          p_category: Database["public"]["Enums"]["document_category"]
+          p_file_name?: string
+          p_id: string
+          p_link: Json
+          p_org: string
+          p_path: string
+          p_title: string
+        }
+        Returns: string
+      }
       add_money_account: {
         Args: {
           p_account_no?: string
@@ -1050,6 +1253,8 @@ export type Database = {
         }
         Returns: string
       }
+      delete_document: { Args: { p_id: string }; Returns: string }
+      document_path_org: { Args: { p_name: string }; Returns: string }
       edit_voucher: {
         Args: { p_changes: Json; p_voucher: string }
         Returns: Json
@@ -1244,6 +1449,7 @@ export type Database = {
         Returns: Json
       }
       seed_chart_of_accounts: { Args: { p_org: string }; Returns: undefined }
+      storage_used: { Args: { p_org: string }; Returns: number }
       trial_balance: {
         Args: { p_as_of?: string; p_org: string }
         Returns: {
@@ -1258,10 +1464,26 @@ export type Database = {
         Args: { p_qty: number; p_unit: string }
         Returns: number
       }
+      update_document: {
+        Args: {
+          p_category: Database["public"]["Enums"]["document_category"]
+          p_id: string
+          p_title: string
+        }
+        Returns: undefined
+      }
       voucher_detail: { Args: { p_voucher: string }; Returns: Json }
     }
     Enums: {
       account_type: "asset" | "liability" | "equity" | "income" | "expense"
+      document_category:
+        | "registry"
+        | "sale_agreement"
+        | "rent_agreement"
+        | "receipt"
+        | "id_card"
+        | "photo"
+        | "other"
       member_role: "owner" | "accountant" | "viewer"
       property_kind:
         | "house"
@@ -1419,6 +1641,15 @@ export const Constants = {
   public: {
     Enums: {
       account_type: ["asset", "liability", "equity", "income", "expense"],
+      document_category: [
+        "registry",
+        "sale_agreement",
+        "rent_agreement",
+        "receipt",
+        "id_card",
+        "photo",
+        "other",
+      ],
       member_role: ["owner", "accountant", "viewer"],
       property_kind: ["house", "apartment", "shop", "plot", "office", "other"],
       property_status: ["vacant", "rented", "under_agreement", "sold"],

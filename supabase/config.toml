@@ -116,6 +116,12 @@ enabled = true
 # The maximum file size allowed (e.g. "5MB", "500KB").
 file_size_limit = "50MiB"
 
+# Spec 004 documents bucket. Mirrors 20261004000001_documents.sql, which creates it everywhere (keep in step).
+[storage.buckets.documents]
+public = false
+file_size_limit = "10MiB"
+allowed_mime_types = ["application/pdf", "image/jpeg", "image/png", "image/webp", "image/heic"]
+
 # Uncomment to configure local storage buckets
 # [storage.buckets.images]
 # public = false
