@@ -2,8 +2,10 @@
 # Encrypted logical backup of the hosted database (used by backup.yml and before every deploy).
 # Needs: SUPABASE_DB_URL (session pooler connection string), BACKUP_PASSPHRASE, Docker (supabase db dump runs pg_dump
 # in a container matching the server version). Output: backups/<name>.tar.gz.gpg
+# Uploaded documents (spec 004) go in files/, via the Storage S3 keys SUPABASE_S3_* (see scripts/backup-files.mjs).
 #
-# Restore (see docs/go-live.md): gpg --decrypt <file>.tar.gz.gpg | tar xz, then psql roles.sql, schema.sql, data.sql.
+# Restore (see docs/go-live.md): gpg --decrypt <file>.tar.gz.gpg | tar xz, then psql roles.sql, schema.sql, data.sql,
+# then node scripts/restore-files.mjs <folder>.
 set -euo pipefail
 name="${1:-backup-$(date -u +%Y%m%d-%H%M%S)}"
 : "${SUPABASE_DB_URL:?set SUPABASE_DB_URL}"
@@ -19,6 +21,9 @@ npx supabase db dump --db-url "$SUPABASE_DB_URL" -f "$work/$name/schema.sql"
 # by the postgres role, so they are left out; buckets and objects are kept.
 npx supabase db dump --db-url "$SUPABASE_DB_URL" -f "$work/$name/data.sql" --use-copy --data-only \
   -x storage.buckets_analytics,storage.buckets_vectors,storage.vector_indexes,storage.iceberg_namespaces,storage.iceberg_tables
+
+# Documents' files. Fails if documents exist but the files can't be copied.
+node scripts/backup-files.mjs "$work/$name"
 
 # A dump that silently came out empty is worse than a failed job.
 for f in roles schema data; do

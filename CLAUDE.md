@@ -18,6 +18,8 @@ Source of truth for scope: `intent/*/spec.md`. Read the active spec before codin
 - db:test, evals, check and e2e must all pass before saying "done".
 - Production: merge to main → CI → `deploy.yml` (backup, `supabase db push`, build, Cloudflare Pages). Nightly
   `backup.yml` and daily `keepalive.yml` (calls `public.ping()`). Setup and restore: `docs/go-live.md`.
+  Backups include documents' files (`scripts/backup-files.mjs`, needs the `SUPABASE_S3_*` secrets once documents
+  exist); `scripts/restore-files.mjs` puts them back.
   Security headers/CSP live in `web/public/_headers`: a new external origin must be added there.
 - e2e may read auth emails from Mailpit (`http://127.0.0.1:54324`); CI keeps Mailpit running for this.
 - Local auth allows 1000 sign-ups/5 min (config.toml): each e2e run creates ~22 users, and the default 30
@@ -73,6 +75,12 @@ sets `script-shell` to Git Bash, and `web/scripts/with-local-supabase.mjs` runs 
   geometry (`toChartNumber`/`sharePct` in `lib/money.ts`); every figure a user reads is formatted from the Money
   string. A chart needs a table view (accessible, and it is what prints).
 - Every page has one `<h1>` (`PageHeader`/`AuthLayout`); e2e tests find pages by heading.
+- Documents (spec 004): files live in the private bucket `documents` at `<org>/<document>/<safe name>`; the
+  `documents` table is written only through `add_document`/`update_document`/`delete_document`. Upload = Storage
+  upload → `add_document` (remove the file if it fails); delete = `delete_document` → remove the file. Open files
+  only through short-lived signed URLs, never stored or public. The bucket's size and type limits (migration and
+  `config.toml`, kept in step) are the real control; UI checks only give friendly messages. Pure file logic is in
+  `lib/files.ts`. A new record type that takes documents needs a link column, a composite FK and `documents_overview`.
 
 ## Definition of done
 Spec requirement met · pgTAP and unit tests added · `npm run check` + `supabase test db` + evals green · works at 375 px width.
