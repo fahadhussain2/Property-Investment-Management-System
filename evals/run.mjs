@@ -18,6 +18,7 @@ class Ctx {
     this.orgs = {} // key -> { id, accounts: {code|bank:Name -> id}, properties: {code -> id}, holdings: {code -> id}, parties: {name -> id} }
     this.users = {} // key -> uuid
     this.vouchers = {} // step id -> voucher id
+    this.documents = {} // step document key -> document id
   }
   q(sql, params) {
     return this.client.query(sql, params)
@@ -172,6 +173,11 @@ async function runSingleOrgCase(ctx, c, failures) {
 
   for (const step of c.steps) {
     let res
+    if (step.type === 'attach') {
+      await attachDocument(ctx, org, step)
+      await snap()
+      continue
+    }
     if (step.type === 'edit') {
       res = await ctx.q('select public.edit_voucher($1, $2) as r', [ctx.vouchers[step.voucher], step.changes])
     } else {
@@ -290,9 +296,44 @@ async function runSingleOrgCase(ctx, c, failures) {
       for (const [f, v] of Object.entries(fields)) check(failures, `holdings_valuation.${cls}.${f}`, row?.[f], v)
     }
   }
+  if (x.documents) {
+    for (const [key, fields] of Object.entries(x.documents)) {
+      const { rows } = await ctx.q('select * from public.documents_overview where id = $1', [ctx.documents[key]])
+      const row = rows[0]
+      for (const [f, v] of Object.entries(fields)) {
+        if (f === 'voucher') check(failures, `documents.${key}.voucher`, row?.voucher_id, ctx.vouchers[v])
+        else check(failures, `documents.${key}.${f}`, row?.[f] === undefined ? undefined : String(row[f]), v)
+      }
+    }
+  }
+  if (x.storage_used !== undefined) {
+    const { rows } = await ctx.q('select public.storage_used($1)::text as n', [org.id])
+    check(failures, 'storage_used', rows[0].n, x.storage_used)
+  }
   if (x.trial_balance_difference !== undefined) {
     check(failures, 'trial_balance_difference', await tbDifference(ctx, org), x.trial_balance_difference)
   }
+}
+
+// Spec 004: "uploads" a file the way the Storage API does (as the current user, RLS on), then records it.
+// { type: 'attach', document: key, file, size, mime, category, title, to: { property|lease|party|holding|voucher: ref } }
+async function attachDocument(ctx, org, step) {
+  const id = randomUUID()
+  const storagePath = `${org.id}/${id}/${step.file}`
+  await ctx.q(
+    `insert into storage.objects (bucket_id, name, owner_id, metadata)
+     values ('documents', $1, auth.uid()::text, jsonb_build_object('size', $2::bigint, 'mimetype', $3::text))`,
+    [storagePath, step.size ?? 1000, step.mime ?? 'application/pdf'],
+  )
+  const [[kind, ref]] = Object.entries(step.to)
+  const target = {
+    property: org.properties, lease: org.leases, party: org.parties, holding: org.holdings, voucher: ctx.vouchers,
+  }[kind][ref]
+  if (!target) throw new Error(`attach: unknown ${kind} "${ref}"`)
+  await ctx.q('select public.add_document($1, $2, $3, $4, $5, $6)', [
+    org.id, id, storagePath, step.category ?? 'other', step.title ?? null, { [`${kind}_id`]: target },
+  ])
+  ctx.documents[step.document] = id
 }
 
 async function tbDifference(ctx, org) {

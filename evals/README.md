@@ -16,3 +16,7 @@ Rules:
   `rate_per_tola`); steps take `holding`, `weight`, `unit` (`g`/`kg`/`tola`) and `whole`. `holdings_overview`
   checks rows by code; `holdings_valuation` is `{ "as_of", "<class>": { column: value } }`. The overview values at
   the latest rate up to today, so give rates past dates.
+- Documents (spec 004): step `{ "type": "attach", "document": key, "to": { "property"|"lease"|"party"|"holding"|"voucher": ref },
+  "file", "size", "mime", "category", "title" }` stores a stub Storage object as the owner (RLS on) and calls `add_document`.
+  `documents` checks `documents_overview` fields by key (values as strings; `voucher` is a step id); `storage_used` is bytes.
+  An `edit` step with an `id` names the replacement entry.
