@@ -143,6 +143,9 @@ A failed removal leaves a harmless orphan object with no row. Orphans can be lis
 - Without the S3 keys, a backup skips files only while there are no documents; once there are, it fails.
   The restore drill after `db:reset` must first drop the `documents` bucket the migrations created, because
   `data.sql` brings it back (clarified at Stage 3, D3).
+- **Files are backed up weekly, not nightly** (changed by the product owner, 2026-09-30, after D3): every copy
+  holds all the files and GitHub's free artifact storage is 500 MB. The nightly and pre-deploy backups are the
+  database only; the weekly one (Sunday, kept 35 days) is the database plus files.
 
 ## 9. Acceptance scenarios (these become `evals/`, pgTAP and e2e)
 

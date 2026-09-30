@@ -42,7 +42,7 @@ plus however long it takes to enter your register data.
      `postgresql://postgres.<ref>:<PASSWORD>@aws-0-ap-south-1.pooler.supabase.com:5432/postgres`,
      with your password filled in. Use the *session pooler*, not the "direct connection": GitHub's runners
      cannot reach the direct host, which is IPv6 only.
-6. **Storage keys for backing up documents' files** (spec 004). The nightly backup copies uploaded files
+6. **Storage keys for backing up documents' files** (spec 004). The weekly backup copies uploaded files
    through Supabase Storage's S3 connection:
    - **Storage → Settings** (or **Project Settings → Storage**) → **S3 Connection**: make sure the S3 protocol
      connection is **enabled**, and note the **Endpoint** (`https://<ref>.storage.supabase.co/storage/v1/s3`)
@@ -86,8 +86,8 @@ Add these **environment secrets**:
 | `SUPABASE_S3_ACCESS_KEY_ID` | access key id from step 1.6 |
 | `SUPABASE_S3_SECRET_ACCESS_KEY` | secret access key from step 1.6 |
 
-The four `SUPABASE_S3_*` secrets are needed once anyone uploads a document: from then on, a backup **fails** without
-them rather than silently leaving the files out.
+The four `SUPABASE_S3_*` secrets are needed once anyone uploads a document: from then on, the weekly backup
+**fails** without them rather than silently leaving the files out.
 
 ## 4. First deploy
 
@@ -104,20 +104,30 @@ them rather than silently leaving the files out.
 
 ## 5. Backups (and a restore drill)
 
-- **Nightly backup** runs at 02:30 Pakistan time: an encrypted dump (roles, schema, data) **plus every uploaded
-  document** (`files/`, with a `manifest.tsv`), kept 30 days as a workflow artifact. Every deploy also keeps a
-  **pre-deploy** backup. The run log warns about orphan files (no document row) and rows whose file is missing.
-  Orphans are harmless; remove them from **Storage → documents** in the dashboard if you like.
-- Run it once by hand: **Actions → Nightly backup → Run workflow**. Then do a restore drill on your PC
-  (Docker running, local stack started with `npm run db:start`):
+The *Nightly backup* workflow makes two kinds of encrypted backup, each kept as a workflow artifact:
+
+| Backup | When | Contains | Kept |
+|---|---|---|---|
+| `nightly-YYYYMMDD` | every night, 02:30 Pakistan time | the database (roles, schema, data) | 30 days |
+| `weekly-YYYYMMDD` | Sunday, 03:00 Pakistan time | the database **plus every uploaded document** (`files/`, with a `manifest.tsv`) | 35 days |
+| `pre-deploy-…` | before every deploy | the database | 30 days |
+
+Files are backed up weekly because every copy holds all of them (see the limits under *Running it day to day*).
+So a document uploaded after the last weekly backup has its row in the nightly backups but not yet its file. The
+weekly run log also warns about orphan files (no document row) and rows whose file is missing. Orphans are
+harmless; remove them from **Storage → documents** in the dashboard if you like.
+
+- Run it once by hand: **Actions → Nightly backup → Run workflow**, ticking **Include documents' files**. That
+  makes a `weekly-…` backup. Then do a restore drill on your PC (Docker running, local stack started with
+  `npm run db:start`):
 
 ```bash
-# 1. Download the artifact from the workflow run and unzip it, giving nightly-YYYYMMDD.tar.gz.gpg
-gpg --decrypt nightly-YYYYMMDD.tar.gz.gpg | tar xz        # asks for BACKUP_PASSPHRASE
+# 1. Download the artifact from the workflow run and unzip it, giving weekly-YYYYMMDD.tar.gz.gpg
+gpg --decrypt weekly-YYYYMMDD.tar.gz.gpg | tar xz         # asks for BACKUP_PASSPHRASE
 # 2. Fresh local database with the same schema (from the migrations), then load the data. The migrations
 #    already created the documents bucket, and data.sql brings it back too, so drop the fresh one first.
 npm run db:reset
-docker cp nightly-YYYYMMDD/data.sql supabase_db_property-ledger:/tmp/data.sql
+docker cp weekly-YYYYMMDD/data.sql supabase_db_property-ledger:/tmp/data.sql
 MSYS_NO_PATHCONV=1 docker exec supabase_db_property-ledger psql -U postgres --single-transaction \
   -v ON_ERROR_STOP=1 -c "SET session_replication_role = replica" -c "SET storage.allow_delete_query = 'true'" \
   -c "DELETE FROM storage.buckets WHERE id = 'documents'" -f /tmp/data.sql
@@ -125,23 +135,28 @@ MSYS_NO_PATHCONV=1 docker exec supabase_db_property-ledger psql -U postgres --si
 #    S3_PROTOCOL_REGION, S3_PROTOCOL_ACCESS_KEY_ID and S3_PROTOCOL_ACCESS_KEY_SECRET.
 SUPABASE_S3_ENDPOINT=http://127.0.0.1:54321/storage/v1/s3 SUPABASE_S3_REGION=local \
   SUPABASE_S3_ACCESS_KEY_ID=<id> SUPABASE_S3_SECRET_ACCESS_KEY=<secret> \
-  node scripts/restore-files.mjs nightly-YYYYMMDD
+  node scripts/restore-files.mjs weekly-YYYYMMDD
 # 4. Sign in locally with a production account: its businesses, entries, balances and documents are all there.
 ```
 
 (`MSYS_NO_PATHCONV=1` stops Git Bash on Windows from rewriting `/tmp/...`.)
 
 **Real disaster (the project is lost):** create a new Supabase project, then restore everything into it
-(Supabase's documented order). After that, update the secrets and redeploy.
+(Supabase's documented order). Use the **latest nightly** backup for the database (the most recent data) and the
+**latest weekly** backup for the files. After that, update the secrets and redeploy.
 
 ```bash
+# In the unpacked latest nightly-YYYYMMDD folder:
 psql --single-transaction -v ON_ERROR_STOP=1 \
   -f roles.sql -f schema.sql -c "SET session_replication_role = replica" -f data.sql \
   -d "<new project's session pooler URI>"
-# Then the documents' files, with the NEW project's Storage S3 keys (step 1.6):
+# Then the documents' files from the latest weekly-YYYYMMDD, with the NEW project's Storage S3 keys (step 1.6):
 SUPABASE_S3_ENDPOINT=... SUPABASE_S3_REGION=... SUPABASE_S3_ACCESS_KEY_ID=... SUPABASE_S3_SECRET_ACCESS_KEY=... \
-  node scripts/restore-files.mjs nightly-YYYYMMDD
+  node scripts/restore-files.mjs weekly-YYYYMMDD
 ```
+
+Documents uploaded after that weekly backup come back as rows without a file: opening one fails. Their titles and
+records are still listed, so the papers can be scanned and uploaded again.
 
 ## 6. Cut-over and UAT sign-off (the M7 gate)
 
@@ -180,8 +195,9 @@ SUPABASE_S3_ENDPOINT=... SUPABASE_S3_REGION=... SUPABASE_S3_ACCESS_KEY_ID=... SU
   **60 days without commits**. If that happens, re-enable *Nightly backup* and *Keep-alive* in the Actions tab.
 - **Watch for failure emails** from GitHub about *Nightly backup*. A missed backup is the one alert that matters.
 - **Free-tier limits:** 500 MB database and 50k monthly users are far beyond one business. Documents share **1 GB**
-  of file storage (Settings shows how much is used). Each backup artifact grows with the files; GitHub's free
-  artifact storage is 500 MB and 30 nightly copies count against it, so watch both as documents pile up. The move to Supabase Pro
+  of file storage (Settings shows how much is used). Each weekly backup holds every file and about 5 are kept, so
+  GitHub's free 500 MB of artifact storage lasts to roughly 90 MB of documents (the nightly database copies take a
+  little of it too); watch both as documents pile up. The move to Supabase Pro
   (~$25/month) is a plan change with no code change.
 - **Rotating the database password:** change it in Supabase, then update `SUPABASE_DB_URL` in GitHub.
 - **Rotating the Storage keys:** create a new S3 access key, update the two `SUPABASE_S3_*` key secrets, then delete
