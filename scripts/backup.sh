@@ -2,7 +2,8 @@
 # Encrypted logical backup of the hosted database (used by backup.yml and before every deploy).
 # Needs: SUPABASE_DB_URL (session pooler connection string), BACKUP_PASSPHRASE, Docker (supabase db dump runs pg_dump
 # in a container matching the server version). Output: backups/<name>.tar.gz.gpg
-# Uploaded documents (spec 004) go in files/, via the Storage S3 keys SUPABASE_S3_* (see scripts/backup-files.mjs).
+# With BACKUP_FILES=1 (the weekly run), uploaded documents (spec 004) also go in files/, via the Storage S3 keys
+# SUPABASE_S3_* (see scripts/backup-files.mjs). Nightly and pre-deploy backups are the database only.
 #
 # Restore (see docs/go-live.md): gpg --decrypt <file>.tar.gz.gpg | tar xz, then psql roles.sql, schema.sql, data.sql,
 # then node scripts/restore-files.mjs <folder>.
@@ -22,8 +23,10 @@ npx supabase db dump --db-url "$SUPABASE_DB_URL" -f "$work/$name/schema.sql"
 npx supabase db dump --db-url "$SUPABASE_DB_URL" -f "$work/$name/data.sql" --use-copy --data-only \
   -x storage.buckets_analytics,storage.buckets_vectors,storage.vector_indexes,storage.iceberg_namespaces,storage.iceberg_tables
 
-# Documents' files. Fails if documents exist but the files can't be copied.
-node scripts/backup-files.mjs "$work/$name"
+# Documents' files, weekly. Fails if documents exist but the files can't be copied.
+if [ "${BACKUP_FILES:-0}" = 1 ]; then
+  node scripts/backup-files.mjs "$work/$name"
+fi
 
 # A dump that silently came out empty is worse than a failed job.
 for f in roles schema data; do

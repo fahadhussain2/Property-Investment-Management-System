@@ -1,10 +1,18 @@
 name: Nightly backup
 
-# Supabase's free tier has no point-in-time recovery: keep our own encrypted dumps for 30 days.
+# Supabase's free tier has no point-in-time recovery: keep our own encrypted backups.
+# Nightly: the database, kept 30 days. Weekly (Sunday): the database AND documents' files, kept 35 days.
+# Files only weekly because every copy holds all of them, and GitHub's free artifact storage is 500 MB.
 on:
   schedule:
-    - cron: '30 21 * * *' # 02:30 in Pakistan (UTC+5)
+    - cron: '30 21 * * *' # nightly, 02:30 in Pakistan (UTC+5)
+    - cron: '0 22 * * 6' # weekly, Sunday 03:00 in Pakistan
   workflow_dispatch:
+    inputs:
+      with_files:
+        description: Include documents' files (like the weekly backup)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -21,18 +29,30 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
       - run: npm ci
-      - name: Dump, copy documents' files, encrypt
+      - name: Nightly or weekly?
+        id: kind
+        env:
+          SCHEDULE: ${{ github.event.schedule }}
+          WITH_FILES: ${{ inputs.with_files }}
+        run: |
+          if [ "$SCHEDULE" = '0 22 * * 6' ] || [ "$WITH_FILES" = 'true' ]; then
+            { echo "name=weekly-$(date -u +%Y%m%d)"; echo "files=1"; echo "days=35"; } >> "$GITHUB_OUTPUT"
+          else
+            { echo "name=nightly-$(date -u +%Y%m%d)"; echo "files=0"; echo "days=30"; } >> "$GITHUB_OUTPUT"
+          fi
+      - name: Dump (and weekly, copy documents' files), then encrypt
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
           BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+          BACKUP_FILES: ${{ steps.kind.outputs.files }}
           SUPABASE_S3_ENDPOINT: ${{ secrets.SUPABASE_S3_ENDPOINT }}
           SUPABASE_S3_REGION: ${{ secrets.SUPABASE_S3_REGION }}
           SUPABASE_S3_ACCESS_KEY_ID: ${{ secrets.SUPABASE_S3_ACCESS_KEY_ID }}
           SUPABASE_S3_SECRET_ACCESS_KEY: ${{ secrets.SUPABASE_S3_SECRET_ACCESS_KEY }}
-        run: bash scripts/backup.sh "nightly-$(date -u +%Y%m%d)"
+        run: bash scripts/backup.sh "${{ steps.kind.outputs.name }}"
       - uses: actions/upload-artifact@v4
         with:
-          name: nightly-backup-${{ github.run_id }}
+          name: ${{ steps.kind.outputs.name }}-backup-${{ github.run_id }}
           path: backups/
-          retention-days: 30
+          retention-days: ${{ steps.kind.outputs.days }}
           if-no-files-found: error

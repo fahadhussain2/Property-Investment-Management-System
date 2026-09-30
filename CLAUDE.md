@@ -18,8 +18,9 @@ Source of truth for scope: `intent/*/spec.md`. Read the active spec before codin
 - db:test, evals, check and e2e must all pass before saying "done".
 - Production: merge to main → CI → `deploy.yml` (backup, `supabase db push`, build, Cloudflare Pages). Nightly
   `backup.yml` and daily `keepalive.yml` (calls `public.ping()`). Setup and restore: `docs/go-live.md`.
-  Backups include documents' files (`scripts/backup-files.mjs`, needs the `SUPABASE_S3_*` secrets once documents
-  exist); `scripts/restore-files.mjs` puts them back.
+  Nightly and pre-deploy backups are the database only; the weekly run (`BACKUP_FILES=1`, Sunday) adds documents'
+  files (`scripts/backup-files.mjs`, needs the `SUPABASE_S3_*` secrets once documents exist). Files stay weekly to
+  fit GitHub's 500 MB artifact storage. `scripts/restore-files.mjs` puts them back.
   Security headers/CSP live in `web/public/_headers`: a new external origin must be added there.
 - e2e may read auth emails from Mailpit (`http://127.0.0.1:54324`); CI keeps Mailpit running for this.
 - Local auth allows 1000 sign-ups/5 min (config.toml): each e2e run creates ~22 users, and the default 30
