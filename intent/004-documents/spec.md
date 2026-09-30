@@ -114,7 +114,7 @@ A failed removal leaves a harmless orphan object with no row. Orphans can be lis
 | Property page (`/properties/:id`) | "Documents" section: list, Upload button, and a link to the Documents page filtered to this property |
 | Lease page (`/leases/:id`), party page (`/parties/:id`), vehicle / gold / silver pages, entry page (`/entries/:id`) | The same Documents section |
 | **Documents** page (`/documents`, in the menu under More) | All documents: title, category, linked record (as a link), uploaded by and on, size. Filters: category and record type. Search on title. Newest first. |
-| Upload dialog (`FormDialog`) | File (`accept` = the five types; phones offer the camera), category, title (prefilled with the file name). Shows the 10 MB limit and a clear error for a wrong type or size. |
+| Upload dialog (`FormDialog`) | File (`accept` = the five types; phones offer the camera), category, title (prefilled with the file name without its extension). Shows the 10 MB limit and a clear error for a wrong type or size. A photo shrunk to JPEG keeps its name with `.jpg`, since that is what is stored (clarified at Stage 3, D2). |
 | Settings | "Storage used: X MB of 1 GB" (Σ `size_bytes` for the organization; the 1 GB is shared by the whole project) |
 
 - Each list row shows an icon by type (PDF / image), title, category and date, with actions Open,

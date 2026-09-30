@@ -10,6 +10,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { SectionError, SectionLoading } from '@/components/QueryState'
 import { HoldingStatusBadge } from '@/components/StatusBadge'
 import { VoucherList } from '@/components/VoucherList'
+import { DocumentsSection } from '@/features/documents/DocumentsSection'
 import { useOrg } from '@/features/org/OrgProvider'
 import { fetchVouchersFor } from '@/features/properties/api'
 import { friendlyError } from '@/lib/forms'
@@ -186,6 +187,9 @@ export function HoldingPage({ cls }: { cls: HoldingClass }) {
               ))}
             </dl>
           )}
+          <div className="mt-6">
+            <DocumentsSection link={{ holding_id: h.id }} recordLabel={h.code} />
+          </div>
         </section>
         <section>
           <h2 className="mb-2 text-sm font-semibold text-muted-foreground">Entries</h2>

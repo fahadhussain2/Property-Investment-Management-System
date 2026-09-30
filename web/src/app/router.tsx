@@ -34,6 +34,7 @@ import { OnboardingPage } from '@/features/org/OnboardingPage'
 import { OrgProvider } from '@/features/org/OrgProvider'
 import { PartiesPage } from '@/features/parties/PartiesPage'
 import { PartyPage } from '@/features/parties/PartyPage'
+import { DocumentsPage } from '@/features/documents/DocumentsPage'
 import { PropertiesPage } from '@/features/properties/PropertiesPage'
 import { PropertyPage } from '@/features/properties/PropertyPage'
 import { SettingsPage } from '@/features/settings/SettingsPage'
@@ -71,6 +72,7 @@ export const router = createBrowserRouter([
       { path: 'silver/:id', element: <HoldingPage key="silver" cls="silver" /> },
       { path: 'parties', element: <PartiesPage /> },
       { path: 'parties/:id', element: <PartyPage /> },
+      { path: 'documents', element: <DocumentsPage /> },
       { path: 'new', element: <RequireWrite><NewEntryPage /></RequireWrite> },
       { path: 'new/opening', element: <RequireWrite><OpeningBalancesPage /></RequireWrite> },
       { path: 'new/journal', element: <RequireWrite><JournalPage /></RequireWrite> },

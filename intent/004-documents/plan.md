@@ -2,7 +2,7 @@
 
 > Stage 3 artifact. Implements [`spec.md`](spec.md). Each milestone is one PR on its own branch and ends
 > with a **verification gate** that the `verifier` subagent must pass before asking for human review.
-> Status: **IN PROGRESS** · D1 built (branch `feat/documents-data`)
+> Status: **IN PROGRESS** · D1 ✅ merged (PR #20: 265 pgTAP, 14/14 evals) · D2 built (branch `feat/documents-ui`)
 
 ## Milestones
 
@@ -55,9 +55,9 @@ Database and storage only. Can merge on its own.
   - `schema.ts` (zod)
   - `DocumentsSection.tsx`: takes a `link` prop; list, empty state, `SectionError`
   - `UploadDocumentDialog.tsx` (`FormDialog`, camera `accept`)
-  - `EditDocumentDialog.tsx`
+  - `DocumentList.tsx`: rows, open/download, image preview, and the edit-details `FormDialog`
   - `DocumentsPage.tsx` (`/documents`: filters and search kept in the URL)
-  - pure `filter.ts` + test
+  - pure `model.ts` (links, record paths, filters) + test
 - Add `DocumentsSection` to `PropertyPage`, `LeasePage`, `PartyPage`, `HoldingPage`, `EntryPage`.
 - Router: `/documents`. Links on the More page and in the nav. Settings: "Storage used" line.
 - `web/public/_headers`: add `https://*.supabase.co` to `img-src`.

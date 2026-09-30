@@ -14,6 +14,7 @@ import { VoucherList } from '@/components/VoucherList'
 import { createLease, fetchRentRoll, leaseKeys } from '@/features/leases/api'
 import { LeaseFormDialog } from '@/features/leases/LeaseFormDialog'
 import { RollList } from '@/features/leases/RollList'
+import { DocumentsSection } from '@/features/documents/DocumentsSection'
 import { useOrg } from '@/features/org/OrgProvider'
 import { friendlyError } from '@/lib/forms'
 import { kindLabel } from '@/lib/labels'
@@ -181,6 +182,9 @@ export function PropertyPage() {
               empty={sold ? 'This property was not rented out.' : 'Use “Add lease” when you rent it out.'}
             />
           )}
+          <div className="mt-6">
+            <DocumentsSection link={{ property_id: property.id }} recordLabel={property.code} defaultCategory="registry" />
+          </div>
         </section>
         <section>
           <h2 className="mb-2 text-sm font-semibold text-muted-foreground">Entries</h2>
