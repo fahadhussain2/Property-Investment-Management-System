@@ -2,7 +2,7 @@
 
 > Stage 2 artifact. Derived from [`intent.md`](intent.md). Delivers the "document attachments" item of
 > spec 001 §10 (v1.1) and the Documents section reserved on the property page (spec 001 §6.3).
-> Status: **APPROVED** by Fahad Hussain, 2026-09-30
+> Status: **APPROVED** by Fahad Hussain, 2026-09-30 · **DONE** 2026-09-30 (plan 004 D1–D3)
 
 ## 1. Design principle: "a file cabinet next to the books"
 
@@ -140,6 +140,9 @@ A failed removal leaves a harmless orphan object with no row. Orphans can be lis
   - a note to watch the 1 GB Storage limit and the size of the GitHub artifact
 - Orphan objects (no `documents` row, older than one day) are reported by the backup run. Removing
   them is a manual step for now.
+- Without the S3 keys, a backup skips files only while there are no documents; once there are, it fails.
+  The restore drill after `db:reset` must first drop the `documents` bucket the migrations created, because
+  `data.sql` brings it back (clarified at Stage 3, D3).
 
 ## 9. Acceptance scenarios (these become `evals/`, pgTAP and e2e)
 

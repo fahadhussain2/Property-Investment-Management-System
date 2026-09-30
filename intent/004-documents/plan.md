@@ -2,7 +2,7 @@
 
 > Stage 3 artifact. Implements [`spec.md`](spec.md). Each milestone is one PR on its own branch and ends
 > with a **verification gate** that the `verifier` subagent must pass before asking for human review.
-> Status: **IN PROGRESS** · D1 ✅ merged (PR #20: 265 pgTAP, 14/14 evals) · D2 built (branch `feat/documents-ui`)
+> Status: **DONE**, 2026-09-30 · D1 ✅ merged (PR #20: 265 pgTAP, 14/14 evals) · D2 ✅ merged (PR #21: 96 unit, e2e 32/32) · D3 ✅ (this PR: backup + restore drill of files)
 
 ## Milestones
 
@@ -74,8 +74,11 @@ Database and storage only. Can merge on its own.
 
 ### D3 — Backup and close-out (branch `feat/documents-backup`)
 
-- `scripts/backup.sh`: when `SUPABASE_S3_*` is set, sync the `documents` bucket into `$work/$name/files/`
-  (AWS CLI against the Supabase S3 endpoint). The archive is encrypted as before. Report orphan objects
+- `scripts/backup.sh` calls `scripts/backup-files.mjs`, which copies the `documents` bucket into `$work/$name/files/`
+  through the Supabase S3 endpoint with `@aws-sdk/client-s3`. That is a root devDependency, so the same script runs
+  on Windows and in CI with no AWS CLI or Docker (the AWS CLI was first planned). It fails if documents exist and the
+  `SUPABASE_S3_*` keys are missing, or if any recorded document's file isn't copied. `scripts/restore-files.mjs`
+  puts files back. The archive is encrypted as before. Report orphan objects
   (no `documents` row, over a day old) from the dump.
   `backup.yml` and `deploy.yml` pass the new secrets.
 - `docs/go-live.md`: create S3 access keys; secrets `SUPABASE_S3_ENDPOINT`, `SUPABASE_S3_ACCESS_KEY_ID`,
