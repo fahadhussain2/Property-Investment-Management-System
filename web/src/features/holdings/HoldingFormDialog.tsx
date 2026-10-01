@@ -82,9 +82,10 @@ export function HoldingFormDialog({
                 <Field label="Model (optional)" name="model" defaultValue={holding?.model ?? ''} placeholder="Corolla" error={errors.model} />
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <Field label="Registration no. (optional)" name="registration_no" defaultValue={holding?.registration_no ?? ''} error={errors.registration_no} />
+                <Field label="Engine cc (optional)" name="engine_cc" inputMode="numeric" defaultValue={holding?.engine_cc ?? ''} placeholder="1300" error={errors.engine_cc} />
                 <Field label="Colour (optional)" name="colour" defaultValue={holding?.colour ?? ''} error={errors.colour} />
               </div>
+              <Field label="Registration no. (optional)" name="registration_no" defaultValue={holding?.registration_no ?? ''} error={errors.registration_no} />
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Chassis no. (optional)" name="chassis_no" defaultValue={holding?.chassis_no ?? ''} error={errors.chassis_no} />
                 <Field label="Engine no. (optional)" name="engine_no" defaultValue={holding?.engine_no ?? ''} error={errors.engine_no} />

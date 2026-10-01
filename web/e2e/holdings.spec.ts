@@ -110,6 +110,7 @@ test('vehicle: bought (created on the spot), fuel tagged to it, sold at a gain',
   await page.getByRole('dialog').getByLabel('Code').fill('CAR-1')
   await page.getByRole('dialog').getByLabel('Make (optional)').fill('Toyota')
   await page.getByRole('dialog').getByLabel('Model (optional)').fill('Corolla')
+  await page.getByRole('dialog').getByLabel('Engine cc (optional)').fill('1,300')
   await page.getByRole('dialog').getByRole('button', { name: 'Add vehicle' }).click()
   await expect(page.getByRole('dialog')).toBeHidden()
   await expect(page.getByLabel('Vehicle', { exact: true })).toHaveValue(/[0-9a-f-]{36}/)
@@ -137,6 +138,7 @@ test('vehicle: bought (created on the spot), fuel tagged to it, sold at a gain',
 
   await page.goto('/vehicles')
   await page.getByRole('link', { name: 'CAR-1' }).first().click()
+  await expect(page.getByText('1,300 cc')).toBeVisible() // engine capacity, in the details
   await expect(page.getByTestId('kpi-cost')).toHaveText('Rs 3,000,000')
   await expect(page.getByTestId('kpi-running')).toHaveText('Rs 20,000')
   await page.getByRole('link', { name: 'Sell' }).click()

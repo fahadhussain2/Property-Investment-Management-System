@@ -15,6 +15,14 @@ export const vehicleSchema = z.object({
     .optional()
     .refine((v) => !v || (/^\d{4}$/.test(v) && Number(v) >= 1900 && Number(v) <= 2100), 'Enter a year like 2022')
     .transform((v) => (v ? Number(v) : null)),
+  // Whole cc, commas allowed ("1,300"); the database allows 1 to 20,000.
+  engine_cc: z
+    .string()
+    .trim()
+    .optional()
+    .transform((v) => (v ?? '').replace(/[,\s]/g, ''))
+    .refine((v) => !v || (/^\d{1,5}$/.test(v) && Number(v) >= 1 && Number(v) <= 20000), 'Enter the engine capacity in cc, e.g. 1300')
+    .transform((v) => (v ? Number(v) : null)),
   registration_no: optionalText(30),
   chassis_no: optionalText(40),
   engine_no: optionalText(40),

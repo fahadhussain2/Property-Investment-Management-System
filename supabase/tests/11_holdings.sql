@@ -2,7 +2,7 @@
 -- weight arithmetic and limits, reversal, valuation, income statement, and organization isolation.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(46);
+select plan(49);
 
 insert into auth.users (id, instance_id, email, aud, role, email_confirmed_at) values
   ('0a1d0000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000000', 'o@h.local', 'authenticated', 'authenticated', now()),
@@ -60,6 +60,13 @@ select throws_ok(format($$insert into public.holdings (org_id, class, code) valu
   '23514', null, 'a gold item needs a purity');
 select throws_ok(format($$insert into public.holdings (org_id, class, code, purity) values (%L, 'vehicle', 'V-X', 1)$$, current_setting('t.org')),
   '23514', null, 'a vehicle has no purity');
+update public.holdings set engine_cc = 1300 where id = pg_temp.id('CAR-1');
+select is((select engine_cc from public.holdings_overview where id = pg_temp.id('CAR-1')), 1300,
+  'a vehicle''s engine capacity (cc) shows in holdings_overview');
+select throws_ok(format($$insert into public.holdings (org_id, class, code, purity, engine_cc) values (%L, 'gold', 'G-CC', 1, 1000)$$, current_setting('t.org')),
+  '23514', null, 'only a vehicle has an engine capacity');
+select throws_ok(format($$update public.holdings set engine_cc = 0 where id = %L$$, pg_temp.id('CAR-1')),
+  '23514', null, 'engine capacity is a whole number from 1 to 20,000 cc');
 select throws_like(format($$update public.holdings set class = 'gold', purity = 1 where id = %L$$, pg_temp.id('CAR-1')),
   '%class cannot be changed%', 'a holding''s class never changes');
 select throws_ok(format($$insert into public.holdings (org_id, class, code) values (%L, 'vehicle', 'car-1')$$, current_setting('t.org')),
