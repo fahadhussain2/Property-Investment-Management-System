@@ -1,12 +1,7 @@
 import { expect, type Page, test } from '@playwright/test'
-import { choose, expectNoHorizontalScroll, newBusiness, openingBalances, review, save } from './helpers'
+import { choose, expectNoHorizontalScroll, firstOfMonthsBack, newBusiness, openingBalances, orgDate, review, save } from './helpers'
 
-// Spec 002 (dashboard v2). Dates use the org's calendar (Asia/Karachi), as in leases.spec.ts.
-const ymd = (d: Date) => d.toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' })
-const twoMonthsBack = () => {
-  const d = new Date()
-  return ymd(new Date(d.getFullYear(), d.getMonth() - 2, 1))
-}
+// Spec 002 (dashboard v2). Dates use the org's calendar (Asia/Karachi), see orgDate().
 
 async function addProperty(page: Page, code: string) {
   await page.goto('/properties')
@@ -112,7 +107,7 @@ test('rent overdue shows in the tile and Needs attention, and portfolio counts o
   const dialog = page.getByRole('dialog', { name: 'New lease' })
   await dialog.getByLabel('Property', { exact: true }).selectOption({ label: 'SHOP-4' })
   await dialog.getByLabel('Tenant', { exact: true }).selectOption({ label: 'Tenant X' })
-  await dialog.getByLabel('Start date').fill(twoMonthsBack())
+  await dialog.getByLabel('Start date').fill(firstOfMonthsBack(orgDate(), 2))
   await dialog.getByLabel('Rent per month').fill('50,000')
   await dialog.getByRole('button', { name: 'Add lease' }).click()
   await expect(page.getByRole('heading', { name: 'SHOP-4 · Tenant X' })).toBeVisible()
