@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { metalSchema, rateSchema, vehicleSchema } from './schema'
-import { daysBetween, filterHoldings, isStaleRate, statusCounts, vehicleTitle } from './model'
+import { daysBetween, filterHoldings, formatCc, isStaleRate, statusCounts, vehicleTitle } from './model'
 
 const rows = [
   { code: 'CAR-1', name: 'Family car', status: 'held' as const, make: 'Toyota', model: 'Corolla', registration_no: 'LEA-123' },
@@ -29,9 +29,17 @@ describe('holdings registers', () => {
     expect(vehicleTitle({ make: null, model: 'City', year: null })).toBe('City')
   })
 
+  it('shows engine capacity in cc', () => {
+    expect(formatCc(1300)).toBe('1,300 cc')
+    expect(formatCc(660)).toBe('660 cc')
+  })
+
   it('validates vehicle, metal and rate forms', () => {
     expect(vehicleSchema.parse({ code: 'CAR-1', year: '2022', make: '' })).toMatchObject({ code: 'CAR-1', year: 2022, make: null })
     expect(vehicleSchema.safeParse({ code: 'CAR-1', year: '22' }).success).toBe(false)
+    expect(vehicleSchema.parse({ code: 'CAR-1', engine_cc: '1,300' }).engine_cc).toBe(1300)
+    expect(vehicleSchema.parse({ code: 'CAR-1', engine_cc: '' }).engine_cc).toBeNull()
+    for (const bad of ['0', '1300.5', '1.3L', '25000']) expect(vehicleSchema.safeParse({ code: 'CAR-1', engine_cc: bad }).success).toBe(false)
     expect(metalSchema.parse({ code: 'G-01', purity: '0.9167' }).purity).toBe('0.9167')
     expect(metalSchema.safeParse({ code: 'G-01', purity: '' }).success).toBe(false)
     expect(metalSchema.safeParse({ code: 'G-01', purity: '1.5' }).success).toBe(false)

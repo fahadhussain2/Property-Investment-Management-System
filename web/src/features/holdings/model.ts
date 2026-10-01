@@ -40,5 +40,8 @@ export const isStaleRate = (rateDate: string | null | undefined, today: string) 
   !!rateDate && daysBetween(rateDate, today) > STALE_RATE_DAYS
 
 /** "Toyota Corolla 2022" from whatever is filled in. */
+/** Engine capacity for display: 1300 → "1,300 cc". */
+export const formatCc = (cc: number) => `${String(cc).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} cc`
+
 export const vehicleTitle = (h: { make?: string | null; model?: string | null; year?: number | null }) =>
   [h.make, h.model, h.year].filter(Boolean).join(' ')

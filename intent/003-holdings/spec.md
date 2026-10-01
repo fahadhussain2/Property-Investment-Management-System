@@ -34,7 +34,8 @@ vouchers are immutable.
 
 `holdings(id, org_id, class, code, name, notes, created_at)` plus:
 
-- **Vehicle fields** (all optional): make, model, year, registration no., chassis no., engine no., colour.
+- **Vehicle fields** (all optional): make, model, year, engine capacity (`engine_cc`, whole cc 1–20,000, "Engine cc" on the
+  form, shown as "1,300 cc"; added 2026-10-01), registration no., chassis no., engine no., colour.
 - **Metal field:** `purity` (required for gold and silver, not allowed for vehicles).
 - `code` is unique per organization (case-insensitive), across all three classes.
 

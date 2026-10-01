@@ -20,7 +20,7 @@ import { formatWeight, toGrams } from '@/lib/quantity'
 import { deleteHolding, fetchHolding, fetchHoldingBreakdown, holdingKeys, updateHolding, type Holding, type HoldingRow } from './api'
 import { HoldingFormDialog } from './HoldingFormDialog'
 import { UnitSwitch, useWeightUnit } from './HoldingsPage'
-import { vehicleTitle } from './model'
+import { formatCc, vehicleTitle } from './model'
 
 /** One vehicle or gold/silver item: figures, how its cost and gain are made up, and every entry (spec 003 §7.4). */
 export function HoldingPage({ cls }: { cls: HoldingClass }) {
@@ -99,6 +99,7 @@ export function HoldingPage({ cls }: { cls: HoldingClass }) {
         ]
       : [
           ['Vehicle', vehicleTitle(h)],
+          ['Engine capacity', h.engine_cc ? formatCc(h.engine_cc) : null],
           ['Registration', h.registration_no],
           ['Colour', h.colour],
           ['Chassis no.', h.chassis_no],

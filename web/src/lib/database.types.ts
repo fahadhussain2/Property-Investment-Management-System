@@ -215,6 +215,7 @@ export type Database = {
           code: string
           colour: string | null
           created_at: string
+          engine_cc: number | null
           engine_no: string | null
           id: string
           make: string | null
@@ -232,6 +233,7 @@ export type Database = {
           code: string
           colour?: string | null
           created_at?: string
+          engine_cc?: number | null
           engine_no?: string | null
           id?: string
           make?: string | null
@@ -249,6 +251,7 @@ export type Database = {
           code?: string
           colour?: string | null
           created_at?: string
+          engine_cc?: number | null
           engine_no?: string | null
           id?: string
           make?: string | null
@@ -924,6 +927,7 @@ export type Database = {
           cost: number | null
           cost_relieved: number | null
           created_at: string | null
+          engine_cc: number | null
           engine_no: string | null
           id: string | null
           make: string | null
@@ -1029,6 +1033,7 @@ export type Database = {
           code: string
           colour: string | null
           created_at: string
+          engine_cc: number | null
           engine_no: string | null
           id: string
           make: string | null
