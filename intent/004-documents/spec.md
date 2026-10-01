@@ -16,7 +16,7 @@ touch the books: no vouchers and no `journal_lines`.
 | Only our organization sees our files | `documents` RLS + `storage.objects` policies keyed on the org in the file's path |
 | Viewers read-only | Insert/delete need owner or accountant, in the DB and in Storage |
 | 10 MB, PDF and images only | Enforced by the bucket itself (`file_size_limit`, `allowed_mime_types`), not only the UI |
-| Files survive a disaster | Nightly backup also copies the bucket |
+| Files survive a disaster | Weekly backup also copies the bucket |
 | Business logic in SQL (rule 10) | Recording and deleting go through RPCs; the UI only uploads bytes and shows lists |
 
 ## 2. Glossary additions
