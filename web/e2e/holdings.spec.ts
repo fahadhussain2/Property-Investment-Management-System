@@ -44,6 +44,19 @@ test('gold: buy 10 tola, value it at a rate, sell 3 tola (3/10 of the cost), the
   await expect(page.getByTestId('holdings-weight')).toHaveText('116.638 g')
   await expect(page).toHaveURL(/unit=g/)
 
+  // Dashboard "What we own": gold at cost with its worth; empty classes keep a "None held" tile.
+  await page.goto('/')
+  await expect(page.getByTestId('asset-gold')).toContainText('Rs 2,000,000')
+  await expect(page.getByTestId('asset-gold')).toContainText('10 tola · worth Rs 2,291,750')
+  await expect(page.getByTestId('invested-total')).toHaveText('Rs 2,000,000')
+  await expect(page.getByTestId('held-cost')).toHaveText('None held')
+  await expect(page.getByTestId('asset-silver')).toContainText('None held')
+  await expect(page.getByTestId('asset-silver').getByRole('link', { name: 'Silver' })).toHaveAttribute('href', '/silver')
+  await page.setViewportSize({ width: 375, height: 812 })
+  await expect(page.getByTestId('recent-entries')).toBeVisible()
+  await expectNoHorizontalScroll(page, 'dashboard with gold')
+  await page.setViewportSize({ width: 1280, height: 720 })
+
   // Sell 3 tola: its share of the cost (600,000) and the gain are shown before saving.
   await page.goto('/gold')
   await page.getByRole('link', { name: 'G-01' }).first().click()
@@ -116,6 +129,11 @@ test('vehicle: bought (created on the spot), fuel tagged to it, sold at a gain',
   await review(page)
   await expect(page.getByTestId('entry-summary')).toHaveText('Paid Rs 20,000 for Fuel from Cash in Hand (CAR-1).')
   await save(page)
+
+  // Dashboard: the vehicle at cost (running costs are expenses, not cost).
+  await page.goto('/')
+  await expect(page.getByTestId('asset-vehicle')).toContainText('Rs 3,000,000')
+  await expect(page.getByTestId('asset-vehicle')).toContainText('1 vehicle at cost')
 
   await page.goto('/vehicles')
   await page.getByRole('link', { name: 'CAR-1' }).first().click()

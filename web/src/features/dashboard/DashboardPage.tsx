@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '@/components/PageHeader'
 import { entryKeys, fetchEntries } from '@/features/entries/api'
+import { fetchValuation, holdingKeys } from '@/features/holdings/api'
 import { fetchExpiringLeases, fetchRentRoll, leaseKeys } from '@/features/leases/api'
 import { useOrg } from '@/features/org/OrgProvider'
 import { fetchPropertySummaries, propertyKeys } from '@/features/properties/api'
@@ -9,15 +10,27 @@ import { today } from '@/lib/money'
 import { fiscalYearLabel, monthOf, presetPeriod } from '@/lib/periods'
 import { supabase, unwrap } from '@/lib/supabase'
 import { dashboardKeys, fetchMonthlyPerformance } from './api'
+import { AssetTiles } from './AssetTiles'
 import { CashAccountsBody, LatestEntriesBody, OwedBody, PortfolioBody, ProfitMixBody } from './Cards'
 import { HeadlineTiles } from './HeadlineTiles'
-import { HoldingsCard } from './HoldingsCard'
-import { attention, cashAccounts, formatDate, mapQuery, owed, portfolio, profitMix, rentOverdue, type QueryLike } from './model'
+import {
+  assetClasses,
+  attention,
+  cashAccounts,
+  formatDate,
+  mapQuery,
+  owed,
+  portfolio,
+  profitMix,
+  rentOverdue,
+  totalInvested,
+  type QueryLike,
+} from './model'
 import { NeedsAttention } from './NeedsAttention'
 import { Block, Loaded, Skeleton } from './parts'
 import { PerformanceCard } from './PerformanceCard'
 
-/** Spec 002: headline figures, the monthly trend, what needs attention, then the detail blocks. */
+/** Spec 002: key figures, what we own, the monthly trend, what needs attention, then the detail blocks. */
 export function DashboardPage() {
   const { current, canWrite } = useOrg()
   const org = current.id
@@ -37,11 +50,20 @@ export function DashboardPage() {
   const expiring = useQuery({ queryKey: leaseKeys.expiring(org), queryFn: () => fetchExpiringLeases(org) })
   const parties = useQuery({ queryKey: dashboardKeys.partyBalances(org), queryFn: () => fetchPartyBalances(org) })
   const recent = useQuery({ queryKey: [...entryKeys.all(org), { limit: 5 }], queryFn: () => fetchEntries(org, { limit: 5 }) })
+  const valuation = useQuery({ queryKey: holdingKeys.valuation(org), queryFn: () => fetchValuation(org) })
 
   // Derived views keep each query's own loading/error state.
   const cash = mapQuery(balances, cashAccounts)
   const portfolioQ = mapQuery(properties, portfolio)
   const overdueQ = mapQuery(roll, rentOverdue)
+  const assetsQ = mapQuery(valuation, assetClasses)
+  const invested: QueryLike<ReturnType<typeof totalInvested>> = {
+    isPending: portfolioQ.isPending || assetsQ.isPending,
+    isError: portfolioQ.isError || assetsQ.isError,
+    error: portfolioQ.error ?? assetsQ.error,
+    refetch: () => Promise.all([properties.refetch(), valuation.refetch()]),
+    data: portfolioQ.data && assetsQ.data ? totalInvested(portfolioQ.data, assetsQ.data) : undefined,
+  }
   const needs: QueryLike<ReturnType<typeof attention>> = {
     isPending: roll.isPending || expiring.isPending || parties.isPending,
     isError: roll.isError || expiring.isError || parties.isError,
@@ -67,9 +89,10 @@ export function DashboardPage() {
           monthly={monthly}
           fy={fyProfit}
           month={monthProfit}
-          portfolio={portfolioQ}
+          invested={invested}
           overdue={overdueQ}
         />
+        <AssetTiles currency={currency} portfolio={portfolioQ} assets={assetsQ} />
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           <PerformanceCard query={monthly} currency={currency} canWrite={canWrite} />
@@ -110,8 +133,6 @@ export function DashboardPage() {
             </Loaded>
           </Block>
         </div>
-
-        <HoldingsCard orgId={org} currency={currency} />
       </div>
     </>
   )

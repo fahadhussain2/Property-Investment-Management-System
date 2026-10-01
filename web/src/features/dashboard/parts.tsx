@@ -87,3 +87,66 @@ export function ShareBar({ pct, color }: { pct: number; color: string }) {
     </div>
   )
 }
+
+/**
+ * A row of figure tiles under a small heading: 2 columns on phones and tablets, 4 on desktop.
+ * The heading names the row for screen readers too (the page keeps one h1).
+ */
+export function TileRow({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
+  const id = `tiles-${title.toLowerCase().replace(/\W+/g, '-')}`
+  return (
+    <section aria-labelledby={id} className="grid grid-cols-1 gap-2">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+        <h2 id={id} className="text-sm font-medium text-muted-foreground">
+          {title}
+        </h2>
+        {action}
+      </div>
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">{children}</div>
+    </section>
+  )
+}
+
+/**
+ * A tile is a plain box whose label is a link stretched over the whole tile (after:absolute).
+ * Not a <Link> around everything: a "Try again" button inside a link is invalid and would navigate.
+ */
+export function Tile({ label, to, alert, testid, children }: { label: ReactNode; to: string; alert?: boolean; testid?: string; children: ReactNode }) {
+  return (
+    <div
+      data-testid={testid}
+      className={cn(
+        'relative flex min-w-0 flex-col gap-1 rounded-xl bg-card p-4 ring-1 ring-foreground/10 transition-colors has-[a:hover]:bg-accent/50',
+        alert && 'ring-2 ring-red-600/70 dark:ring-red-400/70',
+      )}
+    >
+      <Link
+        to={to}
+        className={cn(
+          'flex items-center gap-1.5 text-sm font-medium text-muted-foreground after:absolute after:inset-0 after:rounded-xl',
+          alert && 'text-red-700 dark:text-red-400',
+        )}
+      >
+        {label}
+      </Link>
+      {children}
+    </div>
+  )
+}
+
+export const Value = ({ children, testid, negative, muted }: { children: ReactNode; testid?: string; negative?: boolean; muted?: boolean }) => (
+  <span
+    data-testid={testid}
+    className={cn(
+      'text-lg leading-tight font-semibold tabular-nums [overflow-wrap:anywhere] sm:text-2xl',
+      negative && 'text-red-700 dark:text-red-400',
+      muted && 'font-medium text-muted-foreground',
+    )}
+  >
+    {children}
+  </span>
+)
+
+export const Sub = ({ children }: { children: ReactNode }) => <span className="text-xs text-muted-foreground sm:text-sm">{children}</span>
+
+export const TileSkeleton = () => <Skeleton className="h-12" />

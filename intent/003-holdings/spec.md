@@ -141,9 +141,10 @@ Journal line rules (database-enforced):
    - New **Holdings report** (`ReportShell`): all items at cost and at market value, by class, with totals,
      print and CSV. As of today (clarified at Stage 3, H2): valuing each item at a past date needs another SQL
      function; `holdings_valuation(org, as_of)` already gives past totals by class if that is wanted later.
-8. **Dashboard (amends spec 002 §3):** a "Vehicles, gold & silver" card after Portfolio: vehicles at
-   cost; gold and silver weight held, cost and market value; links to each register. It is hidden when
-   the organization has no holdings. The four headline tiles don't change.
+8. **Dashboard (amends spec 002 §3):** Vehicles, Gold and Silver tiles in the "What we own" row
+   (spec 002 §3.1a, which replaced the original "Vehicles, gold & silver" card on 2026-10-01): each at cost;
+   gold and silver also show the weight held and its market value; each links to its register. "Total
+   invested" in Key figures includes them.
 
 ## 8. Data (new SQL)
 

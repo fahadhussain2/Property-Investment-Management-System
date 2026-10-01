@@ -13,7 +13,8 @@ so the dashboard never disagrees with the reports it links to.
 
 | Block | Question it answers | Form |
 |---|---|---|
-| Headline figures | "How are we doing right now?" | 4 figure tiles |
+| Key figures | "How are we doing right now?" | 4 figure tiles |
+| What we own | "What have we put our money into?" | 4 figure tiles (amendment 1) |
 | Income, expenses and profit | "Are we doing better or worse over time?" | Monthly bars + net-profit line |
 | Needs attention | "What do I need to chase or pay?" | Tabbed list |
 | Portfolio | "What is the state of what we own?" | One stacked bar + counts |
@@ -28,7 +29,10 @@ Desktop (≥ 1024 px), top to bottom:
 
 ```
 ┌──────────────┬──────────────┬──────────────┬──────────────┐
-│ Cash & bank  │ Net profit FY│ Invested     │ Rent overdue │   row 1: 4 tiles
+│ Cash & bank  │ Net profit FY│ Total        │ Rent overdue │   row 1: Key figures
+│              │              │ invested     │              │
+├──────────────┼──────────────┼──────────────┼──────────────┤
+│ Properties   │ Vehicles     │ Gold         │ Silver       │   row 1b: What we own
 ├──────────────┴──────────────┴──────┬───────┴──────────────┤
 │ Income, expenses and profit (2/3)  │ Needs attention (1/3)│   row 2
 ├────────────────────┬───────────────┴──────┬───────────────┤
@@ -39,9 +43,9 @@ Desktop (≥ 1024 px), top to bottom:
 └────────────────────┴──────────────────────────────────────┘
 ```
 
-- Tablet (640–1023 px): tiles 2 × 2; rows 2–4 become one block per row, except row 3, which is
+- Tablet (640–1023 px): each tile row 2 × 2; rows 2–4 become one block per row, except row 3, which is
   2 columns + 1.
-- Phone (< 640 px): tiles 2 × 2, then every block full width in this order: chart, needs
+- Phone (< 640 px): each tile row 2 × 2, then every block full width in this order: chart, needs
   attention, portfolio, profit mix, cash by account, who owes whom, latest entries (5 rows).
 - All grids follow the CLAUDE.md rule (`grid-cols-1` or `minmax(0, …)` tracks). No
   horizontal scroll at 375 px.
@@ -61,7 +65,7 @@ the size of the block, so the layout does not jump.
 |---|---|---|---|
 | Cash & bank | Σ balance of accounts with subtype `cash` or `bank` | "N accounts" + 6-month sparkline of month-end cash (§4.1 `closing_cash`) | `/money` |
 | Net profit · FY <label> | `income_statement(fy).net_profit` | "This month <net_profit of current month>" | `/reports/income-statement` (FY) |
-| Invested in properties held | Σ cost of properties whose status is not `sold` (as today) | "N properties at cost" | `/properties` |
+| Total invested | Σ cost of properties held + Σ `holdings_valuation.cost` (all at cost) | "N assets at cost" | `/reports/balance-sheet` |
 | Rent overdue | Σ `rent_roll.arrears` over rows with `arrears > 0` | "N tenants · M months unpaid" (M = Σ `months_unpaid`) | `/leases` (rent roll) |
 
 - The **Rent overdue** tile uses the critical style (red border and a warning icon, never
@@ -71,6 +75,25 @@ the size of the block, so the layout does not jump.
   still owed. This matches the rent roll.
 - The sparkline is decoration for the trend. It has no axis and is `aria-hidden`. The tile's
   text carries the value.
+
+### 3.1a What we own (amendment 1, 2026-10-01)
+
+The "Invested in properties held" tile moved out of Key figures into its own row, next to
+vehicles, gold and silver (spec 003), replacing the "Vehicles, gold & silver" card. Each row has
+a small heading ("Key figures", "What we own"). The big figure is always **at cost**, so the
+four tiles add up to Total invested. Market value is a display-only sub-line.
+
+| Tile | Value | Sub-line | Links to |
+|---|---|---|---|
+| Properties | Σ cost of properties whose status is not `sold` | "N properties at cost" | `/properties` |
+| Vehicles | `holdings_valuation.cost` (vehicle) | "N vehicles at cost" | `/vehicles` |
+| Gold | `holdings_valuation.cost` (gold) | "W tola · worth <market_value>", or "no rate yet" | `/gold` |
+| Silver | `holdings_valuation.cost` (silver) | "W tola · worth <market_value>", or "no rate yet" | `/silver` |
+
+- A class with nothing held keeps its tile and shows a muted "None held", so the grid never
+  changes shape.
+- Total invested needs both the properties and the valuation data: it shows `SectionError` if either fails.
+- Test ids: `invested-total`, `held-cost` (Properties value), `asset-vehicle`, `asset-gold`, `asset-silver`.
 
 ### 3.2 Income, expenses and profit (the main chart)
 
