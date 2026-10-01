@@ -24,7 +24,7 @@ We need it now, ahead of the other v1.1 items (rent accrual, period lock), which
    filters and a search.
 4. **Private.** Only members of our organization can see our files. Viewers can open and download
    files but cannot add or delete them.
-5. **Safe.** Files are included in the nightly backup, like the books.
+5. **Safe.** Files are included in the weekly backup; the books are backed up nightly.
 
 ## Users
 
@@ -50,7 +50,8 @@ Same as intent 001: the owner and staff now, subscribing businesses later.
 
 1. Documents attach to **properties, leases, parties, holdings and entries**, one record per document.
 2. **10 MB per file.** Allowed types: PDF, JPG, PNG, WebP, HEIC.
-3. **Uploaded files are added to the nightly encrypted backup.**
+3. **Uploaded files are added to the encrypted backup** (weekly; changed from nightly on 2026-09-30 to fit
+   GitHub's free backup storage).
 
 ## Approval
 

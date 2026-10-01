@@ -8,7 +8,7 @@ plus however long it takes to enter your register data.
 |---|---|---|
 | Database, logins, emails, document files | Supabase, free plan, region **Mumbai (ap-south-1)** | free (1 GB of files) |
 | Website | Cloudflare Pages, `https://property-ledger.pages.dev` | free |
-| Deploys, nightly backups, keep-alive | GitHub Actions (this repo) | free (≈ 150 of 2,000 min/month) |
+| Deploys, nightly and weekly backups, keep-alive | GitHub Actions (this repo) | free (≈ 150 of 2,000 min/month) |
 
 > Throughout, `<ref>` is your Supabase project reference, the random id in `https://<ref>.supabase.co`.
 > If you pick a different Cloudflare project name, replace `property-ledger` everywhere below.
@@ -68,7 +68,7 @@ plus however long it takes to enter your register data.
 
 **Settings → Environments → New environment** `production`:
 - Deployment branches: **Selected branches → `main`**.
-- **Do not** add required reviewers. The nightly backup and keep-alive use this environment too, and they would
+- **Do not** add required reviewers. The backups and keep-alive use this environment too, and they would
   wait for approval every night.
 
 Add these **environment secrets**:
@@ -104,7 +104,7 @@ The four `SUPABASE_S3_*` secrets are needed once anyone uploads a document: from
 
 ## 5. Backups (and a restore drill)
 
-The *Nightly backup* workflow makes two kinds of encrypted backup, each kept as a workflow artifact:
+The *Backups* workflow makes two kinds of encrypted backup, each kept as a workflow artifact:
 
 | Backup | When | Contains | Kept |
 |---|---|---|---|
@@ -117,7 +117,7 @@ So a document uploaded after the last weekly backup has its row in the nightly b
 weekly run log also warns about orphan files (no document row) and rows whose file is missing. Orphans are
 harmless; remove them from **Storage → documents** in the dashboard if you like.
 
-- Run it once by hand: **Actions → Nightly backup → Run workflow**, ticking **Include documents' files**. That
+- Run it once by hand: **Actions → Backups → Run workflow**, ticking **Include documents' files**. That
   makes a `weekly-…` backup. Then do a restore drill on your PC (Docker running, local stack started with
   `npm run db:start`):
 
@@ -192,8 +192,8 @@ records are still listed, so the papers can be scanned and uploaded again.
 
 - **Deploys:** merge to `main`, CI runs, then Deploy runs (backup, migrate, publish). A failed CI means no deploy.
 - **Keep-alive:** a daily ping stops Supabase pausing the project. GitHub turns scheduled workflows off after
-  **60 days without commits**. If that happens, re-enable *Nightly backup* and *Keep-alive* in the Actions tab.
-- **Watch for failure emails** from GitHub about *Nightly backup*. A missed backup is the one alert that matters.
+  **60 days without commits**. If that happens, re-enable *Backups* and *Keep-alive* in the Actions tab.
+- **Watch for failure emails** from GitHub about *Backups*. A missed backup is the one alert that matters.
 - **Free-tier limits:** 500 MB database and 50k monthly users are far beyond one business. Documents share **1 GB**
   of file storage (Settings shows how much is used). Each weekly backup holds every file and about 5 are kept, so
   GitHub's free 500 MB of artifact storage lasts to roughly 90 MB of documents (the nightly database copies take a

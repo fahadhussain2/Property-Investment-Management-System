@@ -1,4 +1,4 @@
-name: Nightly backup
+name: Backups
 
 # Supabase's free tier has no point-in-time recovery: keep our own encrypted backups.
 # Nightly: the database, kept 30 days. Weekly (Sunday): the database AND documents' files, kept 35 days.
