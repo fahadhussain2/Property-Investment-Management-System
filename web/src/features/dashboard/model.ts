@@ -2,6 +2,7 @@
 // Money stays a decimal string everywhere; plain numbers exist only in *_y / pct fields for geometry.
 import type { RollRow } from '@/features/leases/rentRoll'
 import { compare, isNegative, isZero, sharePct, sum, toChartNumber, toMoney, type Money } from '@/lib/money'
+import { toGrams, type Grams } from '@/lib/quantity'
 
 // ---------------------------------------------------------------------------------------------
 // Income, expenses and profit chart
@@ -203,6 +204,39 @@ export function portfolio(props: PortfolioProperty[]): Portfolio {
 
 export const portfolioLabel = (p: Portfolio) =>
   `${p.held} held: ` + p.segments.map((s) => `${s.count} ${s.label.toLowerCase()}`).join(', ')
+
+// ---------------------------------------------------------------------------------------------
+// What we own: vehicles, gold and silver (holdings_valuation), and the total invested at cost
+// ---------------------------------------------------------------------------------------------
+
+export const ASSET_CLASSES = ['vehicle', 'gold', 'silver'] as const
+export type AssetClass = (typeof ASSET_CLASSES)[number]
+
+export type RawValuation = { class: string; items: number; weight_g: Num | null; cost: Num | null; market_value: Num | null }
+/** market_value is null for vehicles, and for a metal that has no rate yet. */
+export type AssetTotals = { class: AssetClass; items: number; cost: Money; weight_g: Grams; market_value: Money | null }
+
+/** One row per class in a fixed order; a class missing from the rows counts as none held. */
+export function assetClasses(rows: RawValuation[]): AssetTotals[] {
+  return ASSET_CLASSES.map((c) => {
+    const r = rows.find((x) => x.class === c)
+    return {
+      class: c,
+      items: r?.items ?? 0,
+      cost: toMoney(r?.cost),
+      weight_g: toGrams(r?.weight_g),
+      market_value: r?.market_value == null ? null : toMoney(r.market_value),
+    }
+  })
+}
+
+/** Properties held plus vehicles, gold and silver, all at cost (the books never hold market value). */
+export function totalInvested(p: Portfolio, assets: AssetTotals[]): { total: Money; count: number } {
+  return {
+    total: sum([p.heldCost, ...assets.map((a) => a.cost)]),
+    count: p.held + assets.reduce((n, a) => n + a.items, 0),
+  }
+}
 
 // ---------------------------------------------------------------------------------------------
 // Where this year's profit came from

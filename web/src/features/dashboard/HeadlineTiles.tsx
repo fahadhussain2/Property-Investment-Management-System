@@ -1,48 +1,9 @@
 import { TriangleAlertIcon } from 'lucide-react'
-import type { ReactNode } from 'react'
-import { Link } from 'react-router-dom'
 import type { IncomeStatement } from '@/features/reports/api'
 import { formatMoney, isNegative, isZero, type Money } from '@/lib/money'
-import { cn } from '@/lib/utils'
-import type { MonthRow, Portfolio, QueryLike as Q } from './model'
+import type { MonthRow, QueryLike as Q } from './model'
 import { Polyline } from './Sparkline'
-import { Loaded, Skeleton } from './parts'
-
-
-/**
- * A tile is a plain box whose label is a link stretched over the whole tile (after:absolute).
- * Not a <Link> around everything: a "Try again" button inside a link is invalid and would navigate.
- */
-function Tile({ label, to, alert, children }: { label: ReactNode; to: string; alert?: boolean; children: ReactNode }) {
-  return (
-    <div
-      className={cn(
-        'relative flex min-w-0 flex-col gap-1 rounded-xl bg-card p-4 ring-1 ring-foreground/10 transition-colors has-[a:hover]:bg-accent/50',
-        alert && 'ring-2 ring-red-600/70 dark:ring-red-400/70',
-      )}
-    >
-      <Link
-        to={to}
-        className={cn(
-          'flex items-center gap-1.5 text-sm font-medium text-muted-foreground after:absolute after:inset-0 after:rounded-xl',
-          alert && 'text-red-700 dark:text-red-400',
-        )}
-      >
-        {label}
-      </Link>
-      {children}
-    </div>
-  )
-}
-
-const Value = ({ children, testid, negative }: { children: ReactNode; testid?: string; negative?: boolean }) => (
-  <span data-testid={testid} className={cn('text-lg leading-tight font-semibold tabular-nums [overflow-wrap:anywhere] sm:text-2xl', negative && 'text-red-700 dark:text-red-400')}>
-    {children}
-  </span>
-)
-const Sub = ({ children }: { children: ReactNode }) => <span className="text-xs text-muted-foreground sm:text-sm">{children}</span>
-
-const tileSkeleton = <Skeleton className="h-12" />
+import { Loaded, Sub, Tile, TileRow, TileSkeleton, Value } from './parts'
 
 export function HeadlineTiles({
   currency,
@@ -51,7 +12,7 @@ export function HeadlineTiles({
   monthly,
   fy,
   month,
-  portfolio,
+  invested,
   overdue,
 }: {
   currency: string
@@ -60,14 +21,14 @@ export function HeadlineTiles({
   monthly: Q<MonthRow[]>
   fy: Q<IncomeStatement>
   month: Q<IncomeStatement>
-  portfolio: Q<Portfolio>
+  invested: Q<{ total: Money; count: number }>
   overdue: Q<{ total: Money; tenants: number; months: number }>
 }) {
   const m = (x: Money) => formatMoney(x, currency)
   return (
-    <section aria-label="Key figures" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <TileRow title="Key figures">
       <Tile label="Cash & bank" to="/money">
-        <Loaded query={cash} skeleton={tileSkeleton}>
+        <Loaded query={cash} skeleton={<TileSkeleton />}>
           {(c) => (
             <>
               <Value testid="total-cash" negative={isNegative(c.total)}>
@@ -89,7 +50,7 @@ export function HeadlineTiles({
       </Tile>
 
       <Tile label={`Net profit · ${fyLabel}`} to="/reports/income-statement">
-        <Loaded query={fy} skeleton={tileSkeleton}>
+        <Loaded query={fy} skeleton={<TileSkeleton />}>
           {(is) => (
             <>
               <Value testid="profit-fy" negative={isNegative(is.net_profit)}>
@@ -106,20 +67,20 @@ export function HeadlineTiles({
         </Loaded>
       </Tile>
 
-      <Tile label="Invested in properties held" to="/properties">
-        <Loaded query={portfolio} skeleton={tileSkeleton}>
-          {(p) => (
+      <Tile label="Total invested" to="/reports/balance-sheet">
+        <Loaded query={invested} skeleton={<TileSkeleton />}>
+          {(i) => (
             <>
-              <Value testid="held-cost">{m(p.heldCost)}</Value>
+              <Value testid="invested-total">{m(i.total)}</Value>
               <Sub>
-                {p.held} {p.held === 1 ? 'property' : 'properties'} at cost
+                {i.count} {i.count === 1 ? 'asset' : 'assets'} at cost
               </Sub>
             </>
           )}
         </Loaded>
       </Tile>
 
-      <Loaded query={overdue} skeleton={<Tile label="Rent overdue" to="/leases">{tileSkeleton}</Tile>}>
+      <Loaded query={overdue} skeleton={<Tile label="Rent overdue" to="/leases"><TileSkeleton /></Tile>}>
         {(o) =>
           isZero(o.total) ? (
             <Tile label="Rent overdue" to="/leases">
@@ -144,7 +105,7 @@ export function HeadlineTiles({
           )
         }
       </Loaded>
-    </section>
+    </TileRow>
   )
 }
 

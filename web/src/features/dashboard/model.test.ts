@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { toRollRow, type RollRow } from '@/features/leases/rentRoll'
 import {
+  assetClasses,
   attention,
   axisFor,
   cashAccounts,
@@ -15,6 +16,7 @@ import {
   rentOverdue,
   toChartPoints,
   toMonthRow,
+  totalInvested,
   type RawMonth,
 } from './model'
 
@@ -187,6 +189,30 @@ describe('portfolio', () => {
 
   it('describes the bar for screen readers', () => {
     expect(portfolioLabel(p)).toBe('4 held: 2 rented, 1 vacant, 1 under agreement')
+  })
+})
+
+describe('what we own', () => {
+  const assets = assetClasses([
+    { class: 'silver', items: 1, weight_g: 583.19019, cost: 120000.1, market_value: null },
+    { class: 'gold', items: 2, weight_g: 116.638038, cost: 2500000.2, market_value: 2780000 },
+  ])
+
+  it('returns vehicle, gold and silver in order; a missing class counts as none held', () => {
+    expect(assets.map((a) => a.class)).toEqual(['vehicle', 'gold', 'silver'])
+    expect(assets[0]).toEqual({ class: 'vehicle', items: 0, cost: '0.00', weight_g: '0', market_value: null })
+  })
+
+  it('converts API numbers to decimal strings and keeps "no rate yet" as null', () => {
+    expect(assets[1]).toMatchObject({ items: 2, cost: '2500000.20', weight_g: '116.638038', market_value: '2780000.00' })
+    expect(assets[2].market_value).toBeNull()
+  })
+
+  it('totals properties and holdings at cost, exactly', () => {
+    expect(totalInvested(portfolio([{ status: 'vacant', for_sale: false, cost: 0.1 }]), assets)).toEqual({
+      total: '2620000.40',
+      count: 4,
+    })
   })
 })
 
