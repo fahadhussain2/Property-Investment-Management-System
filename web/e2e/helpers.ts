@@ -4,6 +4,17 @@ import { expect, type Locator, type Page } from '@playwright/test'
 export const unique = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
 export const PASSWORD = 'correct-horse-9'
 
+// Dates on the org's calendar (default timezone Asia/Karachi, see org_today()), never the runner's
+// local/UTC clock: near midnight UTC the two disagree on the day, and on the last day of a month on the month.
+/** The org's date `n` days from today, as YYYY-MM-DD. */
+export const orgDate = (n = 0) => new Date(Date.now() + n * 86_400_000).toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' })
+/** The 1st of the month `n` months before the month of `ymd` (YYYY-MM-DD), by plain calendar arithmetic. */
+export function firstOfMonthsBack(ymd: string, n: number) {
+  const [y, m] = ymd.split('-').map(Number)
+  const i = y * 12 + (m - 1) - n
+  return `${Math.floor(i / 12)}-${String((i % 12) + 1).padStart(2, '0')}-01`
+}
+
 export async function signUp(page: Page, email: string, businessName?: string) {
   await page.goto('/signup')
   if (businessName) await page.getByLabel('Business name').fill(businessName)

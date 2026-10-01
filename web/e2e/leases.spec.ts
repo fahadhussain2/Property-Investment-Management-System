@@ -1,15 +1,13 @@
 import { expect, type Page, test } from '@playwright/test'
-import { choose, expectNoHorizontalScroll, newBusiness, openingBalances, review, save } from './helpers'
+import { choose, expectNoHorizontalScroll, firstOfMonthsBack, newBusiness, openingBalances, orgDate, review, save } from './helpers'
 
-// The org's calendar date (default timezone Asia/Karachi, see org_today()), not the test
-// runner's local/UTC clock: near midnight UTC the two disagree on "today" by a day.
-const ymd = (d: Date) => d.toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' })
-const daysFromToday = (n: number) => ymd(new Date(Date.now() + n * 86_400_000))
-/** The 1st of the month two months ago: rent due on the 1st gives exactly 3 months due today. */
-const twoMonthsBack = () => {
-  const d = new Date()
-  return ymd(new Date(d.getFullYear(), d.getMonth() - 2, 1))
-}
+// Rent is due once a month. The lease is ended "yesterday" (it shows as Ended only once its last day is
+// past), so all three dues must fall on or before yesterday and none today: start on the 1st two months
+// before yesterday's month, with rent due on the 1st, or on the 2nd when today is the 1st (else today's
+// due would count before the lease ends and drop out after it).
+const yesterday = () => orgDate(-1)
+const leaseStart = () => firstOfMonthsBack(yesterday(), 2)
+const dueDay = () => (orgDate().endsWith('-01') ? '2' : '1')
 
 async function addProperty(page: Page, code: string) {
   await page.goto('/properties')
@@ -37,8 +35,9 @@ test('lease lifecycle: add lease → rented → rent roll shows months unpaid �
   await page.getByRole('dialog').last().getByLabel('Name', { exact: true }).fill('Tenant X')
   await page.getByRole('dialog').last().getByRole('button', { name: 'Add party' }).click()
   await expect(dialog.getByLabel('Tenant', { exact: true })).toHaveValue(/[0-9a-f-]{36}/)
-  await dialog.getByLabel('Start date').fill(twoMonthsBack())
+  await dialog.getByLabel('Start date').fill(leaseStart())
   await dialog.getByLabel('Rent per month').fill('50,000')
+  await dialog.getByLabel('Rent due on day (optional)').fill(dueDay())
   await dialog.getByLabel('Security deposit (optional)').fill('100,000')
   await dialog.getByRole('button', { name: 'Add lease' }).click()
 
@@ -101,7 +100,7 @@ test('lease lifecycle: add lease → rented → rent roll shows months unpaid �
 
   // End the lease (tenant left yesterday): the property is vacant again, the lease moves to "Ended".
   await page.getByRole('button', { name: 'End lease' }).click()
-  await page.getByRole('dialog').getByLabel('Tenant left on').fill(daysFromToday(-1))
+  await page.getByRole('dialog').getByLabel('Tenant left on').fill(yesterday())
   await page.getByRole('dialog').getByRole('button', { name: 'End lease' }).click()
   await expect(page.getByTestId('lease-status')).toContainText('Ended')
   await expect(page.getByTestId('kpi-unpaid')).toHaveText('Rs 50,000 · 1 mo') // what's unpaid stays unpaid
@@ -124,7 +123,7 @@ test('a lease ending soon shows on the dashboard; added from the property page',
   await page.getByRole('dialog').last().getByLabel('Name', { exact: true }).fill('Tenant Y')
   await page.getByRole('dialog').last().getByRole('button', { name: 'Add party' }).click()
   await expect(dialog.getByLabel('Tenant', { exact: true })).toHaveValue(/[0-9a-f-]{36}/)
-  await dialog.getByLabel('End date (optional)').fill(daysFromToday(20))
+  await dialog.getByLabel('End date (optional)').fill(orgDate(20))
   await dialog.getByLabel('Rent per month').fill('30000')
   await dialog.getByRole('button', { name: 'Add lease' }).click()
   await expect(page.getByRole('heading', { name: 'FLAT-7 · Tenant Y' })).toBeVisible()
