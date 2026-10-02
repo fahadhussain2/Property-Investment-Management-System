@@ -21,6 +21,7 @@ import { VoucherList } from '@/components/VoucherList'
 import { DocumentsSection } from '@/features/documents/DocumentsSection'
 import { useOrg } from '@/features/org/OrgProvider'
 import { fetchVouchersFor, propertyKeys } from '@/features/properties/api'
+import { leaseLabel } from '@/features/properties/units'
 import { friendlyError } from '@/lib/forms'
 import { formatMoney, isZero, today } from '@/lib/money'
 import { cn } from '@/lib/utils'
@@ -118,6 +119,7 @@ export function LeasePage() {
         {roll.property_name ? ` · ${roll.property_name}` : ''}
       </Link>,
     ],
+    ['Unit', roll.unit_name],
     [
       'Tenant',
       <Link key="t" to={`/parties/${roll.party_id}`} className="underline">
@@ -147,7 +149,7 @@ export function LeasePage() {
         <ArrowLeftIcon className="size-4" aria-hidden /> Leases &amp; Rent
       </Link>
       <PageHeader
-        title={`${roll.property_code} · ${roll.tenant_name}`}
+        title={leaseLabel(roll)}
         description={
           <span
             className="mt-1 inline-flex flex-wrap items-center gap-2"
@@ -237,7 +239,7 @@ export function LeasePage() {
             ))}
           </dl>
           <div className="mt-6">
-            <DocumentsSection link={{ lease_id: lease.id }} recordLabel={`the lease of ${roll.property_code} to ${roll.tenant_name}`} defaultCategory="rent_agreement" />
+            <DocumentsSection link={{ lease_id: lease.id }} recordLabel={`the lease of ${[roll.property_code, roll.unit_name].filter(Boolean).join(' · ')} to ${roll.tenant_name}`} defaultCategory="rent_agreement" />
           </div>
         </section>
         <section>
@@ -268,7 +270,7 @@ export function LeasePage() {
         open={ending}
         onOpenChange={setEnding}
         title="End lease"
-        description={`${roll.property_code} becomes vacant after this date. Rent stops falling due; anything unpaid stays on the rent roll.`}
+        description={`${roll.unit_name ? `${roll.property_code} · ${roll.unit_name}` : roll.property_code} becomes vacant after this date. Rent stops falling due; anything unpaid stays on the rent roll.`}
         submitLabel="End lease"
         schema={endLeaseSchema}
         onSubmit={async ({ ended_on }) => {

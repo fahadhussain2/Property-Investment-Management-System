@@ -54,6 +54,13 @@ sets `script-shell` to Git Bash, and `web/scripts/with-local-supabase.mjs` runs 
   A new enum value goes in its own migration file (it can't be used in the transaction that adds it).
 - "Holding" (code only) = a vehicle, gold item or silver item (`holdings.class`); the UI says Vehicles / Gold / Silver.
   Journal lines carry `holding_id` next to `property_id`. Books stay at cost; market value (`metal_rates`) is display only.
+- "Unit" (spec 006) = a part of a property rented on its own (`property_units`: a floor, flat or shop), never a
+  weight unit. A lease is for one unit (`leases.unit_id`) or the whole property (null). Leases conflict only on the
+  same unit, or when one is for the whole property (`check_lease`). Name a lease with `leaseLabel()`
+  (`code · unit · tenant`). Rent entered without a lease counts towards ONE lease (`rent_roll`) and is refused when
+  the tenant has two leases active that day (`vouchers_unlinked_rent`): a new query that reads leases must keep both.
+  Books stay per property: units never reach `journal_lines`. Occupancy comes from `property_units_overview` /
+  `properties_overview`, never stored.
 - Frontend features: `web/src/features/<feature>/` with `api.ts` (queries), pages, `schema.ts` (zod).
   Pure logic goes in files that do not import `lib/supabase` (so unit tests need no env).
 - API `numeric` values arrive as JSON numbers: convert with `toMoney()` (weights: `toGrams()`) immediately.

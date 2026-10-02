@@ -44,3 +44,10 @@ export const forSaleSchema = z.object({
       }
     }),
 })
+
+/** A unit of a property (spec 006): "Ground floor", "Shop 3". Names are unique within the property (the DB checks). */
+export const unitSchema = z.object({
+  name: z.string().trim().min(1, 'Enter a name, e.g. Ground floor or Shop 3').max(60, 'Keep the name under 60 characters'),
+  notes: optionalText(500),
+})
+export type UnitInput = z.infer<typeof unitSchema>

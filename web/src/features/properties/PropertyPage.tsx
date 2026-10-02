@@ -23,6 +23,7 @@ import { deleteProperty, fetchProperty, fetchVouchersFor, propertyKeys, updatePr
 import { PropertyBreakdown } from './PropertyBreakdown'
 import { PropertyFormDialog } from './PropertyFormDialog'
 import { forSaleSchema } from './schema'
+import { UnitsSection } from './UnitsSection'
 
 export function PropertyPage() {
   const { id = '' } = useParams()
@@ -170,6 +171,9 @@ export function PropertyPage() {
               </div>
             ))}
           </dl>
+          <div className="mt-6">
+            <UnitsSection propertyId={property.id} propertyCode={property.code} sold={sold} />
+          </div>
           <h2 className="mt-6 mb-2 text-sm font-semibold text-muted-foreground">Leases</h2>
           {roll.isPending ? (
             <SectionLoading label="Loading leases…" />
@@ -179,6 +183,7 @@ export function PropertyPage() {
             <RollList
               rows={roll.data.filter((r) => r.property_id === property.id)}
               currency={current.currency}
+              stacked
               empty={sold ? 'This property was not rented out.' : 'Use “Add lease” when you rent it out.'}
             />
           )}

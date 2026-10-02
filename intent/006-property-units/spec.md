@@ -2,7 +2,7 @@
 
 > Stage 2 artifact. Derived from [`intent.md`](intent.md). Changes the lease rule of spec 001 (§6.7, M6:
 > "leases on the same property never overlap") and adds occupancy to the property page and register.
-> Status: **APPROVED** by Fahad Hussain, 2026-10-02
+> Status: **APPROVED** by Fahad Hussain, 2026-10-02 · **DONE** 2026-10-02 (plan 006 U1–U2)
 
 ## 1. Design principle: "units are a room list, not a second set of books"
 
@@ -82,9 +82,10 @@ forever, exactly as today) **and** either one is a whole-property lease or both 
 
 - A lease's unit **can** be changed after entries point at it (a correction): the unit is not copied onto
   entries, and the books are per property. The new unit is checked for overlap like any update.
-- The lease form shows a **Unit** field only when the property has units. It is then required, with the
+- The lease form shows a **Unit** choice when the property has units. It is then required, with the
   choices "Whole property" and each unit. It never defaults silently to the whole property, because that
-  would block every unit.
+  would block every unit. For a property without units it shows a read-only "Whole property" line with
+  "New unit" (amended at Stage 3, U2), and a save made before the units have loaded waits for them.
 
 ## 5. Rent and deposits entered without a lease
 
@@ -140,7 +141,7 @@ financial report are **not changed**.
 | Property page (`/properties/:id`) | New **Units** section above Leases: each unit with its state ("Rented to Ali Traders until 30 Jun 2027", "Part of the whole-property lease", "Vacant") and a link to the lease. Header line "2 of 3 units rented". Actions (when `canWrite`): Add unit, Rename / edit note, Delete (only when the unit never had a lease; otherwise the action explains why). Empty state: "No units. This property is rented as a whole. Add units if parts of it are rented separately." Hidden for a sold property with no units. |
 | Unit dialog (`FormDialog`) | Name (required, 1–60), Notes (optional). Duplicate name → "This property already has a unit with that name." |
 | Properties list | Under the status badge, for a property with units that is not sold: "2 of 3 units rented". Nothing new for properties without units. |
-| Lease form | **Unit** select after Property, shown only when that property has units: "Choose a unit…" (placeholder, required), "Whole property", then units by name. A "New unit…" option opens the unit dialog inside the lease dialog and selects the new unit. Changing the property clears the unit. |
+| Lease form | **Unit** select after Property, when that property has units (without units: a read-only "Whole property" line with "New unit"): "Choose a unit…" (placeholder, required), "Whole property", then units by name. A "New unit…" option opens the unit dialog inside the lease dialog and selects the new unit. Changing the property clears the unit. |
 | Lease page, rent roll (`/leases`), lease picker in rent/deposit entries, dashboard (Rent overdue, Leases ending), documents | The unit is shown after the property code: `DP-25 · Shop 3 · Ali Traders`. A whole-property lease shows as today. |
 
 - A failed load shows `SectionError`, never "0 of 0 units".

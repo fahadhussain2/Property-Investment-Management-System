@@ -119,6 +119,8 @@ export function compactTick(n: number): string {
 export type ExpiringLease = {
   lease_id: string
   property_code: string
+  /** Spec 006: the unit, or null/absent for a whole-property lease. */
+  unit_name?: string | null
   tenant_name: string
   end_date: string
   days_to_end: number

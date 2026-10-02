@@ -26,6 +26,9 @@ export type RollRow = {
   last_rent_amount: Money | null
   days_to_end: number | null
   rent_counted_from: string | null
+  /** Spec 006: the unit, or null for a whole-property lease. */
+  unit_id: string | null
+  unit_name: string | null
 }
 
 type Raw = Omit<
@@ -39,7 +42,11 @@ type Raw = Omit<
   | 'deposit_held'
   | 'last_rent_amount'
   | 'status'
+  | 'unit_id'
+  | 'unit_name'
 > & {
+  unit_id?: string | null
+  unit_name?: string | null
   status: string
   monthly_rent: number | string
   security_deposit: number | string
@@ -63,6 +70,8 @@ export const toRollRow = (r: Raw): RollRow => ({
   paid_ahead: toMoney(r.paid_ahead),
   deposit_held: toMoney(r.deposit_held),
   last_rent_amount: r.last_rent_amount == null ? null : toMoney(r.last_rent_amount),
+  unit_id: r.unit_id ?? null,
+  unit_name: r.unit_name ?? null,
 })
 
 export const EXPIRING_DAYS = 60

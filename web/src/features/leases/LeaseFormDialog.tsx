@@ -1,9 +1,14 @@
+import { useQueryClient } from '@tanstack/react-query'
+import { useState } from 'react'
 import { Field } from '@/components/Field'
 import { FormDialog } from '@/components/FormDialog'
 import { AmountField, PartyPicker, PropertyPicker } from '@/features/entries/fields'
+import { useOrg } from '@/features/org/OrgProvider'
+import { fetchUnits, propertyKeys } from '@/features/properties/api'
 import { isZero, today, toMoney } from '@/lib/money'
 import type { Lease } from './api'
-import { leaseSchema, type LeaseInput } from './schema'
+import { leaseSchema, UNIT_REQUIRED, WHOLE_PROPERTY, type LeaseForm, type LeaseInput } from './schema'
+import { UnitPicker } from './UnitPicker'
 
 /** Add or edit a lease. Creating a lease records no money: rent and deposits are entries. */
 export function LeaseFormDialog({
@@ -20,6 +25,25 @@ export function LeaseFormDialog({
   propertyId?: string
   onSave: (input: LeaseInput) => Promise<void>
 }) {
+  const { current } = useOrg()
+  const qc = useQueryClient()
+
+  // Spec 006: if the form saved before it could show the property's units, look them up now (waiting for a
+  // fetch already in flight). A property with units needs a choice; an unchanged lease keeps its unit.
+  async function save({ unit_chosen, ...input }: LeaseForm) {
+    if (!unit_chosen) {
+      const units = await qc.fetchQuery({
+        queryKey: propertyKeys.units(current.id, input.property_id),
+        queryFn: () => fetchUnits(current.id, input.property_id),
+      })
+      if (units.length > 0) {
+        if (lease && lease.property_id === input.property_id) input.unit_id = lease.unit_id
+        else throw new Error(UNIT_REQUIRED)
+      }
+    }
+    await onSave(input)
+  }
+
   return (
     <FormDialog
       open={open}
@@ -32,17 +56,11 @@ export function LeaseFormDialog({
       }
       submitLabel={lease ? 'Save lease' : 'Add lease'}
       schema={leaseSchema}
-      onSubmit={onSave}
+      onSubmit={save}
     >
       {(errors) => (
         <>
-          <PropertyPicker
-            name="property_id"
-            label="Property"
-            unsoldOnly
-            defaultValue={lease?.property_id ?? propertyId}
-            error={errors.property_id}
-          />
+          <PropertyAndUnit lease={lease} propertyId={propertyId} errors={errors} />
           <PartyPicker
             name="party_id"
             label="Tenant"
@@ -112,5 +130,34 @@ export function LeaseFormDialog({
         </>
       )}
     </FormDialog>
+  )
+}
+
+/** The property, then its unit (spec 006). Choosing another property clears the unit. */
+function PropertyAndUnit({
+  lease,
+  propertyId,
+  errors,
+}: {
+  lease?: Lease
+  propertyId?: string
+  errors: Partial<Record<string, string>>
+}) {
+  const initial = lease?.property_id ?? propertyId ?? ''
+  const [property, setProperty] = useState(initial)
+  // An existing lease keeps its unit, or "Whole property", while its property stays the same.
+  const unitDefault = lease && property === lease.property_id ? (lease.unit_id ?? WHOLE_PROPERTY) : undefined
+  return (
+    <>
+      <PropertyPicker
+        name="property_id"
+        label="Property"
+        unsoldOnly
+        defaultValue={initial}
+        error={errors.property_id}
+        onValueChange={setProperty}
+      />
+      {property && <UnitPicker key={property} propertyId={property} defaultValue={unitDefault} error={errors.unit_id} />}
+    </>
   )
 }

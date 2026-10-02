@@ -5,6 +5,7 @@ import { formatMoney } from '@/lib/money'
 import { cn } from '@/lib/utils'
 import { daysLabel, formatDate, type Attention, type AttentionTab } from './model'
 import { MoreLink } from './parts'
+import { leaseLabel } from '@/features/properties/units'
 
 const TABS: { id: AttentionTab; label: string; short: string; more: { to: string; label: string } }[] = [
   { id: 'overdue', label: 'Rent overdue', short: 'Overdue', more: { to: '/leases', label: 'Rent roll' } },
@@ -96,7 +97,7 @@ export function NeedsAttention({ data, currency }: { data: Attention; currency: 
                 <Row
                   key={r.lease_id}
                   to={`/leases/${r.lease_id}`}
-                  title={`${r.property_code} · ${r.tenant_name}`}
+                  title={leaseLabel(r)}
                   detail={`${r.months_unpaid} ${r.months_unpaid === 1 ? 'month' : 'months'} unpaid · ${
                     r.last_rent_date ? `last paid ${formatDate(r.last_rent_date)}` : 'nothing received yet'
                   }`}
@@ -109,7 +110,7 @@ export function NeedsAttention({ data, currency }: { data: Attention; currency: 
                 <Row
                   key={l.lease_id}
                   to={`/leases/${l.lease_id}`}
-                  title={`${l.property_code} · ${l.tenant_name}`}
+                  title={leaseLabel(l)}
                   detail={`Ends ${formatDate(l.end_date)}`}
                   value={daysLabel(l.days_to_end)}
                   tone={l.days_to_end <= 30 ? 'warning' : undefined}
