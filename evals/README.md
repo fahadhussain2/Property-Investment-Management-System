@@ -20,3 +20,7 @@ Rules:
   "file", "size", "mime", "category", "title" }` stores a stub Storage object as the owner (RLS on) and calls `add_document`.
   `documents` checks `documents_overview` fields by key (values as strings; `voucher` is a step id); `storage_used` is bytes.
   An `edit` step with an `id` names the replacement entry.
+- Units (spec 006): `setup.units` (`key`, `property`, `name`); a lease (in `setup.leases` or a `{ "type": "lease", … }` step,
+  which adds it between entries) takes `unit` (a unit key; omit for the whole property). `rent_roll` rows are keyed by
+  property code, or by `"lease:<key>"` when a property has several leases. Any entry step may carry `"error"`: it must
+  fail with a message containing that text, and is rolled back.

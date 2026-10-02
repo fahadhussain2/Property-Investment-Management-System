@@ -424,6 +424,7 @@ export type Database = {
           rent_due_day: number
           security_deposit: number
           start_date: string
+          unit_id: string | null
         }
         Insert: {
           created_at?: string
@@ -439,6 +440,7 @@ export type Database = {
           rent_due_day?: number
           security_deposit?: number
           start_date: string
+          unit_id?: string | null
         }
         Update: {
           created_at?: string
@@ -454,6 +456,7 @@ export type Database = {
           rent_due_day?: number
           security_deposit?: number
           start_date?: string
+          unit_id?: string | null
         }
         Relationships: [
           {
@@ -483,6 +486,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "properties_overview"
             referencedColumns: ["org_id", "id"]
+          },
+          {
+            foreignKeyName: "leases_unit_fkey"
+            columns: ["org_id", "property_id", "unit_id"]
+            isOneToOne: false
+            referencedRelation: "property_units"
+            referencedColumns: ["org_id", "property_id", "id"]
+          },
+          {
+            foreignKeyName: "leases_unit_fkey"
+            columns: ["org_id", "property_id", "unit_id"]
+            isOneToOne: false
+            referencedRelation: "property_units_overview"
+            referencedColumns: ["org_id", "property_id", "id"]
           },
         ]
       }
@@ -683,6 +700,55 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      property_units: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          notes: string | null
+          org_id: string
+          property_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string | null
+          org_id: string
+          property_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          org_id?: string
+          property_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_units_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_units_org_id_property_id_fkey"
+            columns: ["org_id", "property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["org_id", "id"]
+          },
+          {
+            foreignKeyName: "property_units_org_id_property_id_fkey"
+            columns: ["org_id", "property_id"]
+            isOneToOne: false
+            referencedRelation: "properties_overview"
+            referencedColumns: ["org_id", "id"]
           },
         ]
       }
@@ -975,38 +1041,8 @@ export type Database = {
           notes: string | null
           org_id: string | null
           status: Database["public"]["Enums"]["property_status"] | null
-        }
-        Insert: {
-          address?: string | null
-          area?: number | null
-          area_unit?: string | null
-          asking_price?: number | null
-          city?: string | null
-          code?: string | null
-          created_at?: string | null
-          for_sale?: boolean | null
-          id?: string | null
-          kind?: Database["public"]["Enums"]["property_kind"] | null
-          name?: string | null
-          notes?: string | null
-          org_id?: string | null
-          status?: never
-        }
-        Update: {
-          address?: string | null
-          area?: number | null
-          area_unit?: string | null
-          asking_price?: number | null
-          city?: string | null
-          code?: string | null
-          created_at?: string | null
-          for_sale?: boolean | null
-          id?: string | null
-          kind?: Database["public"]["Enums"]["property_kind"] | null
-          name?: string | null
-          notes?: string | null
-          org_id?: string | null
-          status?: never
+          units_total: number | null
+          units_vacant: number | null
         }
         Relationships: [
           {
@@ -1015,6 +1051,45 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      property_units_overview: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          lease_count: number | null
+          lease_ends: string | null
+          lease_id: string | null
+          name: string | null
+          notes: string | null
+          org_id: string | null
+          property_id: string | null
+          state: string | null
+          tenant_id: string | null
+          tenant_name: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_units_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_units_org_id_property_id_fkey"
+            columns: ["org_id", "property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["org_id", "id"]
+          },
+          {
+            foreignKeyName: "property_units_org_id_property_id_fkey"
+            columns: ["org_id", "property_id"]
+            isOneToOne: false
+            referencedRelation: "properties_overview"
+            referencedColumns: ["org_id", "id"]
           },
         ]
       }
@@ -1274,6 +1349,7 @@ export type Database = {
           property_code: string
           property_id: string
           tenant_name: string
+          unit_name: string
         }[]
       }
       has_role: {
@@ -1440,6 +1516,8 @@ export type Database = {
           start_date: string
           status: string
           tenant_name: string
+          unit_id: string
+          unit_name: string
         }[]
       }
       require_role: {

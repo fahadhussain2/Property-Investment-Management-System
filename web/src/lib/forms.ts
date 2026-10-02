@@ -43,6 +43,21 @@ export function friendlyError(e: unknown): string {
   if (msg.includes('bring it to zero')) return 'This account still has money in it. Move the balance out before hiding it.'
   if (msg.includes('system accounts')) return 'Built-in accounts can be renamed, but not hidden or deleted.'
   if (msg.includes('type cannot be changed')) return 'An account keeps its type. Add a new account instead.'
+  // Units (spec 006): checked before the whole-property message, which shares its wording.
+  if (msg.includes('this unit already has a lease for these dates'))
+    return 'This unit already has a lease for these dates. End the current lease first, or change the dates.'
+  if (msg.includes('the whole property is rented for these dates'))
+    return 'The whole property is rented for these dates. End that lease first, or change the dates.'
+  if (msg.includes('a unit of this property is rented for these dates'))
+    return 'A unit of this property is rented for these dates, so it can’t be rented as a whole. End the unit’s lease first, or change the dates.'
+  if (msg.includes('more than one lease on this property on that date'))
+    return 'This tenant rents more than one unit here on that date. Choose the lease the payment is for.'
+  if (msg.includes('property_units_name_idx')) return 'This property already has a unit with that name.'
+  if (msg.includes('property_units_name_check')) return 'Enter a unit name of up to 60 characters.'
+  if (msg.includes('leases_unit_fkey'))
+    return msg.includes('on table "property_units"')
+      ? 'This unit has leases, so it can’t be deleted.'
+      : 'This unit belongs to another property. Choose one of this property’s units.'
   if (msg.includes('already has a lease for these dates'))
     return 'This property already has a lease for these dates. End the current lease first, or change the dates.'
   if (msg.includes('sold and cannot be rented')) return 'This property is sold, so it cannot be rented out.'

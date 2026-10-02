@@ -15,7 +15,7 @@ const OPENING_DATE = '2025-12-31'
 class Ctx {
   constructor(client) {
     this.client = client
-    this.orgs = {} // key -> { id, accounts: {code|bank:Name -> id}, properties: {code -> id}, holdings: {code -> id}, parties: {name -> id} }
+    this.orgs = {} // key -> { id, accounts: {code|bank:Name -> id}, properties: {code -> id}, units: {key -> id}, holdings: {code -> id}, parties: {name -> id}, leases: {key -> id} }
     this.users = {} // key -> uuid
     this.vouchers = {} // step id -> voucher id
     this.documents = {} // step document key -> document id
@@ -53,7 +53,7 @@ class Ctx {
 async function setupOrg(ctx, key, spec, ownerKey) {
   await ctx.as(ownerKey)
   const { rows } = await ctx.q('select public.create_organization($1) as id', [`Eval ${key}`])
-  const org = { id: rows[0].id, accounts: {}, properties: {}, holdings: {}, parties: {}, leases: {} }
+  const org = { id: rows[0].id, accounts: {}, properties: {}, units: {}, holdings: {}, parties: {}, leases: {} }
   ctx.orgs[key] = org
 
   const accts = await ctx.q('select id, code from public.accounts where org_id = $1', [org.id])
@@ -78,6 +78,13 @@ async function setupOrg(ctx, key, spec, ownerKey) {
       opening.push({ account_id: org.accounts['1200'], debit: p.opening_cost, property_id: r.rows[0].id })
     }
   }
+  // Spec 006: units of a property, { key, property, name }.
+  for (const u of spec.units ?? []) {
+    const r = await ctx.q('insert into public.property_units (org_id, property_id, name) values ($1, $2, $3) returning id', [
+      org.id, org.properties[u.property], u.name,
+    ])
+    org.units[u.key] = r.rows[0].id
+  }
   for (const h of spec.holdings ?? []) {
     const r = await ctx.q(
       'insert into public.holdings (org_id, class, code, name, purity) values ($1, $2, $3, $4, $5) returning id',
@@ -97,14 +104,7 @@ async function setupOrg(ctx, key, spec, ownerKey) {
     )
     org.parties[p.name] = r.rows[0].id
   }
-  for (const l of spec.leases ?? []) {
-    const r = await ctx.q(
-      `insert into public.leases (org_id, property_id, party_id, start_date, end_date, monthly_rent, rent_due_day)
-       values ($1, $2, $3, $4, $5, $6, $7) returning id`,
-      [org.id, org.properties[l.property], org.parties[l.party], l.start, l.end ?? null, l.monthly_rent, l.rent_due_day ?? 1],
-    )
-    if (l.key) org.leases[l.key] = r.rows[0].id
-  }
+  for (const l of spec.leases ?? []) await addLease(ctx, org, l)
   if (opening.length) {
     await ctx.q('select public.post_voucher($1, $2)', [
       org.id,
@@ -112,6 +112,18 @@ async function setupOrg(ctx, key, spec, ownerKey) {
     ])
   }
   return org
+}
+
+// { key, property, unit (unit key, optional: whole property), party, start, end, monthly_rent, rent_due_day }
+async function addLease(ctx, org, l) {
+  if (l.unit && !org.units[l.unit]) throw new Error(`lease: unknown unit "${l.unit}"`)
+  const r = await ctx.q(
+    `insert into public.leases (org_id, property_id, unit_id, party_id, start_date, end_date, monthly_rent, rent_due_day)
+     values ($1, $2, $3, $4, $5, $6, $7, $8) returning id`,
+    [org.id, org.properties[l.property], l.unit ? org.units[l.unit] : null, org.parties[l.party], l.start, l.end ?? null,
+     l.monthly_rent, l.rent_due_day ?? 1],
+  )
+  if (l.key) org.leases[l.key] = r.rows[0].id
 }
 
 // Scenario step (human-friendly refs) -> post_voucher payload (ids).
@@ -178,10 +190,29 @@ async function runSingleOrgCase(ctx, c, failures) {
       await snap()
       continue
     }
-    if (step.type === 'edit') {
-      res = await ctx.q('select public.edit_voucher($1, $2) as r', [ctx.vouchers[step.voucher], step.changes])
-    } else {
-      res = await ctx.q('select public.post_voucher($1, $2) as r', [org.id, toPayload(ctx, org, step)])
+    if (step.type === 'lease') {
+      await addLease(ctx, org, step)
+      await snap()
+      continue
+    }
+    // A step with "error" must fail with a message containing it, and changes nothing.
+    if (step.error) await ctx.q('savepoint step')
+    try {
+      if (step.type === 'edit') {
+        res = await ctx.q('select public.edit_voucher($1, $2) as r', [ctx.vouchers[step.voucher], step.changes])
+      } else {
+        res = await ctx.q('select public.post_voucher($1, $2) as r', [org.id, toPayload(ctx, org, step)])
+      }
+    } catch (e) {
+      if (!step.error) throw e
+      if (!String(e.message).includes(step.error)) failures.push(`step error: expected "${step.error}", got "${e.message}"`)
+      await ctx.q('rollback to savepoint step')
+      continue
+    }
+    if (step.error) {
+      failures.push(`step ${step.id ?? step.type} was expected to fail with "${step.error}" but succeeded`)
+      await ctx.q('rollback to savepoint step')
+      continue
     }
     if (step.id) ctx.vouchers[step.id] = res.rows[0].r.id
     await snap()
@@ -268,10 +299,13 @@ async function runSingleOrgCase(ctx, c, failures) {
     for (const [f, v] of Object.entries(fields)) check(failures, `balance_sheet.${f}`, rows[0].r[f], v)
   }
   if (x.rent_roll) {
+    // Keyed by property code, or by "lease:<key>" when a property has several leases (spec 006).
     const { as_of, ...byCode } = x.rent_roll
     const { rows } = await ctx.q('select * from public.rent_roll($1, $2)', [org.id, as_of])
     for (const [code, fields] of Object.entries(byCode)) {
-      const row = rows.find((r) => r.property_code === code)
+      const row = code.startsWith('lease:')
+        ? rows.find((r) => r.lease_id === org.leases[code.slice('lease:'.length)])
+        : rows.find((r) => r.property_code === code)
       for (const [f, v] of Object.entries(fields)) check(failures, `rent_roll.${code}.${f}`, row?.[f], v)
     }
   }

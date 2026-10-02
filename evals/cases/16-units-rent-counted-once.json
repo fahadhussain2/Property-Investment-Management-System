@@ -1,0 +1,29 @@
+{
+  "name": "Units: one tenant renting two shops; rent entered without a lease is counted once, and must name the lease once both are active",
+  "setup": {
+    "banks": [],
+    "cash_opening": "0.00",
+    "properties": [{ "code": "PLAZA", "kind": "shop", "opening_cost": "40000000.00" }],
+    "units": [{ "key": "SH1", "property": "PLAZA", "name": "Shop 1" }, { "key": "SH2", "property": "PLAZA", "name": "Shop 2" }],
+    "parties": [{ "name": "Tenant C", "roles": ["tenant"] }],
+    "leases": [
+      { "key": "L-SH1", "property": "PLAZA", "unit": "SH1", "party": "Tenant C", "start": "2026-01-01", "monthly_rent": "50000.00" }
+    ]
+  },
+  "steps": [
+    { "type": "rent", "date": "2026-02-05", "property": "PLAZA", "party": "Tenant C", "amount": "50000.00", "into": "1000", "period": "2026-02" },
+    { "type": "lease", "key": "L-SH2", "property": "PLAZA", "unit": "SH2", "party": "Tenant C", "start": "2026-02-01", "monthly_rent": "30000.00" },
+    { "type": "rent", "date": "2026-03-05", "property": "PLAZA", "party": "Tenant C", "amount": "30000.00", "into": "1000", "error": "more than one lease on this property on that date" },
+    { "id": "mar", "type": "rent", "date": "2026-03-05", "lease": "L-SH2", "amount": "30000.00", "into": "1000", "period": "2026-03" }
+  ],
+  "expect": {
+    "rent_roll": {
+      "as_of": "2026-03-20",
+      "lease:L-SH1": { "unit_name": "Shop 1", "months_due": 3, "expected": "150000.00", "received": "50000.00", "arrears": "100000.00", "months_unpaid": 2 },
+      "lease:L-SH2": { "unit_name": "Shop 2", "months_due": 2, "expected": "60000.00", "received": "30000.00", "arrears": "30000.00", "months_unpaid": 1 }
+    },
+    "voucher_lease": { "mar": "L-SH2" },
+    "income_statement": { "from": "2026-01-01", "to": "2026-12-31", "rent_income": "80000.00", "rent_income_by_property": { "PLAZA": "80000.00" } },
+    "trial_balance_difference": "0.00"
+  }
+}
