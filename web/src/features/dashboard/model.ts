@@ -324,3 +324,29 @@ export const mapQuery = <T, U>(q: QueryLike<T>, f: (d: T) => U): QueryLike<U> =>
 
 export const formatDate = (d: string) =>
   new Date(d + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
+
+// ---------------------------------------------------------------------------------------------
+// Tile icons and tones (spec 005 §3). Names, not components, so this file stays free of React.
+// ---------------------------------------------------------------------------------------------
+
+export type TileTone = 'blue' | 'green' | 'amber' | 'red' | 'neutral'
+export type TileIcon = 'wallet' | 'trending-up' | 'trending-down' | 'landmark' | 'calendar-clock' | 'alert' | 'building' | 'car' | 'gem' | 'coins'
+export type TileLook = { icon: TileIcon; tone: TileTone }
+
+export const CASH_LOOK: TileLook = { icon: 'wallet', tone: 'blue' }
+export const INVESTED_LOOK: TileLook = { icon: 'landmark', tone: 'blue' }
+
+/** Green only for a profit; a loss gets a neutral, downward icon (its figure is already red). Unknown while loading. */
+export const profitLook = (net: Money | undefined): TileLook =>
+  net === undefined ? { icon: 'trending-up', tone: 'neutral' } : isNegative(net) ? { icon: 'trending-down', tone: 'neutral' } : { icon: 'trending-up', tone: 'green' }
+
+/** Always red; the warning icon (and the tile's red ring) only when rent is overdue, so the alert never relies on colour alone. */
+export const overdueLook = (total: Money | undefined): TileLook =>
+  total === undefined || isZero(total) ? { icon: 'calendar-clock', tone: 'red' } : { icon: 'alert', tone: 'red' }
+
+export const ASSET_LOOK: Record<'property' | AssetClass, TileLook> = {
+  property: { icon: 'building', tone: 'neutral' },
+  vehicle: { icon: 'car', tone: 'neutral' },
+  gold: { icon: 'gem', tone: 'amber' },
+  silver: { icon: 'coins', tone: 'neutral' },
+}

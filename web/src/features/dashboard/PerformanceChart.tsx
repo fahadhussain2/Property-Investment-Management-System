@@ -1,8 +1,10 @@
 // Loaded with React.lazy so only the dashboard pays for Recharts.
+import { useEffect, useState } from 'react'
 import { Bar, CartesianGrid, ComposedChart, Line, ReferenceLine, XAxis, YAxis } from 'recharts'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/components/ui/chart'
 import { formatMoney } from '@/lib/money'
 import { axisFor, compactTick, type ChartPoint } from './model'
+import { useAnimateIn, usePrefersReducedMotion } from './motion'
 
 const config = {
   income: { label: 'Income', color: 'var(--chart-income)' },
@@ -10,8 +12,32 @@ const config = {
   profit: { label: 'Net profit', color: 'var(--chart-profit)' },
 } satisfies ChartConfig
 
-export default function PerformanceChart({ points, currency }: { points: ChartPoint[]; currency: string }) {
+/** Spec 005 §5: bars grow and the line draws once, on the first draw after the skeleton. */
+const GROW_MS = 500
+
+export default function PerformanceChart({
+  points,
+  currency,
+  drawnBefore,
+  onDrawn,
+}: {
+  points: ChartPoint[]
+  currency: string
+  drawnBefore: boolean
+  onDrawn: () => void
+}) {
   const axis = axisFor(points)
+  const animateIn = useAnimateIn()
+  const reduce = usePrefersReducedMotion()
+  const [animate, setAnimate] = useState(() => animateIn && !reduce && !drawnBefore)
+  useEffect(() => {
+    onDrawn()
+    if (!animate) return
+    // Later data (a range switch) redraws without animation.
+    const t = setTimeout(() => setAnimate(false), GROW_MS + 100)
+    return () => clearTimeout(t)
+  }, [animate, onDrawn])
+  const motion = { isAnimationActive: animate && !reduce, animationDuration: GROW_MS, animationEasing: 'ease-out' as const }
   return (
     <ChartContainer config={config} className="aspect-auto h-64 w-full" data-testid="performance-chart">
       <ComposedChart data={points} margin={{ top: 8, right: 8, bottom: 0, left: 0 }} barGap={2} barCategoryGap="22%" accessibilityLayer>
@@ -32,8 +58,8 @@ export default function PerformanceChart({ points, currency }: { points: ChartPo
             active && payload?.length ? <MonthTip point={payload[0].payload as ChartPoint} currency={currency} /> : null
           }
         />
-        <Bar dataKey="income_y" name="Income" fill="var(--color-income)" radius={[4, 4, 0, 0]} maxBarSize={28} isAnimationActive={false} />
-        <Bar dataKey="expenses_y" name="Expenses" fill="var(--color-expenses)" radius={[4, 4, 0, 0]} maxBarSize={28} isAnimationActive={false} />
+        <Bar dataKey="income_y" name="Income" fill="var(--color-income)" radius={[4, 4, 0, 0]} maxBarSize={28} {...motion} />
+        <Bar dataKey="expenses_y" name="Expenses" fill="var(--color-expenses)" radius={[4, 4, 0, 0]} maxBarSize={28} {...motion} />
         <Line
           dataKey="profit_y"
           name="Net profit"
@@ -42,7 +68,7 @@ export default function PerformanceChart({ points, currency }: { points: ChartPo
           strokeWidth={2}
           dot={{ r: 4, fill: 'var(--color-profit)', stroke: 'var(--card)', strokeWidth: 2 }}
           activeDot={{ r: 5, fill: 'var(--color-profit)', stroke: 'var(--card)', strokeWidth: 2 }}
-          isAnimationActive={false}
+          {...motion}
         />
       </ComposedChart>
     </ChartContainer>

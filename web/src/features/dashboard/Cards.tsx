@@ -5,6 +5,7 @@ import { VOUCHER_TYPES } from '@/lib/labels'
 import { formatMoney, isNegative, toMoney, type Money } from '@/lib/money'
 import { cn } from '@/lib/utils'
 import { formatDate, portfolioLabel, type CashAccount, type MixRow, type Portfolio } from './model'
+import { useAnimateIn } from './motion'
 import { MoreLink, ShareBar } from './parts'
 
 const Amount = ({ value, currency, testid, className }: { value: Money; currency: string; testid?: string; className?: string }) => (
@@ -30,6 +31,7 @@ function CountLink({ to, testid, swatch, label, count }: { to: string; testid: s
 }
 
 export function PortfolioBody({ data }: { data: Portfolio }) {
+  const animate = useAnimateIn()
   if (data.held === 0 && data.sold === 0) {
     return (
       <p className="py-6 text-sm text-muted-foreground">
@@ -45,7 +47,11 @@ export function PortfolioBody({ data }: { data: Portfolio }) {
       <p className="-mt-2 text-sm text-muted-foreground">
         {data.held} held · {data.sold} sold
       </p>
-      <div role="img" aria-label={portfolioLabel(data)} className="flex h-3 gap-0.5">
+      <div
+        role="img"
+        aria-label={portfolioLabel(data)}
+        className={cn('flex h-3 origin-left gap-0.5', animate && 'motion-safe:animate-dash-grow')}
+      >
         {data.held === 0 ? (
           <div className="flex-1 rounded-full bg-muted" />
         ) : (

@@ -54,6 +54,25 @@
     --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* Dashboard motion (spec 005 §5): opacity and transform only, used behind motion-safe:. The entrance is
+   delayed by --i (a tile's position in its row, 40 ms apart). Both keep their end state (fill both).
+   inline: --i must resolve on the animated element, not on :root where it is unset. */
+@theme inline {
+    --animate-dash-in: dash-in 220ms cubic-bezier(0.2, 0.7, 0.3, 1) calc(var(--i, 0) * 40ms) both;
+    --animate-dash-grow: dash-grow 500ms cubic-bezier(0.2, 0.7, 0.3, 1) 100ms both;
+    @keyframes dash-in {
+        from {
+            opacity: 0;
+            transform: translateY(6px);
+        }
+    }
+    @keyframes dash-grow {
+        from {
+            transform: scaleX(0);
+        }
+    }
+}
+
 :root {
     color-scheme: light;
     --background: oklch(1 0 0);
@@ -176,5 +195,12 @@
   tr,
   li {
     break-inside: avoid;
+  }
+  /* A page printed while it is still loading shows finished cards, never a half-faded one. */
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
   }
 }

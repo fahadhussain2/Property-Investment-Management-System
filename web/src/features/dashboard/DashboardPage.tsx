@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { ArrowLeftRightIcon, BellIcon, Building2Icon, ChartBarIcon, HistoryIcon, WalletIcon } from 'lucide-react'
 import { PageHeader } from '@/components/PageHeader'
 import { entryKeys, fetchEntries } from '@/features/entries/api'
 import { fetchValuation, holdingKeys } from '@/features/holdings/api'
@@ -96,7 +97,7 @@ export function DashboardPage() {
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           <PerformanceCard query={monthly} currency={currency} canWrite={canWrite} />
-          <Block title="Needs attention" action={needs.data && needs.data.total > 0 ? <Badge n={needs.data.total} /> : undefined}>
+          <Block title="Needs attention" icon={BellIcon} action={needs.data && needs.data.total > 0 ? <Badge n={needs.data.total} /> : undefined}>
             <Loaded query={needs} skeleton={<Skeleton className="h-56" />}>
               {(a) => <NeedsAttention data={a} currency={currency} />}
             </Loaded>
@@ -104,17 +105,17 @@ export function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <Block title="Portfolio" link={{ to: '/properties', label: 'All properties' }}>
+          <Block title="Portfolio" icon={Building2Icon} link={{ to: '/properties', label: 'All properties' }}>
             <Loaded query={portfolioQ} skeleton={<Skeleton className="h-40" />}>
               {(p) => <PortfolioBody data={p} />}
             </Loaded>
           </Block>
-          <Block title="Where this year's profit came from" description={fiscalYearLabel(fy)}>
+          <Block title="Where this year's profit came from" icon={ChartBarIcon} description={fiscalYearLabel(fy)}>
             <Loaded query={fyProfit} skeleton={<Skeleton className="h-40" />}>
               {(is) => <ProfitMixBody rows={profitMix(is)} net={is.net_profit} currency={currency} />}
             </Loaded>
           </Block>
-          <Block title="Cash by account" link={{ to: '/money', label: 'Books' }} className="sm:col-span-2 lg:col-span-1">
+          <Block title="Cash by account" icon={WalletIcon} link={{ to: '/money', label: 'Books' }} className="sm:col-span-2 lg:col-span-1">
             <Loaded query={cash} skeleton={<Skeleton className="h-40" />}>
               {(c) => <CashAccountsBody rows={c.rows} total={c.total} hasBank={c.hasBank} currency={currency} />}
             </Loaded>
@@ -122,12 +123,12 @@ export function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-          <Block title="Who owes whom" link={{ to: '/reports/parties', label: 'Details' }}>
+          <Block title="Who owes whom" icon={ArrowLeftRightIcon} link={{ to: '/reports/parties', label: 'Details' }}>
             <Loaded query={balances} skeleton={<Skeleton className="h-32" />}>
               {(b) => <OwedBody data={owed(b)} currency={currency} />}
             </Loaded>
           </Block>
-          <Block title="Latest entries" className="lg:col-span-2">
+          <Block title="Latest entries" icon={HistoryIcon} className="lg:col-span-2">
             <Loaded query={recent} skeleton={<Skeleton className="h-40" />}>
               {(entries) => <LatestEntriesBody entries={entries} codes={codes} currency={currency} />}
             </Loaded>

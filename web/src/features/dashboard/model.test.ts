@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { toRollRow, type RollRow } from '@/features/leases/rentRoll'
 import {
+  ASSET_LOOK,
+  CASH_LOOK,
+  INVESTED_LOOK,
+  overdueLook,
+  profitLook,
   assetClasses,
   attention,
   axisFor,
@@ -270,5 +275,27 @@ describe('cash by account', () => {
       tokens: '420000.00',
       deposits: '300000.00',
     })
+  })
+})
+
+describe('tile looks (spec 005 §3)', () => {
+  it('colours only what means something', () => {
+    expect(CASH_LOOK).toEqual({ icon: 'wallet', tone: 'blue' })
+    expect(INVESTED_LOOK).toEqual({ icon: 'landmark', tone: 'blue' })
+    expect(ASSET_LOOK.gold.tone).toBe('amber')
+    expect([ASSET_LOOK.property, ASSET_LOOK.vehicle, ASSET_LOOK.silver].map((l) => l.tone)).toEqual(['neutral', 'neutral', 'neutral'])
+  })
+
+  it('net profit: green up for a profit or zero, neutral down for a loss, neutral while unknown', () => {
+    expect(profitLook('550000.00')).toEqual({ icon: 'trending-up', tone: 'green' })
+    expect(profitLook('0.00')).toEqual({ icon: 'trending-up', tone: 'green' })
+    expect(profitLook('-0.01')).toEqual({ icon: 'trending-down', tone: 'neutral' })
+    expect(profitLook(undefined)).toEqual({ icon: 'trending-up', tone: 'neutral' })
+  })
+
+  it('rent overdue: always red, the warning icon only when some is overdue', () => {
+    expect(overdueLook('150000.00')).toEqual({ icon: 'alert', tone: 'red' })
+    expect(overdueLook('0.00')).toEqual({ icon: 'calendar-clock', tone: 'red' })
+    expect(overdueLook(undefined)).toEqual({ icon: 'calendar-clock', tone: 'red' })
   })
 })
