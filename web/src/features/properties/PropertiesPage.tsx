@@ -14,7 +14,8 @@ import { useOrg } from '@/features/org/OrgProvider'
 import { kindLabel, PROPERTY_KINDS, type PropertyKind } from '@/lib/labels'
 import { formatMoney, toMoney } from '@/lib/money'
 import { cn } from '@/lib/utils'
-import { createProperty, fetchPropertySummaries, propertyKeys, type PropertySummary } from './api'
+import { createProperty, fetchOccupancy, fetchPropertySummaries, propertyKeys, type PropertySummary } from './api'
+import { occupancyLabel } from './units'
 import { filterProperties, STATUS_FILTERS, statusCounts, type StatusFilter } from './filter'
 import { PropertyFormDialog } from './PropertyFormDialog'
 
@@ -35,6 +36,12 @@ export function PropertiesPage() {
     queryKey: propertyKeys.all(current.id),
     queryFn: () => fetchPropertySummaries(current.id),
   })
+  // Occupancy of properties with units (spec 006). Extra detail only: if it fails, the list still shows.
+  const occupancy = useQuery({ queryKey: propertyKeys.occupancy(current.id), queryFn: () => fetchOccupancy(current.id) })
+  const occupancyOf = (p: PropertySummary) => {
+    const o = p.status === 'sold' ? undefined : occupancy.data?.get(p.property_id)
+    return o ? occupancyLabel(o.total, o.vacant) : null
+  }
   const rows = useMemo(() => filterProperties(list.data ?? [], { status, kind, q }), [list.data, status, kind, q])
   const counts = useMemo(() => statusCounts(list.data ?? []), [list.data])
   const money = (v: number) => formatMoney(toMoney(v), current.currency)
@@ -120,7 +127,10 @@ export function PropertiesPage() {
                         {p.name ? ` · ${p.name}` : ''}
                       </div>
                     </div>
-                    <PropertyStatusBadge status={p.status} forSale={p.for_sale} />
+                    <div className="flex shrink-0 flex-col items-end gap-1">
+                      <PropertyStatusBadge status={p.status} forSale={p.for_sale} />
+                      {occupancyOf(p) && <span className="text-xs text-muted-foreground" data-testid="occupancy">{occupancyOf(p)}</span>}
+                    </div>
                   </div>
                   <div className="mt-2 flex justify-between text-sm tabular-nums">
                     <span className="text-muted-foreground">Cost {money(p.cost)}</span>
@@ -155,6 +165,7 @@ export function PropertiesPage() {
                     <td className="px-4 py-2">{kindLabel(p.kind)}</td>
                     <td className="px-4 py-2">
                       <PropertyStatusBadge status={p.status} forSale={p.for_sale} />
+                      {occupancyOf(p) && <div className="mt-1 text-xs text-muted-foreground" data-testid="occupancy">{occupancyOf(p)}</div>}
                     </td>
                     <td className="px-4 py-2 text-right tabular-nums">{money(p.cost)}</td>
                     <td className="px-4 py-2 text-right tabular-nums">{money(p.net_profit)}</td>

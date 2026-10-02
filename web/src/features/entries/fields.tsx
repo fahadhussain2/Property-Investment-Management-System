@@ -16,6 +16,7 @@ import { createHolding, fetchHoldings, holdingKeys } from '@/features/holdings/a
 import { HoldingFormDialog } from '@/features/holdings/HoldingFormDialog'
 import { createProperty, fetchPropertySummaries, propertyKeys } from '@/features/properties/api'
 import { PropertyFormDialog } from '@/features/properties/PropertyFormDialog'
+import { leaseLabel } from '@/features/properties/units'
 import { HOLDING_CLASSES, purityLabel, type HoldingClass, type PartyRole } from '@/lib/labels'
 import { formatMoney, inLakhCrore, parseMoney } from '@/lib/money'
 import { formatWeight, isWeightUnit, parseWeight, toGrams, unitToGrams, WEIGHT_UNITS } from '@/lib/quantity'
@@ -101,10 +102,21 @@ export function PropertyPicker({
   unsoldOnly,
   optional,
   allowCreate,
-}: Base & { unsoldOnly?: boolean; optional?: boolean; allowCreate?: boolean }) {
+  onValueChange,
+}: Base & {
+  unsoldOnly?: boolean
+  optional?: boolean
+  allowCreate?: boolean
+  /** Told about every change of property (the lease form shows that property's units). */
+  onValueChange?: (id: string) => void
+}) {
   const { current } = useOrg()
   const qc = useQueryClient()
-  const [value, setValue] = useState(defaultValue ?? '')
+  const [value, setPicked] = useState(defaultValue ?? '')
+  const setValue = (id: string) => {
+    setPicked(id)
+    onValueChange?.(id)
+  }
   const [creating, setCreating] = useState(false)
   const { data = [], isPending } = useQuery({ queryKey: propertyKeys.all(current.id), queryFn: () => fetchPropertySummaries(current.id) })
   // Keep the current selection visible when editing an old entry, even if it no longer qualifies.
@@ -302,7 +314,7 @@ export function LeasePicker({ name, label, error, defaultValue, property, party 
   const others = rows.filter((r) => r.status !== 'active')
   const option = (r: (typeof rows)[number]) => (
     <option key={r.lease_id} value={r.lease_id}>
-      {r.property_code} · {r.tenant_name}
+      {leaseLabel(r)}
       {r.status === 'active' ? '' : r.status === 'ended' ? ' (ended)' : ' (upcoming)'}
     </option>
   )

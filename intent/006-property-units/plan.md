@@ -2,8 +2,8 @@
 
 > Stage 3 artifact. Implements [`spec.md`](spec.md). Each milestone is one PR on its own branch and ends
 > with a **verification gate** that the `verifier` subagent must pass before asking for human review.
-> Status: **APPROVED** by Fahad Hussain, 2026-10-02 · U1 built (328 pgTAP, 16/16 evals, 115 unit, e2e 33/33; no existing
-> test edited) · U2 not started
+> Status: **DONE**, 2026-10-02 · U1 ✅ merged (PR #29: 328 pgTAP, 16/16 evals, 115 unit, e2e 33/33) · U2 ✅ (this PR:
+> 124 unit, e2e 37/37; checked at desktop and 375 px, light and dark). No existing test edited in either.
 
 **Standing rule for both milestones (spec §1):** no existing test file, eval case or e2e spec may be edited
 to make it pass. New tests go in new files or new cases. If an existing test fails, stop and report it to
@@ -127,6 +127,20 @@ units created, the app behaves exactly as before (every lease stays whole-proper
   - viewer sees units but no Add / Rename / Delete
   - `expectNoHorizontalScroll` at 375 px on the property page (Units section), the unit dialog, the lease
     form and `/leases`
+- Clarified while building U2:
+  - A property without units still shows a read-only "Unit" line in the lease form with "New unit", so the first unit
+    can be added while creating the lease (the reported case: a new building, then its first lease).
+  - The lease form sends a hidden `unit_state` (none / some / loading / error). Only "some" with a choice counts as
+    chosen; otherwise the dialog looks the units up before saving (see the gate fix below), so a lease never becomes a
+    whole-property lease by accident.
+  - The dashboard needed no test of its own: its rows use `leaseLabel()`, covered by `units.test.ts` and `units.spec.ts`
+    (existing dashboard tests are not edited, per the standing rule).
+  - Lease rows on the property page always stack (narrow column), so `code · unit · tenant` reads on one line, and
+    lease names in `RollList` wrap instead of being cut off (they are longer with a unit).
+  - Verifier gate, first run: the existing `dashboard.spec.ts` failed under full-suite load. The lease form refused a
+    quick save with "wait for the units to load" (even for a property without units). Fixed in the form, not the
+    test: the dialog now waits for the units (`fetchQuery`) before deciding, and an unchanged lease keeps its unit.
+    Regression e2e: "saving before the units arrive waits for them instead of refusing" (units response held back).
 - Close-out: mark spec and plan **DONE**; `CLAUDE.md`: units rule (overlap is per unit, a whole-property
   lease overlaps all units, a new lease-reading query must use `unit_id`, unlinked rent counts towards one
   lease), and add `property_units` to the naming notes ("Unit" = part of a property, not a weight unit).
