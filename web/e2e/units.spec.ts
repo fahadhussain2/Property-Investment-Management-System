@@ -1,5 +1,5 @@
 import { expect, type Page, test } from '@playwright/test'
-import { expectNoHorizontalScroll, newBusiness, orgDate, PASSWORD, unique } from './helpers'
+import { expectNoHorizontalScroll, newBusiness, orgDate, PASSWORD, SIGN_UP_TIMEOUT, unique } from './helpers'
 
 // Spec 006: several tenants in one property. Dates are relative to the organization's today, so the leases are
 // current whenever the suite runs (occupancy is "as at today").
@@ -165,7 +165,7 @@ test('a viewer sees units but cannot add, rename or delete them', async ({ brows
   await viewer.goto(link)
   await viewer.getByLabel('Password').fill(PASSWORD)
   await viewer.getByRole('button', { name: 'Create account' }).click()
-  await expect(viewer.getByTestId('total-cash')).toBeVisible()
+  await expect(viewer.getByTestId('total-cash')).toBeVisible({ timeout: SIGN_UP_TIMEOUT })
   await viewer.goto(propertyUrl)
   await expect(viewer.getByTestId('unit-Shop 1')).toContainText('Vacant')
   await expect(viewer.getByRole('button', { name: 'Add unit' })).toHaveCount(0)

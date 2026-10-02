@@ -4,6 +4,15 @@ import { expect, type Locator, type Page } from '@playwright/test'
 export const unique = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
 export const PASSWORD = 'correct-horse-9'
 
+/**
+ * How long a test waits for a fresh sign-up to land on the dashboard. That is a chain of about five requests:
+ * create the user, create the business and its chart of accounts, accept invitations, list businesses, then the
+ * dashboard's own queries. Measured 1.8–2.8 s on a warm local stack, but 5.6–6.8 s right after `supabase start` or
+ * with four workers busy, over Playwright's 5 s default, which made sign-ups fail at random (2026-10-02).
+ * Use it only for "has the sign-up finished?" checks; everything after that keeps the default.
+ */
+export const SIGN_UP_TIMEOUT = 15_000
+
 // Dates on the org's calendar (default timezone Asia/Karachi, see org_today()), never the runner's
 // local/UTC clock: near midnight UTC the two disagree on the day, and on the last day of a month on the month.
 /** The org's date `n` days from today, as YYYY-MM-DD. */
@@ -27,7 +36,7 @@ export async function signUp(page: Page, email: string, businessName?: string) {
 export async function newBusiness(page: Page, prefix = 'e2e') {
   const business = `${prefix} Estates ${unique()}`
   await signUp(page, `${prefix}-${unique()}@e2e.local`, business)
-  await expect(page.getByRole('heading', { name: business })).toBeVisible()
+  await expect(page.getByRole('heading', { name: business })).toBeVisible({ timeout: SIGN_UP_TIMEOUT })
   return business
 }
 
