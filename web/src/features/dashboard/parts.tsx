@@ -233,7 +233,6 @@ export function Tile({
         'relative flex min-w-0 flex-col gap-3 overflow-hidden rounded-xl bg-card p-4 ring-1 ring-foreground/10 transition-colors has-[a:hover]:bg-accent/50',
         'before:absolute before:inset-x-0 before:top-0 before:h-0.5',
         STRIPES[look.tone],
-        alert && 'ring-2 ring-red-600/70 dark:ring-red-400/70',
       )}
     >
       <Link

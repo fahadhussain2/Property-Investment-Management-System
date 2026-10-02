@@ -3,6 +3,8 @@
 > Stage 2 artifact. Derived from [`intent.md`](intent.md). Changes how spec 002 §2, §3.1 and §3.1a look;
 > every figure, sub-line, link and test id defined there stays the same.
 > Status: **APPROVED** by Fahad Hussain, 2026-10-02
+> Amendment 2 (product owner, 2026-10-02): Rent overdue > 0 no longer has the red ring. Its red top strip, red
+> label and alert icon remain. Where this spec mentions the red ring below, read it as removed.
 
 ## 1. Design principle: "colour in the icon, calm everywhere else"
 
