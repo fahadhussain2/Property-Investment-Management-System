@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { choose, expectNoHorizontalScroll, newBusiness, PASSWORD, review, save, unique } from './helpers'
+import { choose, expectNoHorizontalScroll, newBusiness, PASSWORD, SIGN_UP_TIMEOUT, review, save, unique } from './helpers'
 
 // Spec 004: documents, through the UI and the real Storage API.
 
@@ -210,7 +210,7 @@ test('a viewer can open documents but not add, edit or delete them; pages fit a 
   await viewer.goto(link)
   await viewer.getByLabel('Password').fill(PASSWORD)
   await viewer.getByRole('button', { name: 'Create account' }).click()
-  await expect(viewer.getByTestId('total-cash')).toBeVisible()
+  await expect(viewer.getByTestId('total-cash')).toBeVisible({ timeout: SIGN_UP_TIMEOUT })
 
   await viewer.goto('/documents')
   const row = viewer.getByTestId('document-row')

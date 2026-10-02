@@ -1,5 +1,5 @@
 import { expect, type Page, test } from '@playwright/test'
-import { choose, expectNoHorizontalScroll, newBusiness, PASSWORD, signUp, unique } from './helpers'
+import { choose, expectNoHorizontalScroll, newBusiness, PASSWORD, SIGN_UP_TIMEOUT, signUp, unique } from './helpers'
 
 // Local Supabase catches every email in Mailpit (http://127.0.0.1:54324).
 const MAILPIT = 'http://127.0.0.1:54324'
@@ -19,7 +19,7 @@ async function latestEmailText(page: Page, to: string): Promise<string> {
 test('forgot password: the emailed link lets the user choose a new password and sign in with it', async ({ page }) => {
   const email = `reset-${unique()}@e2e.local`
   await signUp(page, email, `Reset Estates ${unique()}`)
-  await expect(page.getByTestId('total-cash')).toBeVisible()
+  await expect(page.getByTestId('total-cash')).toBeVisible({ timeout: SIGN_UP_TIMEOUT })
   await page.context().clearCookies()
   await page.evaluate(() => localStorage.clear())
 

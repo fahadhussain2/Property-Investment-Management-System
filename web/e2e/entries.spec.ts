@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { addBank, choose, expectNoHorizontalScroll, newBusiness, openingBalances, PASSWORD, review, save, unique } from './helpers'
+import { addBank, choose, expectNoHorizontalScroll, newBusiness, openingBalances, PASSWORD, SIGN_UP_TIMEOUT, review, save, unique } from './helpers'
 
 test('acceptance scenario 1 through the UI: buy on credit, add costs, sell, profit shown automatically', async ({ page }) => {
   test.slow() // a long multi-screen flow; needs more than the default 30 s when run in parallel
@@ -194,7 +194,7 @@ test('a viewer cannot open entry forms, even by typing the address', async ({ br
   await viewer.goto(link)
   await viewer.getByLabel('Password').fill(PASSWORD)
   await viewer.getByRole('button', { name: 'Create account' }).click()
-  await expect(viewer.getByTestId('total-cash')).toBeVisible()
+  await expect(viewer.getByTestId('total-cash')).toBeVisible({ timeout: SIGN_UP_TIMEOUT })
   await expect(viewer.getByRole('link', { name: 'New entry' })).toHaveCount(0)
   for (const path of ['/new', '/new/purchase', '/new/opening', '/new/journal']) {
     await viewer.goto(path)

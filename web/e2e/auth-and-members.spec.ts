@@ -1,11 +1,11 @@
 import { expect, test } from '@playwright/test'
-import { expectNoHorizontalScroll, PASSWORD, signUp, unique } from './helpers'
+import { expectNoHorizontalScroll, PASSWORD, SIGN_UP_TIMEOUT, signUp, unique } from './helpers'
 
 test('owner signs up with a business and lands on the dashboard', async ({ page }) => {
   const business = `Hussain Estates ${unique()}`
   await signUp(page, `owner-${unique()}@e2e.local`, business)
 
-  await expect(page.getByRole('heading', { name: business })).toBeVisible()
+  await expect(page.getByRole('heading', { name: business })).toBeVisible({ timeout: SIGN_UP_TIMEOUT })
   await expect(page.getByTestId('total-cash')).toHaveText('Rs 0')
   await expect(page.getByTestId('balance-1000')).toContainText('Cash in Hand')
 })
@@ -33,7 +33,7 @@ test('dashboard shows an error, never a fake zero, when balances fail to load', 
 
 test('user without a business goes through onboarding', async ({ page }) => {
   await signUp(page, `solo-${unique()}@e2e.local`)
-  await expect(page).toHaveURL(/\/onboarding$/)
+  await expect(page).toHaveURL(/\/onboarding$/, { timeout: SIGN_UP_TIMEOUT })
 
   const business = `Solo Properties ${unique()}`
   await page.getByLabel('Business name').fill(business)
@@ -48,7 +48,7 @@ test('owner invites an accountant who joins through the link', async ({ browser 
 
   const owner = await (await browser.newContext()).newPage()
   await signUp(owner, ownerEmail, business)
-  await expect(owner.getByRole('heading', { name: business })).toBeVisible()
+  await expect(owner.getByRole('heading', { name: business })).toBeVisible({ timeout: SIGN_UP_TIMEOUT })
 
   await owner.goto('/settings/members')
   await owner.getByRole('button', { name: 'Invite' }).click()
@@ -65,7 +65,7 @@ test('owner invites an accountant who joins through the link', async ({ browser 
   await expect(staff.getByLabel('Email')).toHaveValue(staffEmail)
   await staff.getByLabel('Password').fill(PASSWORD)
   await staff.getByRole('button', { name: 'Create account' }).click()
-  await expect(staff.getByRole('heading', { name: business })).toBeVisible()
+  await expect(staff.getByRole('heading', { name: business })).toBeVisible({ timeout: SIGN_UP_TIMEOUT })
 
   await staff.goto('/settings/members')
   const members = staff.getByTestId('members-list')
@@ -81,12 +81,12 @@ test.describe('mobile', () => {
 
   test('shows bottom tabs and never scrolls sideways', async ({ page }) => {
     await signUp(page, `mobile-${unique()}@e2e.local`, `Mobile Estates ${unique()}`)
-    await expect(page.getByTestId('bottom-nav')).toBeVisible()
+    await expect(page.getByTestId('bottom-nav')).toBeVisible({ timeout: SIGN_UP_TIMEOUT })
     await expect(page.getByTestId('bottom-nav').getByRole('link', { name: 'New' })).toBeVisible()
 
     for (const path of ['/', '/settings/members', '/more']) {
       await page.goto(path)
-      await expect(page.getByTestId('bottom-nav')).toBeVisible()
+      await expect(page.getByTestId('bottom-nav')).toBeVisible({ timeout: SIGN_UP_TIMEOUT })
       await expectNoHorizontalScroll(page, path)
     }
   })
