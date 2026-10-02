@@ -1,0 +1,29 @@
+{
+  "name": "Units: ground floor and 1st floor of one house let to two tenants at once; rent followed per lease, books per property",
+  "setup": {
+    "banks": [{ "name": "Meezan", "opening": "0.00" }],
+    "cash_opening": "0.00",
+    "properties": [{ "code": "H-10", "kind": "house", "opening_cost": "25000000.00" }],
+    "units": [{ "key": "GF", "property": "H-10", "name": "Ground floor" }, { "key": "1F", "property": "H-10", "name": "1st floor" }],
+    "parties": [{ "name": "Tenant A", "roles": ["tenant"] }, { "name": "Tenant B", "roles": ["tenant"] }],
+    "leases": [
+      { "key": "L-GF", "property": "H-10", "unit": "GF", "party": "Tenant A", "start": "2026-10-02", "end": "2027-06-30", "monthly_rent": "150000.00", "rent_due_day": 2 },
+      { "key": "L-1F", "property": "H-10", "unit": "1F", "party": "Tenant B", "start": "2026-10-02", "end": "2027-06-30", "monthly_rent": "120000.00", "rent_due_day": 2 }
+    ]
+  },
+  "steps": [
+    { "type": "rent", "date": "2026-10-02", "lease": "L-GF", "amount": "150000.00", "into": "bank:Meezan", "period": "2026-10" },
+    { "type": "rent", "date": "2026-10-05", "lease": "L-1F", "amount": "120000.00", "into": "1000", "period": "2026-10" },
+    { "type": "rent", "date": "2026-11-02", "lease": "L-GF", "amount": "150000.00", "into": "bank:Meezan", "period": "2026-11" }
+  ],
+  "expect": {
+    "rent_roll": {
+      "as_of": "2026-11-20",
+      "lease:L-GF": { "unit_name": "Ground floor", "tenant_name": "Tenant A", "status": "active", "months_due": 2, "expected": "300000.00", "received": "300000.00", "arrears": "0.00", "months_unpaid": 0 },
+      "lease:L-1F": { "unit_name": "1st floor", "tenant_name": "Tenant B", "status": "active", "months_due": 2, "expected": "240000.00", "received": "120000.00", "arrears": "120000.00", "months_unpaid": 1 }
+    },
+    "property_summary": { "H-10": { "rent_income": "420000.00" } },
+    "income_statement": { "from": "2026-01-01", "to": "2026-12-31", "rent_income": "420000.00", "rent_income_by_property": { "H-10": "420000.00" } },
+    "trial_balance_difference": "0.00"
+  }
+}
