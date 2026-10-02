@@ -1,4 +1,5 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { ChartColumnIcon } from 'lucide-react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { formatMoney, isNegative } from '@/lib/money'
@@ -26,6 +27,11 @@ export function PerformanceCard({ query, currency, canWrite }: { query: QueryLik
   const wide = useWide()
   const [params, setParams] = useSearchParams()
   const [asTable, setAsTable] = useState(false)
+  // The chart grows only on its first draw: not again after the table view or a range switch.
+  const drawn = useRef(false)
+  const markDrawn = useCallback(() => {
+    drawn.current = true
+  }, [])
   const range = wide && params.get('range') !== '6' ? 12 : 6
   const setRange = (n: 6 | 12) =>
     setParams(
@@ -67,6 +73,7 @@ export function PerformanceCard({ query, currency, canWrite }: { query: QueryLik
   return (
     <Block
       title="Income, expenses and profit"
+      icon={ChartColumnIcon}
       description="By month. Income includes profit on properties sold."
       action={action}
       className="lg:col-span-2"
@@ -97,7 +104,7 @@ export function PerformanceCard({ query, currency, canWrite }: { query: QueryLik
                 <div className="grid grid-cols-1 gap-3 print:hidden">
                   <Legend />
                   <Suspense fallback={<Skeleton className="h-64" />}>
-                    <PerformanceChart points={points} currency={currency} />
+                    <PerformanceChart points={points} currency={currency} drawnBefore={drawn.current} onDrawn={markDrawn} />
                   </Suspense>
                 </div>
               )}

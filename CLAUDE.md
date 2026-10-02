@@ -75,6 +75,10 @@ sets `script-shell` to Git Bash, and `web/scripts/with-local-supabase.mjs` runs 
   `--chart-*` tokens in `index.css` (validated palette, light and dark). Money becomes a JS number only for
   geometry (`toChartNumber`/`sharePct` in `lib/money.ts`); every figure a user reads is formatted from the Money
   string. A chart needs a table view (accessible, and it is what prints).
+- Motion (spec 005): `motion-safe:` only, `opacity`/`transform` only, short (≤ 0.5 s), and only when real content
+  replaces a skeleton (`Loaded` provides `useAnimateIn()`; cached data just appears). Never animate a figure
+  (no count-up). `@media print` turns animations and transitions off. Theme values that read a per-element
+  variable (`--i` stagger) go in `@theme inline`, or they resolve on `:root`.
 - Every page has one `<h1>` (`PageHeader`/`AuthLayout`); e2e tests find pages by heading.
 - Documents (spec 004): files live in the private bucket `documents` at `<org>/<document>/<safe name>`; the
   `documents` table is written only through `add_document`/`update_document`/`delete_document`. Upload = Storage

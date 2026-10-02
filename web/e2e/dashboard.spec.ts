@@ -116,6 +116,8 @@ test('rent overdue shows in the tile and Needs attention, and portfolio counts o
   await page.goto('/')
   await expect(page.getByTestId('rent-overdue')).toHaveText('Rs 150,000')
   await expect(page.getByText('1 tenant · 3 months unpaid')).toBeVisible()
+  // Spec 005: the overdue tile is the one with a red alert icon (never colour alone).
+  await expect(page.getByRole('region', { name: 'Key figures' }).locator('[data-icon="alert"][data-tone="red"]')).toHaveCount(1)
   await expect(page.getByRole('tab', { name: /Rent overdue/ })).toHaveAttribute('aria-selected', 'true')
   const row = page.getByTestId('overdue-rent').getByRole('link', { name: /SHOP-4 · Tenant X/ })
   await expect(row).toContainText('Rs 150,000')
@@ -137,4 +139,40 @@ test('rent overdue shows in the tile and Needs attention, and portfolio counts o
   await page.keyboard.press('ArrowRight')
   await expect(page.getByRole('tab', { name: /Leases ending/ })).toHaveAttribute('aria-selected', 'true')
   await expect(page.getByRole('tab', { name: /Leases ending/ })).toBeFocused()
+})
+
+// Spec 005: icons on every tile and section, sections open their pages, no motion when the OS asks for less.
+test('tiles carry icons, What we own is one card of links, and reduced motion turns animation off', async ({ page }) => {
+  await newBusiness(page, 'dash')
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/')
+  await expect(page.getByTestId('rent-overdue')).toHaveText('Rs 0')
+
+  // Nothing overdue: the red calendar icon, no warning icon.
+  const figures = page.getByRole('region', { name: 'Key figures' })
+  await expect(figures.locator('[data-icon]')).toHaveCount(4)
+  await expect(figures.locator('[data-icon="calendar-clock"][data-tone="red"]')).toHaveCount(1)
+  await expect(figures.locator('[data-icon="alert"]')).toHaveCount(0)
+
+  const owned = page.getByRole('region', { name: 'What we own' })
+  await expect(owned.locator('[data-icon]')).toHaveCount(4)
+  for (const [id, name, path] of [
+    ['asset-property', 'Properties', '/properties'],
+    ['asset-vehicle', 'Vehicles', '/vehicles'],
+    ['asset-gold', 'Gold', '/gold'],
+    ['asset-silver', 'Silver', '/silver'],
+  ] as const) {
+    await expect(page.getByTestId(id)).toContainText('None held')
+    await expect(page.getByTestId(id).getByRole('link', { name })).toHaveAttribute('href', path)
+  }
+
+  // Content replaced skeletons on this load, yet nothing animates under reduced motion.
+  const animated = page.locator('[data-animate]')
+  await expect(animated.first()).toBeVisible()
+  const names = await animated.evaluateAll((els) => els.map((e) => getComputedStyle(e).animationName))
+  expect(names.length).toBeGreaterThan(0)
+  expect(names.every((n) => n === 'none')).toBe(true)
+
+  await page.getByTestId('asset-gold').getByRole('link', { name: 'Gold' }).click()
+  await expect(page).toHaveURL(/\/gold$/)
 })

@@ -78,6 +78,8 @@ the size of the block, so the layout does not jump.
 
 ### 3.1a What we own (amendment 1, 2026-10-01)
 
+> Look changed by spec 005: one compact card in four sections, with icons. Figures, links and test ids unchanged.
+
 The "Invested in properties held" tile moved out of Key figures into its own row, next to
 vehicles, gold and silver (spec 003), replacing the "Vehicles, gold & silver" card. Each row has
 a small heading ("Key figures", "What we own"). The big figure is always **at cost**, so the
