@@ -8,6 +8,7 @@ import { useOrg } from '@/features/org/OrgProvider'
 import { fetchPartyBalances, fetchPartyLedger, reportKeys } from '@/features/reports/api'
 import { formatMoney, isNegative, isZero, sub, toMoney } from '@/lib/money'
 import { ALL_TIME } from '@/lib/periods'
+import { formatDateTime } from '@/lib/dates'
 
 const COLS: [string, string] = ['They owe more', 'We owe more']
 
@@ -40,7 +41,7 @@ export function PartyStatement({ partyId, partyName }: { partyId: string; partyN
       <div className="hidden print:block">
         <div className="text-sm">{current.name}</div>
         <h1 className="text-xl font-semibold">Statement · {partyName}</h1>
-        <div className="text-sm">All entries · Printed {new Date().toLocaleString()}</div>
+        <div className="text-sm">All entries · Printed {formatDateTime(new Date())}</div>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-2 print:hidden">
         <h2 className="text-sm font-semibold text-muted-foreground">Balance &amp; statement</h2>

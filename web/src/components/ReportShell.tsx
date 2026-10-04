@@ -9,6 +9,7 @@ import { downloadCsv, slug, toCsv, type Cell } from '@/lib/csv'
 import { formatMoney, isZero, today, type Money } from '@/lib/money'
 import { describePeriod, fiscalYearLabel, presetPeriod, type Period, type PresetKey } from '@/lib/periods'
 import { cn } from '@/lib/utils'
+import { formatDateTime } from '@/lib/dates'
 
 /** Period kept in the URL (?period=fy or ?from=…&to=…) so a printed or shared report keeps its dates. */
 export function usePeriod(defaultKey: Exclude<PresetKey, 'custom'> = 'fy') {
@@ -104,7 +105,7 @@ export function ReportShell({
         <div className="text-sm">{current.name}</div>
         <h1 className="text-xl font-semibold">{title}</h1>
         <div className="text-sm">
-          {subtitle} · Printed {new Date().toLocaleString()}
+          {subtitle} · Printed {formatDateTime(new Date())}
         </div>
       </div>
       <div className="print:hidden">

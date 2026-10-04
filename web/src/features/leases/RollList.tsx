@@ -6,6 +6,7 @@ import { formatMoney } from '@/lib/money'
 import { cn } from '@/lib/utils'
 import { leaseLabel } from '@/features/properties/units'
 import { endLabel, rentPosition, type RollRow } from './rentRoll'
+import { formatDate } from '@/lib/dates'
 
 const TONE = {
   bad: 'bg-red-100 text-red-900 dark:bg-red-500/15 dark:text-red-300',
@@ -52,7 +53,7 @@ export function RollList({
                 <div className="text-sm text-muted-foreground">
                   <span className="tabular-nums">{formatMoney(r.monthly_rent, currency)}</span>
                   /month · {endLabel(r)}
-                  {r.last_rent_date && <> · last rent {r.last_rent_date}</>}
+                  {r.last_rent_date && <> · last rent {formatDate(r.last_rent_date)}</>}
                 </div>
               </div>
               <span

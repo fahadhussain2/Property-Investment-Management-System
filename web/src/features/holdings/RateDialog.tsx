@@ -6,6 +6,7 @@ import { useOrg } from '@/features/org/OrgProvider'
 import { formatMoney, today } from '@/lib/money'
 import { holdingKeys, setRate } from './api'
 import { rateSchema } from './schema'
+import { formatDate } from '@/lib/dates'
 
 /** Today's rate for one tola of pure gold (24K) or pure silver. A second rate on the same day replaces the first. */
 export function RateDialog({
@@ -29,7 +30,7 @@ export function RateDialog({
       title={`Set today's ${metal} rate`}
       description={
         latest
-          ? `Last rate: ${formatMoney(latest.rate_per_tola, current.currency)} per tola on ${latest.rate_date}. Values use the purity of each item.`
+          ? `Last rate: ${formatMoney(latest.rate_per_tola, current.currency)} per tola on ${formatDate(latest.rate_date)}. Values use the purity of each item.`
           : 'Values use the purity of each item. The books stay at cost: the rate only shows what things are worth.'
       }
       submitLabel="Save rate"

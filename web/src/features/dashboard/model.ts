@@ -338,8 +338,6 @@ export const mapQuery = <T, U>(q: QueryLike<T>, f: (d: T) => U): QueryLike<U> =>
   data: q.data === undefined ? undefined : f(q.data),
 })
 
-export const formatDate = (d: string) =>
-  new Date(d + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
 
 // ---------------------------------------------------------------------------------------------
 // Tile icons and tones (spec 005 §3). Names, not components, so this file stays free of React.

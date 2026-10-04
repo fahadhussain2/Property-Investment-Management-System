@@ -30,6 +30,7 @@ import {
   revokeInvitation,
 } from './api'
 import { inviteSchema, ROLES } from './schema'
+import { formatDate } from '@/lib/dates'
 
 async function copyLink(email: string) {
   try {
@@ -213,7 +214,7 @@ export function MembersPage() {
                     {m.email} {isMe && <span className="text-muted-foreground">(you)</span>}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    Joined {new Date(m.joined_at).toLocaleDateString()}
+                    Joined {formatDate(m.joined_at)}
                   </div>
                 </div>
                 {isOwner ? (

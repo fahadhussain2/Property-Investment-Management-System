@@ -19,6 +19,7 @@ import { createHolding, fetchHoldings, fetchValuation, holdingKeys, type Holding
 import { HoldingFormDialog } from './HoldingFormDialog'
 import { filterHoldings, isStaleRate, STATUS_FILTERS, statusCounts, vehicleTitle, type StatusFilter } from './model'
 import { RateDialog } from './RateDialog'
+import { formatDate } from '@/lib/dates'
 
 /** The unit gold/silver weights are shown in, kept in the URL (?unit=g) so reloads and shared links keep it. */
 export function useWeightUnit() {
@@ -321,7 +322,7 @@ function Totals({
             {(noRate || stale) && <AlertTriangleIcon className="size-4 shrink-0" aria-hidden />}
             {noRate
               ? `No ${cls} rate entered yet, so market value is unknown.`
-              : `Rate ${m(v.rate_per_tola)} per tola of pure ${cls}${stale ? `, from ${v.rate_date}: enter today's rate` : ` · ${v.rate_date}`}`}
+              : `Rate ${m(v.rate_per_tola)} per tola of pure ${cls}${stale ? `, from ${formatDate(v.rate_date)}: enter today's rate` : ` · ${formatDate(v.rate_date)}`}`}
           </p>
           <UnitSwitch {...units} />
         </div>

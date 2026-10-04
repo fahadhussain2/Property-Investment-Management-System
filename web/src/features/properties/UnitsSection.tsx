@@ -13,6 +13,7 @@ import { createUnit, deleteUnit, fetchUnits, propertyKeys, updateUnit } from './
 import { UnitFormDialog } from './UnitFormDialog'
 import { useRefreshAfterUnitChange } from './useRefreshAfterUnitChange'
 import { canDeleteUnit, occupancyLabel, unitStateLabel, type UnitRow } from './units'
+import { formatDate } from '@/lib/dates'
 
 /** The units of a property and who has each one today (spec 006 §7). */
 export function UnitsSection({ propertyId, propertyCode, sold }: { propertyId: string; propertyCode: string; sold: boolean }) {
@@ -131,7 +132,7 @@ export function UnitsSection({ propertyId, propertyCode, sold }: { propertyId: s
 /** The unit's state; a date never breaks at its hyphens. */
 function StateText({ unit }: { unit: UnitRow }) {
   const label = unitStateLabel(unit)
-  const date = unit.state === 'rented' ? unit.lease_ends : null
+  const date = unit.state === 'rented' && unit.lease_ends ? formatDate(unit.lease_ends) : null
   if (!date || !label.endsWith(date)) return label
   return (
     <>

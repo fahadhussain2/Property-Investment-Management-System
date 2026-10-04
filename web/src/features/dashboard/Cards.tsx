@@ -4,9 +4,10 @@ import { Link } from 'react-router-dom'
 import { VOUCHER_TYPES } from '@/lib/labels'
 import { formatMoney, isNegative, toMoney, type Money } from '@/lib/money'
 import { cn } from '@/lib/utils'
-import { formatDate, portfolioLabel, type CashAccount, type MixRow, type Portfolio } from './model'
+import { portfolioLabel, type CashAccount, type MixRow, type Portfolio } from './model'
 import { useAnimateIn } from './motion'
 import { MoreLink, ShareBar } from './parts'
+import { formatDate } from '@/lib/dates'
 
 const Amount = ({ value, currency, testid, className }: { value: Money; currency: string; testid?: string; className?: string }) => (
   <span data-testid={testid} className={cn('font-semibold tabular-nums', isNegative(value) && 'text-red-700 dark:text-red-400', className)}>

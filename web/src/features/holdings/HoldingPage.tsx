@@ -21,6 +21,7 @@ import { deleteHolding, fetchHolding, fetchHoldingBreakdown, holdingKeys, update
 import { HoldingFormDialog } from './HoldingFormDialog'
 import { UnitSwitch, useWeightUnit } from './HoldingsPage'
 import { formatCc, vehicleTitle } from './model'
+import { formatDate } from '@/lib/dates'
 
 /** One vehicle or gold/silver item: figures, how its cost and gain are made up, and every entry (spec 003 §7.4). */
 export function HoldingPage({ cls }: { cls: HoldingClass }) {
@@ -119,7 +120,7 @@ export function HoldingPage({ cls }: { cls: HoldingClass }) {
         description={
           <span className="mt-1 inline-flex flex-wrap items-center gap-2">
             <HoldingStatusBadge status={h.status} />
-            {metal && h.rate_date && <span>Rate from {h.rate_date}</span>}
+            {metal && h.rate_date && <span>Rate from {formatDate(h.rate_date)}</span>}
           </span>
         }
         actions={

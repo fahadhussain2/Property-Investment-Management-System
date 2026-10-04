@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils'
 import { entryKeys, fetchEntry, invalidateAfterPosting, reverseVoucher } from './api'
 import { LinesTable, ProfitBanner } from './PreviewPanel'
 import { entryType } from './types'
+import { formatDate, formatDateTime } from '@/lib/dates'
 
 const voidSchema = z.object({ reason: z.string().trim().min(3, 'Say briefly why, e.g. "entered twice"').max(200) })
 
@@ -82,7 +83,7 @@ export function EntryPage() {
         title={`${VOUCHER_TYPES[e.type]} · ${e.number}`}
         description={
           <span className="mt-1 inline-flex flex-wrap items-center gap-2">
-            <span>{new Date(e.date + 'T00:00:00').toLocaleDateString()}</span>
+            <span>{formatDate(e.date)}</span>
             <span className="font-medium text-foreground tabular-nums">{formatMoney(e.amount, current.currency)}</span>
             {e.status === 'reversed' && <Badge variant="destructive">Voided</Badge>}
             {isReversal && <Badge variant="outline">Reversal</Badge>}
@@ -151,7 +152,7 @@ export function EntryPage() {
               <li key={i} className="rounded-md border p-2">
                 <div className="font-medium">{ACTIONS[h.action] ?? h.action}</div>
                 <div className="text-xs text-muted-foreground">
-                  {new Date(h.at).toLocaleString()} · {email(h.user_id)}
+                  {formatDateTime(h.at)} · {email(h.user_id)}
                   {typeof h.details?.reason === 'string' && h.details.reason ? ` · “${h.details.reason}”` : ''}
                   {h.action === 'document_deleted' && typeof h.details?.title === 'string' ? ` · “${h.details.title}”` : ''}
                 </div>

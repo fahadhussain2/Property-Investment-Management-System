@@ -19,7 +19,6 @@ import {
   attention,
   cashAccounts,
   cashSplit,
-  formatDate,
   mapQuery,
   owed,
   portfolio,
@@ -31,6 +30,7 @@ import {
 import { NeedsAttention } from './NeedsAttention'
 import { Block, Loaded, Skeleton } from './parts'
 import { PerformanceCard } from './PerformanceCard'
+import { formatDate } from '@/lib/dates'
 
 /** Spec 002: key figures, what we own, the monthly trend, what needs attention, then the detail blocks. */
 export function DashboardPage() {

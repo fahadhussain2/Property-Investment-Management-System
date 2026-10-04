@@ -15,8 +15,8 @@ import { categoryLabel, DOCUMENT_CATEGORIES } from '@/lib/labels'
 import { deleteDocument, documentKeys, signedUrl, updateDocument, type DocumentRow } from './api'
 import { recordPath } from './model'
 import { editDocumentSchema } from './schema'
+import { formatDate } from '@/lib/dates'
 
-const shortDate = (iso: string) => new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
 
 /** Opens a PDF or HEIC in a new tab. The tab opens before the link is fetched, so popup blockers allow it. */
 async function openInNewTab(doc: DocumentRow) {
@@ -111,7 +111,7 @@ export function DocumentList({ rows, showRecord = false }: { rows: DocumentRow[]
                   )}
                   {' · '}
                   {showRecord && uploader(d.uploaded_by) ? `${uploader(d.uploaded_by)}, ` : ''}
-                  {shortDate(d.created_at)} · {formatBytes(d.size_bytes)}
+                  {formatDate(d.created_at)} · {formatBytes(d.size_bytes)}
                 </p>
               </div>
               <div className="ml-auto flex shrink-0 gap-1">
