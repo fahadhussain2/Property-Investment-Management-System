@@ -18,6 +18,7 @@ import {
   assetClasses,
   attention,
   cashAccounts,
+  cashSplit,
   formatDate,
   mapQuery,
   owed,
@@ -86,8 +87,7 @@ export function DashboardPage() {
         <HeadlineTiles
           currency={currency}
           fyLabel={fiscalYearLabel(fy)}
-          cash={mapQuery(cash, (c) => ({ total: c.total, count: c.rows.length }))}
-          monthly={monthly}
+          cash={mapQuery(cash, cashSplit)}
           fy={fyProfit}
           month={monthProfit}
           invested={invested}

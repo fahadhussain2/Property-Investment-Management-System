@@ -5,6 +5,13 @@
 > Status: **APPROVED** by Fahad Hussain, 2026-10-02
 > Amendment 2 (product owner, 2026-10-02): Rent overdue > 0 no longer has the red ring. Its red top strip, red
 > label and alert icon remain. Where this spec mentions the red ring below, read it as removed.
+>
+> Amendment 3 (product owner, 2026-10-04): the Cash & bank tile's sub-line is now its cash / bank split in short
+> figures, "Cash 5.5 lakh · Bank 1.13 crore" (`formatCompact`: lakh/crore for PKR, K/M otherwise, at most 2
+> decimals, exact below a lakh; a kind with no account is left out). It replaces "N accounts" and the 6-month
+> sparkline (spec 002 §3.1), which did not leave room for it, so the tile keeps its height from tablet width up;
+> on phones the split may take two lines. The total above stays exact, and Cash by account keeps exact figures.
+> The short form is for this glance line only: every other figure stays in full digits.
 
 ## 1. Design principle: "colour in the icon, calm everywhere else"
 

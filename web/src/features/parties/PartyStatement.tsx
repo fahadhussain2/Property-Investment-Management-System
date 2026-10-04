@@ -3,7 +3,7 @@ import { LedgerTable, ledgerCsv, type LedgerRow } from '@/components/LedgerTable
 import { SectionError, SectionLoading } from '@/components/QueryState'
 import { downloadCsv, slug, toCsv } from '@/lib/csv'
 import { Button } from '@/components/ui/button'
-import { DownloadIcon } from 'lucide-react'
+import { DownloadIcon, PrinterIcon } from 'lucide-react'
 import { useOrg } from '@/features/org/OrgProvider'
 import { fetchPartyBalances, fetchPartyLedger, reportKeys } from '@/features/reports/api'
 import { formatMoney, isNegative, isZero, sub, toMoney } from '@/lib/money'
@@ -36,22 +36,33 @@ export function PartyStatement({ partyId, partyName }: { partyId: string; partyN
     : []
   return (
     <section className="grid grid-cols-1 gap-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      {/* On paper the party page prints only this statement (PartyPage hides the rest), under this header. */}
+      <div className="hidden print:block">
+        <div className="text-sm">{current.name}</div>
+        <h1 className="text-xl font-semibold">Statement · {partyName}</h1>
+        <div className="text-sm">All entries · Printed {new Date().toLocaleString()}</div>
+      </div>
+      <div className="flex flex-wrap items-center justify-between gap-2 print:hidden">
         <h2 className="text-sm font-semibold text-muted-foreground">Balance &amp; statement</h2>
         {ledger.data && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              const spec = ledgerCsv(`statement-${partyName}`, rows, COLS)
-              downloadCsv(
-                `${slug(current.name)}-${slug(spec.name)}.csv`,
-                toCsv(spec.headers, spec.rows),
-              )
-            }}
-          >
-            <DownloadIcon /> CSV
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" onClick={() => window.print()}>
+              <PrinterIcon /> Print
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const spec = ledgerCsv(`statement-${partyName}`, rows, COLS)
+                downloadCsv(
+                  `${slug(current.name)}-${slug(spec.name)}.csv`,
+                  toCsv(spec.headers, spec.rows),
+                )
+              }}
+            >
+              <DownloadIcon /> CSV
+            </Button>
+          </div>
         )}
       </div>
       {balances.isPending ? (

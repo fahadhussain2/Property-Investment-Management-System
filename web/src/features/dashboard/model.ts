@@ -300,6 +300,20 @@ export function cashAccounts(balances: RawBalance[]): { rows: CashAccount[]; tot
   }
 }
 
+/**
+ * The Cash & bank tile: the total, and its cash and bank parts for the glance line under it (005 amendment 3).
+ * A kind with no account is left out, so a business without a bank account sees only "Cash".
+ */
+export function cashSplit(c: { rows: CashAccount[]; total: Money }): { total: Money; parts: { kind: CashAccount['kind']; amount: Money }[] } {
+  const kinds: CashAccount['kind'][] = ['Cash', 'Bank']
+  return {
+    total: c.total,
+    parts: kinds
+      .filter((kind) => c.rows.some((r) => r.kind === kind))
+      .map((kind) => ({ kind, amount: sum(c.rows.filter((r) => r.kind === kind).map((r) => r.balance)) })),
+  }
+}
+
 /** Who owes whom, from the system accounts (same figures as before spec 002). */
 export function owed(balances: RawBalance[]) {
   const bal = (key: string) => toMoney(balances.find((a) => a.system_key === key)?.balance)

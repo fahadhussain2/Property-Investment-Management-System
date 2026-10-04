@@ -56,5 +56,37 @@ export function inLakhCrore(a: Money): string | null {
   return null
 }
 
+/**
+ * A short figure for a glance line (the dashboard's cash / bank split), never for a figure a user acts on:
+ * PKR "5.5 lakh" / "1.13 crore", other currencies "250K" / "5M"; at most 2 decimals, rounded half up.
+ * Below a lakh (or a thousand) it stays exact ("45,000"). No currency symbol: the line's label says what it is.
+ */
+export function formatCompact(a: Money, currency = 'PKR'): string {
+  const d = new Decimal(a)
+  const sign = d.isNegative() && !d.isZero() ? '-' : ''
+  const abs = d.abs()
+  // Largest first. A value that rounds up to the next unit uses that unit (9,999,999 is "1 crore", not "100 lakh").
+  const units: [number, string][] =
+    currency === 'PKR'
+      ? [
+          [10_000_000, ' crore'],
+          [100_000, ' lakh'],
+        ]
+      : [
+          [1_000_000, 'M'],
+          [1_000, 'K'],
+        ]
+  const i = units.findIndex(([size]) => abs.gte(size))
+  if (i >= 0) {
+    const [size, name] = units[i]
+    const x = abs.div(size).toDecimalPlaces(2, Decimal.ROUND_HALF_UP)
+    const bigger = units[i - 1]
+    if (bigger && x.times(size).gte(bigger[0])) return `${sign}1${bigger[1]}`
+    return `${sign}${x.toString()}${name}`
+  }
+  const [int, frac] = abs.toFixed(2).split('.')
+  return `${sign}${int.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}${frac === '00' ? '' : `.${frac}`}`
+}
+
 /** Today's date in the user's time zone as YYYY-MM-DD. */
 export const today = () => new Date().toLocaleDateString('en-CA')
