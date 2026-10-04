@@ -3,6 +3,7 @@ import { MoneyTable, td, tdNum, th, thNum } from '@/components/MoneyTable'
 import type { CsvSpec } from '@/components/ReportShell'
 import { VOUCHER_TYPES, type VoucherType } from '@/lib/labels'
 import { formatMoney, toMoney } from '@/lib/money'
+import { formatDate } from '@/lib/dates'
 
 export type LedgerRow = {
   seq: number
@@ -60,7 +61,7 @@ export function LedgerTable({
                 </Link>
               )}
               <span className="block truncate text-xs text-muted-foreground">
-                {new Date(r.entry_date + 'T00:00:00').toLocaleDateString()}
+                {formatDate(r.entry_date)}
                 {detail(r) ? ` · ${detail(r)}` : ''}
               </span>
             </span>
@@ -103,7 +104,7 @@ export function LedgerTable({
             {lines.map((r) => (
               <tr key={r.seq}>
                 <td className={`${td} whitespace-nowrap tabular-nums`}>
-                  {new Date(r.entry_date + 'T00:00:00').toLocaleDateString()}
+                  {formatDate(r.entry_date)}
                 </td>
                 <td className={td}>
                   {r.voucher_id ? (

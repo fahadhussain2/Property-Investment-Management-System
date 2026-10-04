@@ -29,6 +29,7 @@ import { deleteLease, fetchLease, leaseKeys, updateLease } from './api'
 import { LeaseFormDialog } from './LeaseFormDialog'
 import { endLabel, rentPosition } from './rentRoll'
 import { endLeaseSchema } from './schema'
+import { formatDate } from '@/lib/dates'
 
 const STATUS_LABEL = { active: 'Current', upcoming: 'Upcoming', ended: 'Ended' }
 
@@ -126,14 +127,14 @@ export function LeasePage() {
         {roll.tenant_name}
       </Link>,
     ],
-    ['Started', roll.start_date],
+    ['Started', formatDate(roll.start_date)],
     ['Ends', endLabel(roll)],
     ['Rent due', `Day ${roll.rent_due_day} of each month`],
-    ['Counted from', roll.rent_counted_from],
+    ['Counted from', roll.rent_counted_from && formatDate(roll.rent_counted_from)],
     [
       'Last rent',
       roll.last_rent_date && roll.last_rent_amount
-        ? `${m(roll.last_rent_amount)} on ${roll.last_rent_date}`
+        ? `${m(roll.last_rent_amount)} on ${formatDate(roll.last_rent_date)}`
         : 'None yet',
     ],
     ['Notes', lease.notes],

@@ -1,4 +1,5 @@
 import { compare, formatMoney, sum, toMoney, type Money } from '@/lib/money'
+import { formatDate } from '@/lib/dates'
 
 /** One rent roll row with money already converted to Money strings (see toRollRow). */
 export type RollRow = {
@@ -127,16 +128,17 @@ export function rentPosition(
     const months = r.months_unpaid === 1 ? '1 month' : `${r.months_unpaid} months`
     return { label: `${months} unpaid (${formatMoney(r.arrears, currency)})`, tone: 'bad' }
   }
-  if (r.status === 'upcoming') return { label: `Starts ${r.start_date}`, tone: 'neutral' }
+  if (r.status === 'upcoming') return { label: `Starts ${formatDate(r.start_date)}`, tone: 'neutral' }
   if (compare(r.paid_ahead, '0.00') > 0)
     return { label: `Paid up · ${formatMoney(r.paid_ahead, currency)} ahead`, tone: 'good' }
   return { label: 'Paid up', tone: 'good' }
 }
 
-/** "Ends 2026-12-31 (in 20 days)", "Ended 2026-04-30", "No end date". */
+/** "Ends 31/12/2026 (in 20 days)", "Ended 30/04/2026", "No end date". */
 export function endLabel(r: RollRow): string {
-  const end = r.ended_on ?? r.end_date
-  if (!end) return 'No end date'
+  const iso = r.ended_on ?? r.end_date
+  if (!iso) return 'No end date'
+  const end = formatDate(iso)
   if (r.status === 'ended') return `Ended ${end}`
   if (r.days_to_end !== null && r.days_to_end <= EXPIRING_DAYS) {
     return `Ends ${end} (${r.days_to_end === 0 ? 'today' : r.days_to_end === 1 ? 'tomorrow' : `in ${r.days_to_end} days`})`

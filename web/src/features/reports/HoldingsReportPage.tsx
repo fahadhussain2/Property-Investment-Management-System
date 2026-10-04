@@ -11,6 +11,7 @@ import { HOLDING_CLASSES, purityLabel, type HoldingClass } from '@/lib/labels'
 import { formatMoney, sub, sum, toMoney, today } from '@/lib/money'
 import { formatWeight, fromGrams, toGrams } from '@/lib/quantity'
 import { cn } from '@/lib/utils'
+import { formatDate } from '@/lib/dates'
 
 const CLASSES: HoldingClass[] = ['vehicle', 'gold', 'silver']
 
@@ -55,7 +56,7 @@ export function HoldingsReportPage() {
   return (
     <ReportShell
       title="Vehicles, gold & silver"
-      subtitle={`As of ${today()}`}
+      subtitle={`As of ${formatDate(today())}`}
       description="What you hold besides property and money: at cost, and gold and silver at your latest rate. The books stay at cost."
       controls={
         <div className="print:hidden">
@@ -96,7 +97,7 @@ export function HoldingsReportPage() {
                       weight: metal ? w(t.weight_g) : '',
                       cost: toMoney(t.cost),
                       market: metal ? (t.market_value == null ? null : toMoney(t.market_value)) : undefined,
-                      rate: metal && t.rate_per_tola != null ? `${m(toMoney(t.rate_per_tola))} per tola · ${t.rate_date}` : metal ? 'no rate yet' : null,
+                      rate: metal && t.rate_per_tola != null ? `${m(toMoney(t.rate_per_tola))} per tola · ${formatDate(t.rate_date)}` : metal ? 'no rate yet' : null,
                     }
                   }
                 />

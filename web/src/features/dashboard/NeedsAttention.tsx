@@ -3,9 +3,10 @@ import { useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { formatMoney } from '@/lib/money'
 import { cn } from '@/lib/utils'
-import { daysLabel, formatDate, type Attention, type AttentionTab } from './model'
+import { daysLabel, type Attention, type AttentionTab } from './model'
 import { MoreLink } from './parts'
 import { leaseLabel } from '@/features/properties/units'
+import { formatDate } from '@/lib/dates'
 
 const TABS: { id: AttentionTab; label: string; short: string; more: { to: string; label: string } }[] = [
   { id: 'overdue', label: 'Rent overdue', short: 'Overdue', more: { to: '/leases', label: 'Rent roll' } },

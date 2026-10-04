@@ -4,6 +4,7 @@ import { EmptyState } from '@/components/EmptyState'
 import { VOUCHER_TYPES, type VoucherType } from '@/lib/labels'
 import { formatMoney, toMoney } from '@/lib/money'
 import { cn } from '@/lib/utils'
+import { formatDate } from '@/lib/dates'
 
 export type VoucherRow = {
   id: string
@@ -39,7 +40,7 @@ export function VoucherList({ rows, currency }: { rows: VoucherRow[]; currency: 
               )}
             >
               <div className="w-24 shrink-0 tabular-nums">
-                {new Date(v.date + 'T00:00:00').toLocaleDateString()}
+                {formatDate(v.date)}
               </div>
               <div className="min-w-0 flex-1">
                 <div className={cn('font-medium', cancelled && 'line-through')}>

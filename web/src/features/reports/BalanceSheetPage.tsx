@@ -6,6 +6,7 @@ import { useOrg } from '@/features/org/OrgProvider'
 import { formatMoney } from '@/lib/money'
 import { cn } from '@/lib/utils'
 import { fetchBalanceSheet, reportKeys } from './api'
+import { formatDate } from '@/lib/dates'
 
 export function BalanceSheetPage() {
   const { current } = useOrg()
@@ -16,7 +17,7 @@ export function BalanceSheetPage() {
   })
   const m = (x: string) => formatMoney(x, current.currency)
   const b = q.data
-  const asOfText = `As at ${new Date(asOf.asOf + 'T00:00:00').toLocaleDateString()}`
+  const asOfText = `As at ${formatDate(asOf.asOf)}`
 
   const csv = b && {
     name: `balance-sheet-${asOf.asOf}`,

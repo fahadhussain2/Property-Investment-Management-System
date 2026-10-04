@@ -76,7 +76,7 @@ test('two floors of one house let to two tenants for the same dates (the reporte
   await page.goto(propertyUrl)
   await expect(page.getByText('Rented', { exact: true })).toBeVisible()
   await expect(page.getByTestId('occupancy')).toHaveText('2 of 2 units rented')
-  await expect(page.getByTestId('unit-Ground floor')).toContainText(`Rented to Tenant A until ${end()}`)
+  await expect(page.getByTestId('unit-Ground floor')).toContainText(`Rented to Tenant A until ${end().split('-').reverse().join('/')}`)
   await expect(page.getByTestId('rent-roll')).toContainText('H-10 · 1st floor · Tenant B')
 
   // The same unit twice, and the whole property over a let unit, are refused in plain words.

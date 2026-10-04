@@ -84,10 +84,10 @@ describe('rent roll', () => {
   it('labels the end', () => {
     expect(endLabel(row())).toBe('No end date')
     expect(endLabel(row({ end_date: '2026-10-10', days_to_end: 14 }))).toBe(
-      'Ends 2026-10-10 (in 14 days)',
+      'Ends 10/10/2026 (in 14 days)',
     )
     expect(endLabel(row({ status: 'ended', ended_on: '2026-04-30', days_to_end: -10 }))).toBe(
-      'Ended 2026-04-30',
+      'Ended 30/04/2026',
     )
   })
 })

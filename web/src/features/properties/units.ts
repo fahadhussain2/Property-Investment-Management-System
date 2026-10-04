@@ -1,3 +1,4 @@
+import { formatDate } from '@/lib/dates'
 // Units (spec 006): the parts of a property rented separately. Pure display logic: no lib/supabase import.
 
 export type UnitState = 'rented' | 'whole_property' | 'vacant'
@@ -41,7 +42,7 @@ export function occupancyLabel(total: number, vacant: number): string | null {
 export function unitStateLabel(u: Pick<UnitRow, 'state' | 'tenant_name' | 'lease_ends'>): string {
   switch (u.state) {
     case 'rented':
-      return `Rented to ${u.tenant_name}${u.lease_ends ? ` until ${u.lease_ends}` : ''}`
+      return `Rented to ${u.tenant_name}${u.lease_ends ? ` until ${formatDate(u.lease_ends)}` : ''}`
     case 'whole_property':
       return `Part of the whole-property lease (${u.tenant_name})`
     case 'vacant':

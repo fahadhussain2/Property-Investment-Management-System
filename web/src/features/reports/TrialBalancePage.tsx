@@ -5,6 +5,7 @@ import { AsOfPicker, ReconcileBanner, ReportShell, useAsOf } from '@/components/
 import { useOrg } from '@/features/org/OrgProvider'
 import { formatMoney, sub, sum, toMoney } from '@/lib/money'
 import { fetchTrialBalance, reportKeys } from './api'
+import { formatDate } from '@/lib/dates'
 
 export function TrialBalancePage() {
   const { current } = useOrg()
@@ -21,7 +22,7 @@ export function TrialBalancePage() {
   return (
     <ReportShell
       title="Trial balance"
-      subtitle={`As at ${new Date(asOf.asOf + 'T00:00:00').toLocaleDateString()}`}
+      subtitle={`As at ${formatDate(asOf.asOf)}`}
       description="Every account’s balance. Total debits must equal total credits."
       controls={<AsOfPicker state={asOf} />}
       csv={q.data && {

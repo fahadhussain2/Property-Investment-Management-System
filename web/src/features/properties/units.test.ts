@@ -11,7 +11,7 @@ describe('units', () => {
 
   it('says who has a unit today', () => {
     expect(unitStateLabel({ state: 'rented', tenant_name: 'Ali Traders', lease_ends: '2027-06-30' })).toBe(
-      'Rented to Ali Traders until 2027-06-30',
+      'Rented to Ali Traders until 30/06/2027',
     )
     expect(unitStateLabel({ state: 'rented', tenant_name: 'Ali Traders', lease_ends: null })).toBe('Rented to Ali Traders')
     expect(unitStateLabel({ state: 'whole_property', tenant_name: 'Bilal', lease_ends: null })).toBe(

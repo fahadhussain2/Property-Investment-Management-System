@@ -1,3 +1,4 @@
+import { formatDate } from './dates'
 /** Reporting periods. Dates are ISO strings (YYYY-MM-DD) in the business's local calendar. */
 export type Period = { from: string; to: string }
 export type PresetKey = 'month' | 'fy' | 'last_fy' | 'all' | 'custom'
@@ -48,6 +49,5 @@ export function presetPeriod(key: Exclude<PresetKey, 'custom'>, today: string, s
 
 export function describePeriod(p: Period): string {
   if (p.from === ALL_TIME.from && p.to === ALL_TIME.to) return 'All time'
-  const fmt = (d: string) => new Date(d + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
-  return `${fmt(p.from)} – ${fmt(p.to)}`
+  return `${formatDate(p.from)} – ${formatDate(p.to)}`
 }
