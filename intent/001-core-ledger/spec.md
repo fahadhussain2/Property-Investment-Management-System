@@ -134,6 +134,9 @@ Users see a clean history, and the books stay provable.
 6. **Parties.** Party list, plus a party ledger (what we owe them and what they owe us).
 7. **Leases / Rent roll.** Active leases, rent/month, last rent received, months unpaid
    (computed from the lease and receipts).
+   Amendment (product owner, 2026-10-04): "Record rent" and "Deposit" on a lease's page open the entry
+   form with that lease locked (shown, not changeable). New entry → Rent and editing an entry still let the
+   user choose the lease. The lock lifts only if that lease cannot be shown.
 8. **Reports.** Income statement, balance sheet, trial balance, property profitability
    (all properties in one table), rent income by property, expense by category, and an
    account ledger. All support a date range, print and CSV export.
