@@ -303,8 +303,18 @@ type Picked = { label: string; error?: string; defaultValue?: string; unsoldOnly
  * Rent/deposit: pick the lease (which fixes the property and tenant), or "No lease" to pick them by hand.
  * With a lease, hidden property_id/party_id inputs carry its property and tenant so the summary can name
  * them; post_voucher takes them from the lease anyway.
+ * `locked` (opened from a lease's page): the lease cannot be changed. It unlocks only if that lease cannot be
+ * shown (the list failed, or the lease is gone), so the form is never stuck on a lease it cannot name.
  */
-export function LeasePicker({ name, label, error, defaultValue, property, party }: Base & { property: Picked; party: Picked }) {
+export function LeasePicker({
+  name,
+  label,
+  error,
+  defaultValue,
+  locked: lockedProp,
+  property,
+  party,
+}: Base & { locked?: boolean; property: Picked; party: Picked }) {
   const { current } = useOrg()
   const [value, setValue] = useState(defaultValue ?? '')
   const roll = useQuery({ queryKey: leaseKeys.roll(current.id), queryFn: () => fetchRentRoll(current.id) })
@@ -312,6 +322,7 @@ export function LeasePicker({ name, label, error, defaultValue, property, party 
   const chosen = rows.find((r) => r.lease_id === value)
   const active = rows.filter((r) => r.status === 'active')
   const others = rows.filter((r) => r.status !== 'active')
+  const locked = !!lockedProp && !!value && (roll.isPending || !!chosen)
   const option = (r: (typeof rows)[number]) => (
     <option key={r.lease_id} value={r.lease_id}>
       {leaseLabel(r)}
@@ -319,14 +330,22 @@ export function LeasePicker({ name, label, error, defaultValue, property, party 
     </option>
   )
   const hint = chosen
-    ? `${formatMoney(chosen.monthly_rent, current.currency)}/month · ${rentPosition(chosen, current.currency).label}`
+    ? `${formatMoney(chosen.monthly_rent, current.currency)}/month · ${rentPosition(chosen, current.currency).label}${locked ? ' · Opened from this lease' : ''}`
     : roll.isError
       ? 'Could not load leases. You can still choose the property and tenant.'
       : undefined
   return (
     <>
       <Shell name={name} label={label} error={error} hint={hint}>
-        <NativeSelect {...aria(name, error, hint)} value={value} onChange={(e) => setValue(e.target.value)}>
+        {/* A disabled select is left out of the form's data, so a hidden input carries the locked lease. */}
+        {locked && <input type="hidden" name={name} value={value} />}
+        <NativeSelect
+          {...aria(name, error, hint)}
+          name={locked ? undefined : name}
+          disabled={locked}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+        >
           <option value="">No lease: choose property &amp; tenant</option>
           {/* Never let a stored lease silently drop while the list loads (or fails): keep it selectable. */}
           {value && !chosen && <option value={value}>{roll.isPending ? 'Loading…' : 'Selected lease'}</option>}

@@ -62,10 +62,18 @@ export function EntryFormPage() {
   const config = variant ? withVariant(base, variant) : base
   // Links may prefill a new entry, e.g. "Record rent" on a lease: /new/rent?lease_id=…&amount=50000.00
   const prefill = Object.fromEntries(config.fields.filter((f) => params.get(f.name)).map((f) => [f.name, params.get(f.name)!]))
-  return <EntryForm key={`${config.type}-${variant?.class ?? ''}`} config={config} initial={{ date: today(), ...prefill }} />
+  // Coming from a lease ("Record rent" / "Deposit"), the lease is fixed: changing it there is always a slip.
+  return (
+    <EntryForm
+      key={`${config.type}-${variant?.class ?? ''}`}
+      config={config}
+      initial={{ date: today(), ...prefill }}
+      lockLease={!!prefill.lease_id}
+    />
+  )
 }
 
-function renderField(f: FieldSpec, values: FormValues, errors: FieldErrors, config: EntryType) {
+function renderField(f: FieldSpec, values: FormValues, errors: FieldErrors, config: EntryType, lockLease?: boolean) {
   if (f.inLease) return null // drawn by the lease picker
   const common = { name: f.name, label: f.label, hint: f.hint, error: errors[f.name], defaultValue: values[f.name] }
   switch (f.kind) {
@@ -107,12 +115,22 @@ function renderField(f: FieldSpec, values: FormValues, errors: FieldErrors, conf
         const s = config.fields.find((x) => x.name === name)!
         return { label: s.label, error: errors[name], defaultValue: values[name], unsoldOnly: s.unsoldOnly, roles: s.roles, allowCreate: s.allowCreate }
       }
-      return <LeasePicker {...common} property={picked('property_id')} party={picked('party_id')} />
+      return <LeasePicker {...common} locked={lockLease} property={picked('property_id')} party={picked('party_id')} />
     }
   }
 }
 
-function EntryForm({ config, initial, editing }: { config: EntryType; initial: FormValues; editing?: { id: string; number: string } }) {
+function EntryForm({
+  config,
+  initial,
+  editing,
+  lockLease,
+}: {
+  config: EntryType
+  initial: FormValues
+  editing?: { id: string; number: string }
+  lockLease?: boolean
+}) {
   const { current } = useOrg()
   const navigate = useNavigate()
   const qc = useQueryClient()
@@ -197,7 +215,7 @@ function EntryForm({ config, initial, editing }: { config: EntryType; initial: F
           {/* The form stays mounted (hidden) during review, so "Back" keeps every value. */}
           <form ref={formRef} onSubmit={onReview} noValidate className={review ? 'hidden' : 'grid grid-cols-1 gap-4'}>
             {config.fields.map((f) => (
-              <Fragment key={f.name}>{renderField(f, initial, errors, config)}</Fragment>
+              <Fragment key={f.name}>{renderField(f, initial, errors, config, lockLease)}</Fragment>
             ))}
             {errors.form && (
               <p role="alert" className="text-sm text-destructive">
