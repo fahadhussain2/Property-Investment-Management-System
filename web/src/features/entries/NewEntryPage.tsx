@@ -13,7 +13,9 @@ export function NewEntryPage() {
   return (
     <>
       <PageHeader title="New entry" description="What happened? Pick the closest match." />
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      {/* Two flowing columns, not grid rows: a row is as tall as its longest group, which left a big gap under
+          Rent. Sections never split across columns, and the reading order stays top to bottom, then across. */}
+      <div className="gap-6 lg:columns-2 [&>section]:mb-6 [&>section]:break-inside-avoid">
         {GROUPS.map((g) => (
           <section key={g.key} aria-labelledby={`group-${g.key}`}>
             <h2 id={`group-${g.key}`} className="mb-2 text-sm font-semibold text-muted-foreground">

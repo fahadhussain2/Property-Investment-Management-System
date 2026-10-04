@@ -21,7 +21,8 @@
 > as before. Key figures are now five tiles: 2 per row on phones and tablets (Rent overdue full width), 3 + 2 from
 > 1024 px, and all five in one row from 1536 px, where the figures step down to `text-xl` so a 12-crore figure keeps
 > 16 px to spare (narrower, the Net profit label wraps). No tile gets taller: 136 px where a row has a trend line,
-> 132 px otherwise. Cash and bank together remain on the dashboard as the Total of Cash by account (`total-cash`).
+> 132 px otherwise. Cash and bank together remain on the dashboard as the Total of Cash by account (`total-cash`). The Cash and
+> Bank tiles open Cash & Bank on their own accounts (`/money?kind=cash` / `bank`; All / Cash / Bank chips there).
 
 ## 1. Design principle: "colour in the icon, calm everywhere else"
 

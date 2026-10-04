@@ -1,5 +1,6 @@
 import { Building2Icon, LogOutIcon, MoonIcon, PlusIcon, SunIcon, UserIcon } from 'lucide-react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { useLayoutEffect, useRef } from 'react'
+import { NavLink, Outlet, useLocation, useNavigationType } from 'react-router-dom'
 import { buttonVariants } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -84,6 +85,23 @@ function UserMenu() {
   )
 }
 
+/**
+ * A new page starts at the top: the window keeps its scroll position across client-side navigation, so a page
+ * opened from the bottom of a long one used to open part-way down. Only when the path changes: a filter or
+ * period kept in the URL (same path) leaves you where you are. Back and Forward (POP) are left alone.
+ */
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  const type = useNavigationType()
+  const last = useRef(pathname)
+  useLayoutEffect(() => {
+    if (last.current === pathname) return
+    last.current = pathname
+    if (type !== 'POP') window.scrollTo(0, 0)
+  }, [pathname, type])
+  return null
+}
+
 const sideLink = ({ isActive }: { isActive: boolean }) =>
   cn(
     'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
@@ -114,6 +132,7 @@ export function AppShell() {
         </nav>
       </aside>
 
+      <ScrollToTop />
       <div className="flex min-w-0 flex-col">
         <header className="sticky top-0 z-10 flex h-14 print:hidden items-center gap-3 border-b bg-background/95 px-4 backdrop-blur">
           <div className="min-w-0 flex-1 md:hidden">
