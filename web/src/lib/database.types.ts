@@ -1391,7 +1391,9 @@ export type Database = {
       monthly_performance: {
         Args: { p_as_of?: string; p_months?: number; p_org: string }
         Returns: {
+          closing_bank: number
           closing_cash: number
+          closing_cash_in_hand: number
           gross_trading_profit: number
           month_end: string
           month_start: string

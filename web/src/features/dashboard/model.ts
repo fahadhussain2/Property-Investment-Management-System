@@ -300,19 +300,32 @@ export function cashAccounts(balances: RawBalance[]): { rows: CashAccount[]; tot
   }
 }
 
+/** One tile of the Cash and Bank pair (005 amendment 4): the kind's total and how many accounts make it up. */
+export type CashKindTotal = { total: Money; count: number }
+
 /**
- * The Cash & bank tile: the total, and its cash and bank parts for the glance line under it (005 amendment 3).
- * A kind with no account is left out, so a business without a bank account sees only "Cash".
+ * The Cash and Bank tiles. Both are always there, so the row keeps its shape: a kind with no account is
+ * Rs 0 from 0 accounts (the tile then says "No accounts yet").
  */
-export function cashSplit(c: { rows: CashAccount[]; total: Money }): { total: Money; parts: { kind: CashAccount['kind']; amount: Money }[] } {
-  const kinds: CashAccount['kind'][] = ['Cash', 'Bank']
-  return {
-    total: c.total,
-    parts: kinds
-      .filter((kind) => c.rows.some((r) => r.kind === kind))
-      .map((kind) => ({ kind, amount: sum(c.rows.filter((r) => r.kind === kind).map((r) => r.balance)) })),
+export function cashByKind(c: { rows: CashAccount[] }): Record<CashAccount['kind'], CashKindTotal> {
+  const of = (kind: CashAccount['kind']) => {
+    const rows = c.rows.filter((r) => r.kind === kind)
+    return { total: sum(rows.map((r) => r.balance)), count: rows.length }
   }
+  return { Cash: of('Cash'), Bank: of('Bank') }
 }
+
+/** Month-end cash in hand and bank from monthly_performance, for the tiles' trend lines. */
+export type RawCashMonth = { closing_cash_in_hand: Num; closing_bank: Num }
+export type CashMonth = { closing_cash_in_hand: Money; closing_bank: Money }
+export const toCashMonth = (r: RawCashMonth): CashMonth => ({
+  closing_cash_in_hand: toMoney(r.closing_cash_in_hand),
+  closing_bank: toMoney(r.closing_bank),
+})
+
+/** A tile's trend line: the kind's last six month-end balances, oldest first. */
+export const cashTrend = (rows: CashMonth[], kind: CashAccount['kind']): Money[] =>
+  rows.slice(-6).map((r) => (kind === 'Cash' ? r.closing_cash_in_hand : r.closing_bank))
 
 /** Who owes whom, from the system accounts (same figures as before spec 002). */
 export function owed(balances: RawBalance[]) {
@@ -344,10 +357,11 @@ export const mapQuery = <T, U>(q: QueryLike<T>, f: (d: T) => U): QueryLike<U> =>
 // ---------------------------------------------------------------------------------------------
 
 export type TileTone = 'blue' | 'green' | 'amber' | 'red' | 'neutral'
-export type TileIcon = 'wallet' | 'trending-up' | 'trending-down' | 'landmark' | 'calendar-clock' | 'alert' | 'building' | 'car' | 'gem' | 'coins'
+export type TileIcon = 'wallet' | 'credit-card' | 'trending-up' | 'trending-down' | 'landmark' | 'calendar-clock' | 'alert' | 'building' | 'car' | 'gem' | 'coins'
 export type TileLook = { icon: TileIcon; tone: TileTone }
 
 export const CASH_LOOK: TileLook = { icon: 'wallet', tone: 'blue' }
+export const BANK_LOOK: TileLook = { icon: 'credit-card', tone: 'blue' }
 export const INVESTED_LOOK: TileLook = { icon: 'landmark', tone: 'blue' }
 
 /** Green only for a profit; a loss gets a neutral, downward icon (its figure is already red). Unknown while loading. */

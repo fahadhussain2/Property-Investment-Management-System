@@ -13,6 +13,15 @@
 > on phones the split may take two lines. The line is `text-xs` at every width, so it fits with room to spare (at
 > `text-sm` it fitted at 768 px by 3 px and wrapped on CI). The total above stays exact, and Cash by account keeps exact figures.
 > The short form is for this glance line only: every other figure stays in full digits.
+>
+> Amendment 4 (product owner, 2026-10-04; replaces amendment 3): Cash & bank becomes two tiles, **Cash** (`Wallet`)
+> and **Bank** (`CreditCard`), both blue. Each shows its kind's total, "N accounts" (or "No accounts yet", Rs 0, when
+> the business has none of that kind) and its own 6-month trend line from `monthly_performance`'s new
+> `closing_cash_in_hand` / `closing_bank` columns (`closing_cash` stays their sum). The trend line is hidden on phones
+> as before. Key figures are now five tiles: 2 per row on phones and tablets (Rent overdue full width), 3 + 2 from
+> 1024 px, and all five in one row from 1536 px, where the figures step down to `text-xl` so a 12-crore figure keeps
+> 16 px to spare (narrower, the Net profit label wraps). No tile gets taller: 136 px where a row has a trend line,
+> 132 px otherwise. Cash and bank together remain on the dashboard as the Total of Cash by account (`total-cash`).
 
 ## 1. Design principle: "colour in the icon, calm everywhere else"
 

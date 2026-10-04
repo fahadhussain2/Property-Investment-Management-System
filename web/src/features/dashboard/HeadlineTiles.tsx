@@ -1,13 +1,24 @@
-import { Fragment } from 'react'
 import type { IncomeStatement } from '@/features/reports/api'
-import { formatCompact, formatMoney, isNegative, isZero, type Money } from '@/lib/money'
-import { CASH_LOOK, INVESTED_LOOK, overdueLook, profitLook, type cashSplit, type QueryLike as Q } from './model'
-import { Loaded, Sub, Tile, TILE_BODY, TileGrid, TileRow, TileSkeleton, Value } from './parts'
+import { formatMoney, isNegative, isZero, type Money } from '@/lib/money'
+import {
+  BANK_LOOK,
+  CASH_LOOK,
+  cashTrend,
+  INVESTED_LOOK,
+  overdueLook,
+  profitLook,
+  type cashByKind,
+  type CashMonth,
+  type QueryLike as Q,
+} from './model'
+import { Polyline } from './Sparkline'
+import { Loaded, Sub, Tile, TILE_BODY, TILE_SPAN, TileGrid, TileRow, TileSkeleton, Value } from './parts'
 
 export function HeadlineTiles({
   currency,
   fyLabel,
   cash,
+  monthly,
   fy,
   month,
   invested,
@@ -15,7 +26,8 @@ export function HeadlineTiles({
 }: {
   currency: string
   fyLabel: string
-  cash: Q<ReturnType<typeof cashSplit>>
+  cash: Q<ReturnType<typeof cashByKind>>
+  monthly: Q<CashMonth[]>
   fy: Q<IncomeStatement>
   month: Q<IncomeStatement>
   invested: Q<{ total: Money; count: number }>
@@ -26,39 +38,31 @@ export function HeadlineTiles({
   return (
     <TileRow title="Key figures">
       <TileGrid>
-        <Tile label="Cash & bank" to="/money" look={CASH_LOOK} index={0}>
-          <Loaded query={cash} skeleton={<TileSkeleton />} className={TILE_BODY}>
-            {(c) => (
-              <>
-                <Value testid="total-cash" negative={isNegative(c.total)}>
-                  {m(c.total)}
-                </Value>
-                {/* The cash / bank split in short figures, on the line that held the account count and trend line,
-                    so the tile keeps its height (005 amendment 3; sm:min-h-6 is the height the trend line gave it).
-                    Always text-xs: at 768 px the text-sm line fits only by a few px, and wraps on some systems (CI).
-                    Exact figures: the total above, Cash by account below. */}
-                <span className="flex items-center sm:min-h-6">
-                  <Sub compact>
-                    <span data-testid="cash-split">
-                      {c.parts.length
-                        ? c.parts.map((p, i) => (
-                            <Fragment key={p.kind}>
-                              {i > 0 && ' · '}
-                              <span className="whitespace-nowrap">
-                                {p.kind} {formatCompact(p.amount, currency)}
-                              </span>
-                            </Fragment>
-                          ))
-                        : 'No accounts yet'}
-                    </span>
-                  </Sub>
-                </span>
-              </>
-            )}
-          </Loaded>
-        </Tile>
+        {/* Cash and Bank, each with its 6-month trend line (005 amendment 4). The trend line sits beside the
+            account count from sm up; on phones the tiles are too narrow for both. */}
+        {(['Cash', 'Bank'] as const).map((kind, i) => (
+          <Tile key={kind} label={kind} to="/money" look={kind === 'Cash' ? CASH_LOOK : BANK_LOOK} index={i} className={TILE_SPAN.third}>
+            <Loaded query={cash} skeleton={<TileSkeleton />} className={TILE_BODY}>
+              {(c) => (
+                <>
+                  <Value testid={`${kind.toLowerCase()}-total`} negative={isNegative(c[kind].total)}>
+                    {m(c[kind].total)}
+                  </Value>
+                  <span className="flex items-center justify-between gap-2 sm:min-h-6">
+                    <Sub>{c[kind].count ? `${c[kind].count} ${c[kind].count === 1 ? 'account' : 'accounts'}` : 'No accounts yet'}</Sub>
+                    {monthly.data && (
+                      <span className="hidden sm:block" data-testid={`${kind.toLowerCase()}-trend`}>
+                        <Polyline values={cashTrend(monthly.data, kind)} />
+                      </span>
+                    )}
+                  </span>
+                </>
+              )}
+            </Loaded>
+          </Tile>
+        ))}
 
-        <Tile label={`Net profit · ${fyLabel}`} to="/reports/income-statement" look={profitLook(fy.data?.net_profit)} index={1}>
+        <Tile label={`Net profit · ${fyLabel}`} to="/reports/income-statement" look={profitLook(fy.data?.net_profit)} index={2} className={TILE_SPAN.third}>
           <Loaded query={fy} skeleton={<TileSkeleton />} className={TILE_BODY}>
             {(is) => (
               <>
@@ -76,7 +80,7 @@ export function HeadlineTiles({
           </Loaded>
         </Tile>
 
-        <Tile label="Total invested" to="/reports/balance-sheet" look={INVESTED_LOOK} index={2}>
+        <Tile label="Total invested" to="/reports/balance-sheet" look={INVESTED_LOOK} index={3} className={TILE_SPAN.half}>
           <Loaded query={invested} skeleton={<TileSkeleton />} className={TILE_BODY}>
             {(i) => (
               <>
@@ -90,7 +94,7 @@ export function HeadlineTiles({
         </Tile>
 
         {/* Critical style only when rent is overdue (spec 002 §3.1): red ring, red label, warning icon. */}
-        <Tile label="Rent overdue" to="/leases" look={overdueLook(overdue.data?.total)} alert={due} index={3}>
+        <Tile label="Rent overdue" to="/leases" look={overdueLook(overdue.data?.total)} alert={due} index={4} className={TILE_SPAN.last}>
           <Loaded query={overdue} skeleton={<TileSkeleton />} className={TILE_BODY}>
             {(o) => (
               <>

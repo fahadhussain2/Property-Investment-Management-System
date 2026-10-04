@@ -132,7 +132,9 @@ export function CashAccountsBody({ rows, total, hasBank, currency }: { rows: Cas
       </ul>
       <div className="mt-auto flex justify-between border-t pt-3 text-sm font-semibold">
         <span>Total</span>
-        <Amount value={total} currency={currency} />
+        {/* Cash and bank together. Since the Cash and Bank tiles (005 amendment 4) this is the one place the
+            dashboard shows that figure, so it carries the id the Cash & bank tile had. */}
+        <Amount value={total} currency={currency} testid="total-cash" />
       </div>
     </>
   )
