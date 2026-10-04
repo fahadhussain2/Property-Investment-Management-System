@@ -35,9 +35,10 @@ export function HeadlineTiles({
                 </Value>
                 {/* The cash / bank split in short figures, on the line that held the account count and trend line,
                     so the tile keeps its height (005 amendment 3; sm:min-h-6 is the height the trend line gave it).
+                    Always text-xs: at 768 px the text-sm line fits only by a few px, and wraps on some systems (CI).
                     Exact figures: the total above, Cash by account below. */}
                 <span className="flex items-center sm:min-h-6">
-                  <Sub>
+                  <Sub compact>
                     <span data-testid="cash-split">
                       {c.parts.length
                         ? c.parts.map((p, i) => (
