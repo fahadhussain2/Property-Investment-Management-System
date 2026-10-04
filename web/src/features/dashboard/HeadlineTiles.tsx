@@ -41,7 +41,7 @@ export function HeadlineTiles({
         {/* Cash and Bank, each with its 6-month trend line (005 amendment 4). The trend line sits beside the
             account count from sm up; on phones the tiles are too narrow for both. */}
         {(['Cash', 'Bank'] as const).map((kind, i) => (
-          <Tile key={kind} label={kind} to="/money" look={kind === 'Cash' ? CASH_LOOK : BANK_LOOK} index={i} className={TILE_SPAN.third}>
+          <Tile key={kind} label={kind} to={`/money?kind=${kind.toLowerCase()}`} look={kind === 'Cash' ? CASH_LOOK : BANK_LOOK} index={i} className={TILE_SPAN.third}>
             <Loaded query={cash} skeleton={<TileSkeleton />} className={TILE_BODY}>
               {(c) => (
                 <>
