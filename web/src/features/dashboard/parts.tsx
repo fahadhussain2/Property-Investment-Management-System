@@ -4,6 +4,7 @@ import {
   CarIcon,
   ChevronRightIcon,
   CoinsIcon,
+  CreditCardIcon,
   GemIcon,
   LandmarkIcon,
   TrendingDownIcon,
@@ -148,11 +149,27 @@ export function TileRow({ title, action, children }: { title: string; action?: R
   )
 }
 
-/** 2 columns on phones and tablets, 4 on desktop. */
-export const TileGrid = ({ children }: { children: ReactNode }) => <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">{children}</div>
+/**
+ * The five key figures (005 amendment 4): 2 columns on phones and tablets, 3 then 2 on small desktops (a 6-track
+ * grid, see TILE_SPAN), and all 5 in one row from 1536 px. Narrower than that, five tiles are too tight: the Net
+ * profit label wraps and a 12-crore figure has no room to spare. 96rem, not 1536px: a px breakpoint is sorted
+ * before the rem ones (lg) and loses to them.
+ */
+export const TileGrid = ({ children }: { children: ReactNode }) => (
+  <div className="grid grid-cols-2 gap-3 lg:grid-cols-6 min-[96rem]:grid-cols-5">{children}</div>
+)
+
+/** Where each key-figure tile sits in `TileGrid`: the first three take a third of the row, the last two a half. */
+export const TILE_SPAN = {
+  third: 'lg:col-span-2 min-[96rem]:col-span-1',
+  half: 'lg:col-span-3 min-[96rem]:col-span-1',
+  /** The last tile: the full width under four tiles on phones and tablets. */
+  last: 'col-span-2 lg:col-span-3 min-[96rem]:col-span-1',
+}
 
 const ICONS: Record<TileIcon, LucideIcon> = {
   wallet: WalletIcon,
+  'credit-card': CreditCardIcon,
   'trending-up': TrendingUpIcon,
   'trending-down': TrendingDownIcon,
   landmark: LandmarkIcon,
@@ -215,6 +232,7 @@ export function Tile({
   index = 0,
   alert,
   testid,
+  className,
   children,
 }: {
   label: ReactNode
@@ -223,6 +241,7 @@ export function Tile({
   index?: number
   alert?: boolean
   testid?: string
+  className?: string
   children: ReactNode
 }) {
   return (
@@ -233,6 +252,7 @@ export function Tile({
         'relative flex min-w-0 flex-col gap-3 overflow-hidden rounded-xl bg-card p-4 ring-1 ring-foreground/10 transition-colors has-[a:hover]:bg-accent/50',
         'before:absolute before:inset-x-0 before:top-0 before:h-0.5',
         STRIPES[look.tone],
+        className,
       )}
     >
       <Link
@@ -306,7 +326,8 @@ export const Value = ({
     data-testid={testid}
     className={cn(
       'leading-tight font-semibold tabular-nums [overflow-wrap:anywhere]',
-      compact ? 'text-base sm:text-lg' : 'text-lg sm:text-2xl',
+      // Key figures step down to text-xl where five share a row (TileGrid), so a crore figure stays on one line.
+      compact ? 'text-base sm:text-lg' : 'text-lg sm:text-2xl min-[96rem]:text-xl',
       negative && 'text-red-700 dark:text-red-400',
       muted && 'font-medium text-muted-foreground',
     )}

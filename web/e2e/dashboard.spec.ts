@@ -150,7 +150,7 @@ test('tiles carry icons, What we own is one card of links, and reduced motion tu
 
   // Nothing overdue: the red calendar icon, no warning icon.
   const figures = page.getByRole('region', { name: 'Key figures' })
-  await expect(figures.locator('[data-icon]')).toHaveCount(4)
+  await expect(figures.locator('[data-icon]')).toHaveCount(5)
   await expect(figures.locator('[data-icon="calendar-clock"][data-tone="red"]')).toHaveCount(1)
   await expect(figures.locator('[data-icon="alert"]')).toHaveCount(0)
 
