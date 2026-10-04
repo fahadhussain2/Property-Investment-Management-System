@@ -67,37 +67,39 @@ export function PartyPage() {
 
   return (
     <>
-      <Link to="/parties" className="mb-2 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+      <Link to="/parties" className="mb-2 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground print:hidden">
         <ArrowLeftIcon className="size-4" aria-hidden /> Parties
       </Link>
-      <PageHeader
-        title={p.name}
-        description={
-          <span className="mt-1 inline-flex flex-wrap gap-1">
-            {p.roles.map((r) => (
-              <Badge key={r} variant="secondary">
-                {roleLabel(r)}
-              </Badge>
-            ))}
-          </span>
-        }
-        actions={
-          canWrite && (
-            <>
-              <Button variant="outline" size="icon" aria-label="Edit party" onClick={() => setEditing(true)}>
-                <PencilIcon />
-              </Button>
-              <Button variant="outline" size="icon" aria-label="Delete party" onClick={onDelete}>
-                <Trash2Icon />
-              </Button>
-            </>
-          )
-        }
-      />
+      <div className="print:hidden">
+        <PageHeader
+          title={p.name}
+          description={
+            <span className="mt-1 inline-flex flex-wrap gap-1">
+              {p.roles.map((r) => (
+                <Badge key={r} variant="secondary">
+                  {roleLabel(r)}
+                </Badge>
+              ))}
+            </span>
+          }
+          actions={
+            canWrite && (
+              <>
+                <Button variant="outline" size="icon" aria-label="Edit party" onClick={() => setEditing(true)}>
+                  <PencilIcon />
+                </Button>
+                <Button variant="outline" size="icon" aria-label="Delete party" onClick={onDelete}>
+                  <Trash2Icon />
+                </Button>
+              </>
+            )
+          }
+        />
+      </div>
       <div className="mb-6">
         <PartyStatement partyId={p.id} partyName={p.name} />
       </div>
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] print:hidden">
         <section>
           <h2 className="mb-2 text-sm font-semibold text-muted-foreground">Details</h2>
           {details.length ? (

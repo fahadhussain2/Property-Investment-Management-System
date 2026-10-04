@@ -1,14 +1,13 @@
+import { Fragment } from 'react'
 import type { IncomeStatement } from '@/features/reports/api'
-import { formatMoney, isNegative, isZero, type Money } from '@/lib/money'
-import { CASH_LOOK, INVESTED_LOOK, overdueLook, profitLook, type MonthRow, type QueryLike as Q } from './model'
-import { Polyline } from './Sparkline'
+import { formatCompact, formatMoney, isNegative, isZero, type Money } from '@/lib/money'
+import { CASH_LOOK, INVESTED_LOOK, overdueLook, profitLook, type cashSplit, type QueryLike as Q } from './model'
 import { Loaded, Sub, Tile, TILE_BODY, TileGrid, TileRow, TileSkeleton, Value } from './parts'
 
 export function HeadlineTiles({
   currency,
   fyLabel,
   cash,
-  monthly,
   fy,
   month,
   invested,
@@ -16,8 +15,7 @@ export function HeadlineTiles({
 }: {
   currency: string
   fyLabel: string
-  cash: Q<{ total: Money; count: number }>
-  monthly: Q<MonthRow[]>
+  cash: Q<ReturnType<typeof cashSplit>>
   fy: Q<IncomeStatement>
   month: Q<IncomeStatement>
   invested: Q<{ total: Money; count: number }>
@@ -35,15 +33,24 @@ export function HeadlineTiles({
                 <Value testid="total-cash" negative={isNegative(c.total)}>
                   {m(c.total)}
                 </Value>
-                <span className="flex items-center justify-between gap-2">
+                {/* The cash / bank split in short figures, on the line that held the account count and trend line,
+                    so the tile keeps its height (005 amendment 3; sm:min-h-6 is the height the trend line gave it).
+                    Exact figures: the total above, Cash by account below. */}
+                <span className="flex items-center sm:min-h-6">
                   <Sub>
-                    {c.count} {c.count === 1 ? 'account' : 'accounts'}
-                  </Sub>
-                  {monthly.data && (
-                    <span className="hidden sm:block">
-                      <Polyline values={lastSix(monthly.data)} />
+                    <span data-testid="cash-split">
+                      {c.parts.length
+                        ? c.parts.map((p, i) => (
+                            <Fragment key={p.kind}>
+                              {i > 0 && ' · '}
+                              <span className="whitespace-nowrap">
+                                {p.kind} {formatCompact(p.amount, currency)}
+                              </span>
+                            </Fragment>
+                          ))
+                        : 'No accounts yet'}
                     </span>
-                  )}
+                  </Sub>
                 </span>
               </>
             )}
@@ -100,5 +107,3 @@ export function HeadlineTiles({
     </TileRow>
   )
 }
-
-const lastSix = (rows: MonthRow[]) => rows.slice(-6).map((r) => r.closing_cash)
