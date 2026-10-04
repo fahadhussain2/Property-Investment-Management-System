@@ -10,7 +10,8 @@
 > figures, "Cash 5.5 lakh · Bank 1.13 crore" (`formatCompact`: lakh/crore for PKR, K/M otherwise, at most 2
 > decimals, exact below a lakh; a kind with no account is left out). It replaces "N accounts" and the 6-month
 > sparkline (spec 002 §3.1), which did not leave room for it, so the tile keeps its height from tablet width up;
-> on phones the split may take two lines. The total above stays exact, and Cash by account keeps exact figures.
+> on phones the split may take two lines. The line is `text-xs` at every width, so it fits with room to spare (at
+> `text-sm` it fitted at 768 px by 3 px and wrapped on CI). The total above stays exact, and Cash by account keeps exact figures.
 > The short form is for this glance line only: every other figure stays in full digits.
 
 ## 1. Design principle: "colour in the icon, calm everywhere else"

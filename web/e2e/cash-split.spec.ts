@@ -20,6 +20,16 @@ test('the Cash & bank tile splits cash and bank in short figures, on one line', 
     await page.setViewportSize({ width, height: 800 })
     const line = await split.evaluate((el) => parseFloat(getComputedStyle(el).lineHeight))
     expect((await split.boundingBox())!.height, `one line at ${width} px`).toBeLessThan(line * 1.5)
+    // With room to spare: text renders a few px wider on some systems (it wrapped on CI's Linux at 768 px).
+    const room = await split.evaluate((el) => {
+      const probe = el.cloneNode(true) as HTMLElement
+      probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap'
+      el.parentElement!.appendChild(probe)
+      const needed = probe.getBoundingClientRect().width
+      probe.remove()
+      return el.parentElement!.parentElement!.clientWidth - needed
+    })
+    expect(room, `spare width at ${width} px`).toBeGreaterThanOrEqual(16)
   }
 
   await page.setViewportSize({ width: 375, height: 800 })
