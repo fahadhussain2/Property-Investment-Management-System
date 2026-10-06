@@ -5,6 +5,9 @@ import { useOrg } from '@/features/org/OrgProvider'
 import { ENTRY_TYPES, GROUPS } from './types'
 
 const row = 'flex items-center gap-3 px-4 py-3 hover:bg-accent'
+// Each group is a box with a light but visible outline (a little stronger than the rows' dividers), so the
+// groups stand apart from each other.
+const box = 'divide-y rounded-lg border border-foreground/20'
 
 /** "+ New": what happened, in plain words. Each opens the matching entry form. */
 export function NewEntryPage() {
@@ -14,14 +17,15 @@ export function NewEntryPage() {
     <>
       <PageHeader title="New entry" description="What happened? Pick the closest match." />
       {/* Two flowing columns, not grid rows: a row is as tall as its longest group, which left a big gap under
-          Rent. Sections never split across columns, and the reading order stays top to bottom, then across. */}
-      <div className="gap-6 lg:columns-2 [&>section]:mb-6 [&>section]:break-inside-avoid">
+          Rent. Sections never split across columns, and the reading order stays top to bottom, then across.
+          The first two groups make the first column (break after the second), whatever their lengths. */}
+      <div className="gap-6 lg:columns-2 [&>section]:mb-6 [&>section]:break-inside-avoid lg:[&>section:nth-child(2)]:break-after-column">
         {GROUPS.map((g) => (
           <section key={g.key} aria-labelledby={`group-${g.key}`}>
             <h2 id={`group-${g.key}`} className="mb-2 text-sm font-semibold text-muted-foreground">
               {g.label}
             </h2>
-            <ul className="divide-y rounded-lg border">
+            <ul className={box}>
               {ENTRY_TYPES.filter((e) => e.group === g.key)
                 // "Bought a vehicle" and "Bought gold or silver" are one form narrowed by ?class=.
                 .flatMap((e) =>
@@ -47,7 +51,7 @@ export function NewEntryPage() {
           <h2 id="group-setup" className="mb-2 text-sm font-semibold text-muted-foreground">
             Setup &amp; corrections
           </h2>
-          <ul className="divide-y rounded-lg border">
+          <ul className={box}>
             <li>
               <Link to="/new/opening" className={row}>
                 <BookOpenIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
