@@ -279,8 +279,9 @@ export const ENTRY_TYPES: EntryType[] = [
 export const entryType = (t: string) => ENTRY_TYPES.find((e) => e.type === t)
 
 export const GROUPS: { key: EntryType['group']; label: string }[] = [
-  { key: 'property', label: 'Properties' },
+  // Order on /new (product owner, 2026-10-06): Money in & out first, Properties under Rent in the second column.
+  { key: 'money', label: 'Money in & out' },
   { key: 'holdings', label: 'Vehicles, gold & silver' },
   { key: 'rent', label: 'Rent' },
-  { key: 'money', label: 'Money in & out' },
+  { key: 'property', label: 'Properties' },
 ]
