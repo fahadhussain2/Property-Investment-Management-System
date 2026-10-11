@@ -1,3 +1,4 @@
+import { ENTRY_STATE, type EntryState } from '@/lib/entryState'
 import { HOLDING_STATUS, PROPERTY_STATUS, type HoldingStatus, type PropertyStatus } from '@/lib/labels'
 import { cn } from '@/lib/utils'
 
@@ -16,4 +17,15 @@ export function PropertyStatusBadge({ status, forSale }: { status: PropertyStatu
 export function HoldingStatusBadge({ status }: { status: HoldingStatus }) {
   const s = HOLDING_STATUS[status]
   return <span className={cn(pill, s.className)}>{s.label}</span>
+}
+
+/** Corrected / Voided / Reversal beside an entry that no longer counts. Never crossed out itself (it sits outside the struck text). */
+export function EntryStateBadge({ state }: { state: EntryState | null }) {
+  if (!state) return null
+  const s = ENTRY_STATE[state]
+  return (
+    <span className={cn(pill, 'ml-1.5 align-middle', s.className)} data-testid="entry-state">
+      {s.label}
+    </span>
+  )
 }
