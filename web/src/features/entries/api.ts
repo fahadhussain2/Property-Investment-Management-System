@@ -85,7 +85,7 @@ export type EntryFilters = { type?: VoucherType | 'all'; from?: string; to?: str
 export async function fetchEntries(orgId: string, f: EntryFilters) {
   let q = supabase
     .from('vouchers')
-    .select('id, number, type, date, amount, memo, status, reverses_id, property_id, party_id')
+    .select('id, number, type, date, amount, memo, status, reverses_id, replaced_by_id, property_id, party_id')
     .eq('org_id', orgId)
   if (f.type && f.type !== 'all') q = q.eq('type', f.type)
   if (f.from) q = q.gte('date', f.from)

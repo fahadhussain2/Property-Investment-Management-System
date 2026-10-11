@@ -55,7 +55,7 @@ export async function fetchVouchersFor(
   return unwrap(
     await supabase
       .from('vouchers')
-      .select('id, number, type, date, amount, memo, status, reverses_id')
+      .select('id, number, type, date, amount, memo, status, reverses_id, replaced_by_id')
       .eq('org_id', orgId)
       .eq(column, value)
       .order('date', { ascending: false })

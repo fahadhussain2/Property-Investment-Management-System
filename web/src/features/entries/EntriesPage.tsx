@@ -8,9 +8,11 @@ import { EmptyState } from '@/components/EmptyState'
 import { Field, NativeSelect } from '@/components/Field'
 import { PageHeader } from '@/components/PageHeader'
 import { SectionError, SectionLoading } from '@/components/QueryState'
+import { EntryStateBadge } from '@/components/StatusBadge'
 import { useOrg } from '@/features/org/OrgProvider'
 import { fetchParties, partyKeys } from '@/features/parties/api'
 import { fetchPropertySummaries, propertyKeys } from '@/features/properties/api'
+import { CANCELLED_AMOUNT, entryState } from '@/lib/entryState'
 import { VOUCHER_TYPES, type VoucherType } from '@/lib/labels'
 import { formatMoney, toMoney } from '@/lib/money'
 import { cn } from '@/lib/utils'
@@ -133,7 +135,8 @@ export function EntriesPage() {
           )}
           <ul className="divide-y rounded-lg border" data-testid="entries-list">
             {rows.map((v) => {
-              const cancelled = v.status === 'reversed' || v.reverses_id !== null
+              const state = entryState(v)
+              const cancelled = state !== null
               const who = [propCode.get(v.property_id ?? ''), partyName.get(v.party_id ?? '')]
                 .filter(Boolean)
                 .join(' · ')
@@ -150,14 +153,15 @@ export function EntriesPage() {
                       {formatDate(v.date)}
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className={cn('block font-medium', cancelled && 'line-through')}>
-                        {VOUCHER_TYPES[v.type]}
+                      <span className="block">
+                        <span className={cn('font-medium', cancelled && 'line-through')}>{VOUCHER_TYPES[v.type]}</span>
+                        <EntryStateBadge state={state} />
                       </span>
                       <span className="block truncate text-xs text-muted-foreground">
                         {[v.number, who, v.memo].filter(Boolean).join(' · ')}
                       </span>
                     </span>
-                    <span className={cn('shrink-0 tabular-nums', cancelled && 'line-through')}>
+                    <span className={cn('shrink-0 tabular-nums', cancelled && CANCELLED_AMOUNT)}>
                       {formatMoney(toMoney(v.amount), current.currency)}
                     </span>
                   </Link>
