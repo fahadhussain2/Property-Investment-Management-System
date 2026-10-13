@@ -1,4 +1,5 @@
-import type { ComponentProps, ReactNode } from 'react'
+import { EyeIcon, EyeOffIcon } from 'lucide-react'
+import { useState, type ComponentProps, type ReactNode } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
@@ -11,7 +12,27 @@ type FieldProps = {
   children?: ReactNode
 } & ComponentProps<typeof Input>
 
-/** Label + input (or custom control as children) + hint/error, wired for accessibility. */
+/** A password input with an eye button that shows or hides what is typed (off by default, per field). */
+function PasswordInput({ id, ...props }: ComponentProps<typeof Input>) {
+  const [shown, setShown] = useState(false)
+  return (
+    <div className="relative">
+      <Input id={id} {...props} type={shown ? 'text' : 'password'} className={cn('pr-9', props.className)} />
+      <button
+        type="button"
+        aria-pressed={shown}
+        onClick={() => setShown((v) => !v)}
+        className="absolute inset-y-0 right-0 flex w-9 items-center justify-center rounded-r-lg text-muted-foreground outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50"
+      >
+        {shown ? <EyeOffIcon className="size-4" aria-hidden /> : <EyeIcon className="size-4" aria-hidden />}
+        {/* Visible text, not aria-label: getByLabel('Password') must keep finding only the input. */}
+        <span className="sr-only">{shown ? 'Hide password' : 'Show password'}</span>
+      </button>
+    </div>
+  )
+}
+
+/** Label + input (or custom control as children) + hint/error, wired for accessibility. Password fields get the eye toggle. */
 export function Field({ label, name, error, hint, children, className, ...inputProps }: FieldProps) {
   const id = `field-${name}`
   const describedBy = error ? `${id}-error` : hint ? `${id}-hint` : undefined
@@ -20,9 +41,12 @@ export function Field({ label, name, error, hint, children, className, ...inputP
     // grid would stretch its label and control rows to fill that height and the control would drop out of line.
     <div className={cn('grid content-start gap-1.5', className)}>
       <Label htmlFor={id}>{label}</Label>
-      {children ?? (
-        <Input id={id} name={name} aria-invalid={!!error} aria-describedby={describedBy} {...inputProps} />
-      )}
+      {children ??
+        (inputProps.type === 'password' ? (
+          <PasswordInput id={id} name={name} aria-invalid={!!error} aria-describedby={describedBy} {...inputProps} />
+        ) : (
+          <Input id={id} name={name} aria-invalid={!!error} aria-describedby={describedBy} {...inputProps} />
+        ))}
       {error ? (
         <p id={`${id}-error`} className="text-sm text-destructive">
           {error}
