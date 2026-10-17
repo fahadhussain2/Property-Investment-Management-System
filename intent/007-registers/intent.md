@@ -1,7 +1,7 @@
 # Intent 007 — Registers: memo ledgers outside the books
 
 > Stage 1 artifact (AI-Native SDLC). Written from the business owner's own words.
-> Status: **DRAFT**, waiting for approval by Fahad Hussain
+> Status: **APPROVED** by Fahad Hussain, 2026-10-18
 > Owner: Fahad Hussain · Date: 2026-10-18
 
 ## Problem
@@ -67,4 +67,4 @@ registers; viewers can read them.
 
 ## Approval
 
-- [ ] Product owner approves this intent → proceed to `spec.md`
+- [x] Product owner approves this intent → proceed to `spec.md`
