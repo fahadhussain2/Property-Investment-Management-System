@@ -24,3 +24,7 @@ Rules:
   which adds it between entries) takes `unit` (a unit key; omit for the whole property). `rent_roll` rows are keyed by
   property code, or by `"lease:<key>"` when a property has several leases. Any entry step may carry `"error"`: it must
   fail with a message containing that text, and is rolled back.
+- Registers (spec 007): `setup.registers` (`key`, `name`, `opening`); steps `{ "type": "register", "op": "add" | "correct" | "void",
+  "register": key, "entry": step id of the line to correct or void, "date", "description", "direction": "in" | "out", "amount",
+  "reason" }`, where a step `id` names the line it creates (a `correct` step's id names the replacement line). `register`
+  checks `registers_overview` fields by register key plus `balances`, the running balance of every ledger line in order.

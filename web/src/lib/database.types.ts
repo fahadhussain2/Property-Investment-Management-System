@@ -752,6 +752,127 @@ export type Database = {
           },
         ]
       }
+      register_entries: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          description: string
+          direction: string
+          entry_date: string
+          id: string
+          org_id: string
+          register_id: string
+          replaced_by_id: string | null
+          seq: number
+          void_reason: string | null
+          voided_at: string | null
+          voided_by: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          description: string
+          direction: string
+          entry_date: string
+          id?: string
+          org_id: string
+          register_id: string
+          replaced_by_id?: string | null
+          seq?: never
+          void_reason?: string | null
+          voided_at?: string | null
+          voided_by?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          direction?: string
+          entry_date?: string
+          id?: string
+          org_id?: string
+          register_id?: string
+          replaced_by_id?: string | null
+          seq?: never
+          void_reason?: string | null
+          voided_at?: string | null
+          voided_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "register_entries_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "register_entries_org_id_register_id_fkey"
+            columns: ["org_id", "register_id"]
+            isOneToOne: false
+            referencedRelation: "registers"
+            referencedColumns: ["org_id", "id"]
+          },
+          {
+            foreignKeyName: "register_entries_org_id_register_id_fkey"
+            columns: ["org_id", "register_id"]
+            isOneToOne: false
+            referencedRelation: "registers_overview"
+            referencedColumns: ["org_id", "id"]
+          },
+          {
+            foreignKeyName: "register_entries_org_id_replaced_by_id_fkey"
+            columns: ["org_id", "replaced_by_id"]
+            isOneToOne: false
+            referencedRelation: "register_entries"
+            referencedColumns: ["org_id", "id"]
+          },
+        ]
+      }
+      registers: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          name: string
+          opening_balance: number
+          opening_date: string | null
+          org_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          opening_balance?: number
+          opening_date?: string | null
+          org_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          opening_balance?: number
+          opening_date?: string | null
+          org_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registers_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       voucher_sequences: {
         Row: {
           last: number
@@ -1093,12 +1214,47 @@ export type Database = {
           },
         ]
       }
+      registers_overview: {
+        Row: {
+          balance: number | null
+          created_at: string | null
+          entry_count: number | null
+          id: string | null
+          is_active: boolean | null
+          last_entry_date: string | null
+          name: string | null
+          opening_balance: number | null
+          opening_date: string | null
+          org_id: string | null
+          total_in: number | null
+          total_out: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registers_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       _acct: { Args: { p_key: string; p_org: string }; Returns: string }
       _amount: {
         Args: { k: string; p: Json; p_required?: boolean }
         Returns: number
+      }
+      _check_register_entry: {
+        Args: {
+          p_amount: number
+          p_date: string
+          p_description: string
+          p_direction: string
+          p_org: string
+        }
+        Returns: string
       }
       _holding: {
         Args: { p_id: string; p_org: string }
@@ -1321,9 +1477,30 @@ export type Database = {
         }
         Returns: string
       }
+      add_register_entry: {
+        Args: {
+          p_amount: number
+          p_date: string
+          p_description: string
+          p_direction: string
+          p_register: string
+        }
+        Returns: string
+      }
       balance_sheet: {
         Args: { p_as_of?: string; p_org: string }
         Returns: Json
+      }
+      correct_register_entry: {
+        Args: {
+          p_amount: number
+          p_date: string
+          p_description: string
+          p_direction: string
+          p_entry: string
+          p_reason?: string
+        }
+        Returns: string
       }
       create_organization: {
         Args: {
@@ -1491,6 +1668,25 @@ export type Database = {
           status: Database["public"]["Enums"]["property_status"]
         }[]
       }
+      register_ledger: {
+        Args: { p_register: string }
+        Returns: {
+          amount: number
+          created_at: string
+          created_by: string
+          description: string
+          direction: string
+          entry_date: string
+          entry_id: string
+          replaced_by_id: string
+          replaces_id: string
+          running_balance: number
+          seq: number
+          void_reason: string
+          voided_at: string
+          voided_by: string
+        }[]
+      }
       rent_roll: {
         Args: { p_as_of?: string; p_org: string }
         Returns: {
@@ -1555,6 +1751,10 @@ export type Database = {
           p_id: string
           p_title: string
         }
+        Returns: undefined
+      }
+      void_register_entry: {
+        Args: { p_entry: string; p_reason?: string }
         Returns: undefined
       }
       voucher_detail: { Args: { p_voucher: string }; Returns: Json }
