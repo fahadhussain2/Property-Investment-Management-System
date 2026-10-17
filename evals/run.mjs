@@ -18,6 +18,7 @@ class Ctx {
     this.orgs = {} // key -> { id, accounts: {code|bank:Name -> id}, properties: {code -> id}, units: {key -> id}, holdings: {code -> id}, parties: {name -> id}, leases: {key -> id} }
     this.users = {} // key -> uuid
     this.vouchers = {} // step id -> voucher id
+    this.entries = {} // register step id -> register entry id (spec 007)
     this.documents = {} // step document key -> document id
   }
   q(sql, params) {
@@ -53,7 +54,7 @@ class Ctx {
 async function setupOrg(ctx, key, spec, ownerKey) {
   await ctx.as(ownerKey)
   const { rows } = await ctx.q('select public.create_organization($1) as id', [`Eval ${key}`])
-  const org = { id: rows[0].id, accounts: {}, properties: {}, units: {}, holdings: {}, parties: {}, leases: {} }
+  const org = { id: rows[0].id, accounts: {}, properties: {}, units: {}, holdings: {}, parties: {}, leases: {}, registers: {} }
   ctx.orgs[key] = org
 
   const accts = await ctx.q('select id, code from public.accounts where org_id = $1', [org.id])
@@ -105,6 +106,13 @@ async function setupOrg(ctx, key, spec, ownerKey) {
     org.parties[p.name] = r.rows[0].id
   }
   for (const l of spec.leases ?? []) await addLease(ctx, org, l)
+  // Spec 007: registers, memo ledgers outside the books: { key, name, opening }.
+  for (const g of spec.registers ?? []) {
+    const r = await ctx.q('insert into public.registers (org_id, name, opening_balance) values ($1, $2, $3) returning id', [
+      org.id, g.name, g.opening ?? '0.00',
+    ])
+    org.registers[g.key] = r.rows[0].id
+  }
   if (opening.length) {
     await ctx.q('select public.post_voucher($1, $2)', [
       org.id,
@@ -200,6 +208,8 @@ async function runSingleOrgCase(ctx, c, failures) {
     try {
       if (step.type === 'edit') {
         res = await ctx.q('select public.edit_voucher($1, $2) as r', [ctx.vouchers[step.voucher], step.changes])
+      } else if (step.type === 'register') {
+        res = await registerStep(ctx, org, step)
       } else {
         res = await ctx.q('select public.post_voucher($1, $2) as r', [org.id, toPayload(ctx, org, step)])
       }
@@ -214,7 +224,7 @@ async function runSingleOrgCase(ctx, c, failures) {
       await ctx.q('rollback to savepoint step')
       continue
     }
-    if (step.id) ctx.vouchers[step.id] = res.rows[0].r.id
+    if (step.id) (step.type === 'register' ? ctx.entries : ctx.vouchers)[step.id] = res.rows[0].r.id
     await snap()
   }
 
@@ -340,6 +350,19 @@ async function runSingleOrgCase(ctx, c, failures) {
       }
     }
   }
+  if (x.register) {
+    // { "<key>": { balance, total_in, total_out, entry_count, balances: [running balance of each ledger line, in order] } }
+    const { rows } = await ctx.q('select * from public.registers_overview where org_id = $1', [org.id])
+    for (const [key, fields] of Object.entries(x.register)) {
+      const { balances, ...overview } = fields
+      const row = rows.find((r) => r.id === org.registers[key])
+      for (const [f, v] of Object.entries(overview)) check(failures, `register.${key}.${f}`, row?.[f], v)
+      if (balances) {
+        const led = await ctx.q('select running_balance from public.register_ledger($1) order by entry_date, seq', [org.registers[key]])
+        check(failures, `register.${key}.balances`, led.rows.map((r) => r.running_balance), balances)
+      }
+    }
+  }
   if (x.storage_used !== undefined) {
     const { rows } = await ctx.q('select public.storage_used($1)::text as n', [org.id])
     check(failures, 'storage_used', rows[0].n, x.storage_used)
@@ -347,6 +370,26 @@ async function runSingleOrgCase(ctx, c, failures) {
   if (x.trial_balance_difference !== undefined) {
     check(failures, 'trial_balance_difference', await tbDifference(ctx, org), x.trial_balance_difference)
   }
+}
+
+// Spec 007: { type: 'register', op: 'add' | 'correct' | 'void', register, entry (the step id of the line to correct or
+// void), date, description, direction, amount, reason }. A step with an `id` names the line it creates.
+async function registerStep(ctx, org, step) {
+  const one = async (sql, params) => ({ rows: [{ r: { id: (await ctx.q(sql, params)).rows[0].id } }] })
+  if (step.op === 'add') {
+    return one('select public.add_register_entry($1, $2, $3, $4, $5) as id', [
+      org.registers[step.register], step.date, step.description, step.direction, step.amount,
+    ])
+  }
+  if (step.op === 'correct') {
+    return one('select public.correct_register_entry($1, $2, $3, $4, $5, $6) as id', [
+      ctx.entries[step.entry], step.date, step.description, step.direction, step.amount, step.reason ?? null,
+    ])
+  }
+  if (step.op === 'void') {
+    return one('select public.void_register_entry($1, $2)::text as id', [ctx.entries[step.entry], step.reason ?? null])
+  }
+  throw new Error(`register step: unknown op "${step.op}"`)
 }
 
 // Spec 004: "uploads" a file the way the Storage API does (as the current user, RLS on), then records it.

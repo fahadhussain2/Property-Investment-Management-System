@@ -77,6 +77,11 @@ export function friendlyError(e: unknown): string {
   if (msg.includes('only a vehicle can be tagged')) return 'Only a vehicle can be picked for an expense.'
   if (msg.includes('not both')) return 'Choose a property or a vehicle / gold / silver item, not both.'
   if (/ is already sold/.test(msg)) return 'This is already sold.'
+  // Registers (spec 007). The functions already raise plain sentences; these are the table's own errors.
+  if (msg.includes('registers_name_idx')) return 'You already have a register with that name.'
+  if (msg.includes('registers_name_check')) return 'Enter a register name of up to 60 characters.'
+  if (msg.includes('violates foreign key constraint') && msg.includes('on table "register_entries"'))
+    return 'This register has entries, so it can’t be deleted. Archive it instead.'
   if (msg.includes('violates foreign key constraint') && msg.includes('on table "documents"'))
     return 'This record has documents attached. Delete them first (in its Documents section).'
   if (msg.includes('violates foreign key constraint'))

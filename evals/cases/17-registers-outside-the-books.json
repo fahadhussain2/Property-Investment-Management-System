@@ -1,0 +1,31 @@
+{
+  "name": "Register entries added, corrected and voided between real entries leave the books exactly as they would be without them (spec 007 §8.1, §8.4, §8.6)",
+  "setup": {
+    "cash_opening": "100000.00",
+    "properties": [{ "code": "SHOP-4", "kind": "shop", "opening_cost": "3000000.00" }],
+    "parties": [{ "name": "Tenant X", "roles": ["tenant"] }],
+    "registers": [{ "key": "zakat", "name": "Zakat Fund", "opening": "53650.00" }]
+  },
+  "steps": [
+    { "id": "z1", "type": "register", "op": "add", "register": "zakat", "date": "2026-01-02", "description": "Zakat received", "direction": "in", "amount": "1000000.00" },
+    { "id": "r1", "type": "rent", "date": "2026-01-05", "property": "SHOP-4", "party": "Tenant X", "amount": "50000.00", "into": "1000" },
+    { "id": "z2", "type": "register", "op": "add", "register": "zakat", "date": "2026-01-04", "description": "Amjad medical", "direction": "out", "amount": "23500.00" },
+    { "id": "x1", "type": "expense", "date": "2026-01-06", "account": "6000", "property": "SHOP-4", "amount": "5000.00", "from": "1000" },
+    { "id": "z3", "type": "register", "op": "correct", "entry": "z2", "register": "zakat", "date": "2026-01-04", "description": "Amjad medical", "direction": "out", "amount": "25000.00", "reason": "wrong amount" },
+    { "id": "z4", "type": "register", "op": "add", "register": "zakat", "date": "2026-01-03", "description": "Misc person", "direction": "out", "amount": "500.00" },
+    { "type": "register", "op": "void", "entry": "z4", "reason": "entered twice" },
+    { "type": "register", "op": "add", "register": "zakat", "date": "2099-01-01", "description": "Too early", "direction": "in", "amount": "1.00", "error": "cannot be dated in the future" },
+    { "type": "register", "op": "void", "entry": "z4", "error": "already voided" }
+  ],
+  "expect": {
+    "register": {
+      "zakat": { "balance": "1028650.00", "total_in": "1000000.00", "total_out": "25000.00", "entry_count": 2, "balances": ["1053650.00", "1053650.00", "1053650.00", "1028650.00"] }
+    },
+    "balances": { "1000": "145000.00" },
+    "income_statement": { "from": "2026-01-01", "to": "2026-12-31", "rent_income": "50000.00", "total_expenses": "5000.00", "net_profit": "45000.00" },
+    "property_summary": { "SHOP-4": { "rent_income": "50000.00", "expenses": "5000.00", "net_profit": "45000.00" } },
+    "balance_sheet": { "as_of": "2026-12-31", "total_assets": "3145000.00", "total_liabilities": "0.00", "total_equity": "3145000.00", "current_earnings": "45000.00", "difference": "0.00" },
+    "voucher_count": { "opening": 1, "rent": 1, "expense": 1 },
+    "trial_balance_difference": "0.00"
+  }
+}
