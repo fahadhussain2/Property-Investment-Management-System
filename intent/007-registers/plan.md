@@ -2,7 +2,7 @@
 
 > Stage 3 artifact. Implements [`spec.md`](spec.md). Each milestone is one PR on its own branch and ends
 > with a **verification gate** that the `verifier` subagent must pass before asking for human review.
-> Status: **DRAFT**, waiting for approval by Fahad Hussain
+> Status: **APPROVED** by Fahad Hussain, 2026-10-18 · R1 in progress
 
 **Standing rule for both milestones (spec §1):** no existing test file, eval case or e2e spec may be edited
 to make it pass. New tests go in new files or new cases. If an existing test fails, stop and report it to
@@ -123,4 +123,4 @@ app reads the new objects yet, so behaviour is exactly as before.
 
 ## Approval
 
-- [ ] Product owner approves this plan → proceed to build R1
+- [x] Product owner approves this plan → proceed to build R1
