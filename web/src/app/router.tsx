@@ -35,6 +35,8 @@ import { OrgProvider } from '@/features/org/OrgProvider'
 import { PartiesPage } from '@/features/parties/PartiesPage'
 import { PartyPage } from '@/features/parties/PartyPage'
 import { DocumentsPage } from '@/features/documents/DocumentsPage'
+import { RegisterPage } from '@/features/registers/RegisterPage'
+import { RegistersPage } from '@/features/registers/RegistersPage'
 import { PropertiesPage } from '@/features/properties/PropertiesPage'
 import { PropertyPage } from '@/features/properties/PropertyPage'
 import { SettingsPage } from '@/features/settings/SettingsPage'
@@ -73,6 +75,8 @@ export const router = createBrowserRouter([
       { path: 'parties', element: <PartiesPage /> },
       { path: 'parties/:id', element: <PartyPage /> },
       { path: 'documents', element: <DocumentsPage /> },
+      { path: 'registers', element: <RegistersPage /> },
+      { path: 'registers/:id', element: <RegisterPage /> },
       { path: 'new', element: <RequireWrite><NewEntryPage /></RequireWrite> },
       { path: 'new/opening', element: <RequireWrite><OpeningBalancesPage /></RequireWrite> },
       { path: 'new/journal', element: <RequireWrite><JournalPage /></RequireWrite> },

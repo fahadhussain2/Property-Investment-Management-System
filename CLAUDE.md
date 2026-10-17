@@ -61,6 +61,11 @@ sets `script-shell` to Git Bash, and `web/scripts/with-local-supabase.mjs` runs 
   the tenant has two leases active that day (`vouchers_unlinked_rent`): a new query that reads leases must keep both.
   Books stay per property: units never reach `journal_lines`. Occupancy comes from `property_units_overview` /
   `properties_overview`, never stored.
+- "Register" (spec 007) = a memo ledger kept outside the books (a Zakat fund): own tables `registers` / `register_entries`, never a
+  voucher. Never join them to `vouchers`, `journal_lines` or `accounts`, and never refresh books, reports or dashboard queries
+  when one changes (its keys are under `['registers', orgId]`). Entries are written only through `add_register_entry` /
+  `correct_register_entry` / `void_register_entry` and are never edited or deleted: a correction or void marks the old line
+  and keeps it. The running balance comes from `register_ledger()`, never stored or recomputed in the browser.
 - Frontend features: `web/src/features/<feature>/` with `api.ts` (queries), pages, `schema.ts` (zod).
   Pure logic goes in files that do not import `lib/supabase` (so unit tests need no env).
 - API `numeric` values arrive as JSON numbers: convert with `toMoney()` (weights: `toGrams()`) immediately.
