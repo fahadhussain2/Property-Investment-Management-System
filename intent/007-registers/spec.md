@@ -1,7 +1,7 @@
 # Spec 007 — Registers: memo ledgers outside the books
 
 > Stage 2 artifact. Derived from [`intent.md`](intent.md). Adds a new area; changes nothing in specs 001–006.
-> Status: **APPROVED** by Fahad Hussain, 2026-10-18
+> Status: **APPROVED** by Fahad Hussain, 2026-10-18 · **DONE** 2026-10-18 (plan 007 R1–R2)
 
 ## 1. Design principle: "a register is a paper ledger, not a second set of books"
 

@@ -1,5 +1,6 @@
 import {
   BarChart3Icon,
+  BookMarkedIcon,
   BookOpenTextIcon,
   Building2Icon,
   CarIcon,
@@ -30,6 +31,7 @@ export const sidebarNav: NavItem[] = [
   { to: '/leases', label: 'Leases & Rent', icon: FileSignatureIcon },
   { to: '/parties', label: 'Parties', icon: UsersIcon },
   { to: '/documents', label: 'Documents', icon: FolderOpenIcon },
+  { to: '/registers', label: 'Registers', icon: BookMarkedIcon },
   { to: '/reports', label: 'Reports', icon: BarChart3Icon },
   { to: '/settings', label: 'Settings', icon: SettingsIcon },
 ]
@@ -45,5 +47,5 @@ export const bottomNav: (NavItem & { primary?: boolean })[] = [
 
 /** Items reachable from the mobile "More" page. */
 export const moreNav: NavItem[] = sidebarNav.filter((i) =>
-  ['/entries', '/vehicles', '/gold', '/silver', '/leases', '/parties', '/documents', '/reports', '/settings'].includes(i.to),
+  ['/entries', '/vehicles', '/gold', '/silver', '/leases', '/parties', '/documents', '/registers', '/reports', '/settings'].includes(i.to),
 )

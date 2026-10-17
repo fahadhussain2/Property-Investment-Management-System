@@ -2,7 +2,7 @@
 
 > Stage 3 artifact. Implements [`spec.md`](spec.md). Each milestone is one PR on its own branch and ends
 > with a **verification gate** that the `verifier` subagent must pass before asking for human review.
-> Status: **APPROVED** by Fahad Hussain, 2026-10-18 · R1 ✅ (this PR: 65 pgTAP in 15_registers.sql, evals 17/17, 147 unit, e2e 49/49, no existing test edited)
+> Status: **DONE** 2026-10-18 · approved by Fahad Hussain · R1 ✅ merged (PR #42: 65 pgTAP in 15_registers.sql, evals 17/17, 147 unit, e2e 49/49) · R2 ✅ (this PR: 155 unit, e2e 54/54, no existing test edited)
 
 **Standing rule for both milestones (spec §1):** no existing test file, eval case or e2e spec may be edited
 to make it pass. New tests go in new files or new cases. If an existing test fails, stop and report it to
