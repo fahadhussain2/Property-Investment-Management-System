@@ -103,6 +103,13 @@ export function voidedNote(l: LedgerLine, who: string | null | undefined): strin
   return `${l.state === 'corrected' ? 'Corrected' : 'Voided'} ${formatDate(l.voided_at)}${by}${l.void_reason ? `: ${l.void_reason}` : ''}`
 }
 
+/**
+ * The order lines are shown in. The database returns them oldest first, like the paper register. On screen the
+ * newest comes first (product owner, 2026-10-21); a printout keeps the register's own order, as the CSV does.
+ * Only the order changes: each line keeps its own running balance.
+ */
+export const displayOrder = (lines: LedgerLine[], printing: boolean): LedgerLine[] => (printing ? lines : [...lines].reverse())
+
 /** The register as a CSV (spec §6): ISO dates, exact amounts, voided lines included with their status. */
 export function registerCsv(register: RegisterRow, lines: LedgerLine[]): { headers: string[]; rows: (string | null)[][] } {
   return {

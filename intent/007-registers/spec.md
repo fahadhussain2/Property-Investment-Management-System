@@ -2,6 +2,11 @@
 
 > Stage 2 artifact. Derived from [`intent.md`](intent.md). Adds a new area; changes nothing in specs 001–006.
 > Status: **APPROVED** by Fahad Hussain, 2026-10-18 · **DONE** 2026-10-18 (plan 007 R1–R2)
+>
+> Amendment 1 (product owner, 2026-10-21): on screen the ledger shows the **newest entry first**, with the opening
+> balance at the bottom ("Newest first" above the list). Print and CSV keep the register's own order: opening balance, then
+> oldest first. Only the order changes; each line keeps its running balance from `register_ledger()`. Where §6 says
+> "oldest first like the paper register", read it as applying to print and CSV.
 
 ## 1. Design principle: "a register is a paper ledger, not a second set of books"
 
