@@ -274,6 +274,20 @@ export const ENTRY_TYPES: EntryType[] = [
     group: 'money',
     fields: [date, amount(), from(), memo],
   },
+  {
+    type: 'loan_received',
+    action: 'Borrowed money',
+    help: 'Someone lent the business money. It is a debt to repay, not income.',
+    group: 'money',
+    fields: [date, { name: 'party_id', kind: 'party', label: 'Lender', roles: ['lender'], allowCreate: true }, amount(), into(), memo],
+  },
+  {
+    type: 'loan_repayment',
+    action: 'Repaid a loan',
+    help: 'Money paid back to a lender. It is not an expense.',
+    group: 'money',
+    fields: [date, { name: 'party_id', kind: 'party', label: 'Lender', roles: ['lender'] }, amount(), from(), memo],
+  },
 ]
 
 export const entryType = (t: string) => ENTRY_TYPES.find((e) => e.type === t)

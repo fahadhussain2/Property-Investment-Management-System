@@ -68,6 +68,7 @@ export const PARTY_ROLES = [
   { value: 'tenant', label: 'Tenant' },
   { value: 'agent', label: 'Agent' },
   { value: 'partner', label: 'Partner' },
+  { value: 'lender', label: 'Lender' },
   { value: 'other', label: 'Other' },
 ] as const
 export type PartyRole = (typeof PARTY_ROLES)[number]['value']
