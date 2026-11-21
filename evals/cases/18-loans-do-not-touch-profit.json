@@ -1,0 +1,23 @@
+{
+  "name": "Borrowing and repaying a lender moves cash and the debt but never profit; a repayment above what is owed is refused (spec 008 §8.1, §8.2, §8.4, §8.5)",
+  "setup": {
+    "cash_opening": "100000.00",
+    "parties": [{ "name": "Ali", "roles": ["lender"] }, { "name": "Zed", "roles": ["seller"] }]
+  },
+  "steps": [
+    { "id": "l1", "type": "loan_received", "date": "2026-01-02", "party": "Ali", "amount": "500000.00", "into": "1000" },
+    { "id": "x1", "type": "expense", "date": "2026-01-06", "account": "6000", "amount": "5000.00", "from": "1000" },
+    { "id": "r1", "type": "loan_repayment", "date": "2026-02-01", "party": "Ali", "amount": "200000.00", "from": "1000" },
+    { "type": "loan_repayment", "date": "2026-02-02", "party": "Ali", "amount": "300000.01", "from": "1000", "error": "You owe Ali only" },
+    { "type": "loan_received", "date": "2026-02-03", "party": "Zed", "amount": "1.00", "into": "1000", "error": "Choose a lender" },
+    { "type": "void", "voucher": "r1", "reason": "paid on the wrong day" },
+    { "id": "r2", "type": "loan_repayment", "date": "2026-02-02", "party": "Ali", "amount": "100000.00", "from": "1000" }
+  ],
+  "expect": {
+    "balances": { "1000": "495000.00", "2300": "400000.00" },
+    "income_statement": { "from": "2026-01-01", "to": "2026-12-31", "total_expenses": "5000.00", "net_profit": "-5000.00" },
+    "balance_sheet": { "as_of": "2026-12-31", "total_assets": "495000.00", "total_liabilities": "400000.00", "total_equity": "95000.00", "current_earnings": "-5000.00", "difference": "0.00" },
+    "voucher_status": { "r1": "reversed", "r2": "posted" },
+    "trial_balance_difference": "0.00"
+  }
+}

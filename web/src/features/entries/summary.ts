@@ -65,6 +65,10 @@ export function summarize(type: FormVoucherType, p: Payload, n: Names, currency 
       return `Owner put ${m(p.amount)} into ${n.account}.`
     case 'drawing':
       return `Owner took ${m(p.amount)} out of ${n.account}.`
+    case 'loan_received':
+      return `Borrowed ${m(p.amount)} from ${n.party} into ${n.account}.`
+    case 'loan_repayment':
+      return `Repaid ${m(p.amount)} to ${n.party} from ${n.account}.`
     case 'holding_purchase': {
       const paid = p.paid_now ?? '0.00'
       const owed = sub(p.price ?? '0.00', paid)
