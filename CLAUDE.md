@@ -66,6 +66,11 @@ sets `script-shell` to Git Bash, and `web/scripts/with-local-supabase.mjs` runs 
   when one changes (its keys are under `['registers', orgId]`). Entries are written only through `add_register_entry` /
   `correct_register_entry` / `void_register_entry` and are never edited or deleted: a correction or void marks the old line
   and keeps it. The running balance comes from `register_ledger()`, never stored or recomputed in the browser.
+- "Loan" (spec 008) = money borrowed from a lender (a `party` with role `lender`) and repaid later, no interest. Only the two voucher types
+  `loan_received` and `loan_repayment` move it (Dr/Cr account 2300 Loans Payable, tagged with the lender); never capital,
+  income or an expense, so profit never changes. What is owed comes from `loan_balances()` / `loan_ledger()` (journal lines on
+  2300 by lender), never stored. A lender can never be owed less than zero (`journal_lines_loan_not_negative`). Loans have
+  their own pages (`/loans`); `party_balances` is deliberately unchanged. Loan data lives under `['loans', orgId]`.
 - Frontend features: `web/src/features/<feature>/` with `api.ts` (queries), pages, `schema.ts` (zod).
   Pure logic goes in files that do not import `lib/supabase` (so unit tests need no env).
 - API `numeric` values arrive as JSON numbers: convert with `toMoney()` (weights: `toGrams()`) immediately.
