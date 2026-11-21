@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { optionalText } from '@/features/properties/schema'
 
-const ROLE_VALUES = ['seller', 'buyer', 'tenant', 'agent', 'partner', 'other'] as const
+const ROLE_VALUES = ['seller', 'buyer', 'tenant', 'agent', 'partner', 'lender', 'other'] as const
 
 export const partySchema = z.object({
   name: z.string().trim().min(2, 'Enter the name').max(100, 'Keep it under 100 characters'),
