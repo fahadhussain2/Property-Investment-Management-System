@@ -1331,6 +1331,7 @@ export type Database = {
             }
             Returns: undefined
           }
+      _loan_owed: { Args: { p_org: string; p_party: string }; Returns: number }
       _money_account: { Args: { p_id: string; p_org: string }; Returns: string }
       _new_voucher:
         | {
@@ -1565,6 +1566,31 @@ export type Database = {
         Returns: Json
       }
       is_member: { Args: { p_org: string }; Returns: boolean }
+      loan_balances: {
+        Args: { p_org: string }
+        Returns: {
+          borrowed: number
+          last_date: string
+          name: string
+          owed: number
+          party_id: string
+          repaid: number
+        }[]
+      }
+      loan_ledger: {
+        Args: { p_org: string; p_party: string }
+        Returns: {
+          balance: number
+          credit: number
+          debit: number
+          entry_date: string
+          memo: string
+          seq: number
+          voucher_id: string
+          voucher_number: string
+          voucher_type: Database["public"]["Enums"]["voucher_type"]
+        }[]
+      }
       monthly_performance: {
         Args: { p_as_of?: string; p_months?: number; p_org: string }
         Returns: {
@@ -1798,6 +1824,8 @@ export type Database = {
         | "holding_purchase"
         | "holding_cost"
         | "holding_sale"
+        | "loan_received"
+        | "loan_repayment"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1958,6 +1986,8 @@ export const Constants = {
         "holding_purchase",
         "holding_cost",
         "holding_sale",
+        "loan_received",
+        "loan_repayment",
       ],
     },
   },

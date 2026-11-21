@@ -208,6 +208,8 @@ async function runSingleOrgCase(ctx, c, failures) {
     try {
       if (step.type === 'edit') {
         res = await ctx.q('select public.edit_voucher($1, $2) as r', [ctx.vouchers[step.voucher], step.changes])
+      } else if (step.type === 'void') {
+        res = await ctx.q('select public.reverse_voucher($1, $2) as r', [ctx.vouchers[step.voucher], step.reason ?? null])
       } else if (step.type === 'register') {
         res = await registerStep(ctx, org, step)
       } else {

@@ -92,6 +92,8 @@ export const VOUCHER_TYPES: Record<VoucherType, string> = {
   holding_purchase: 'Vehicle / gold / silver purchase',
   holding_cost: 'Vehicle / gold / silver cost',
   holding_sale: 'Vehicle / gold / silver sale',
+  loan_received: 'Loan received',
+  loan_repayment: 'Loan repayment',
 }
 
 export const ACCOUNT_TYPES: { value: AccountType; label: string }[] = [

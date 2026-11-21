@@ -28,3 +28,5 @@ Rules:
   "register": key, "entry": step id of the line to correct or void, "date", "description", "direction": "in" | "out", "amount",
   "reason" }`, where a step `id` names the line it creates (a `correct` step's id names the replacement line). `register`
   checks `registers_overview` fields by register key plus `balances`, the running balance of every ledger line in order.
+- Loans (spec 008): a party with `"roles": ["lender"]`; steps `loan_received` / `loan_repayment` take `party`, `amount`, `into` (received) or
+  `from` (repayment). A `{ "type": "void", "voucher": step id, "reason" }` step reverses a posted entry.
