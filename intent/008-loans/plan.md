@@ -67,7 +67,7 @@ functions are proven isolated by tests above.
   cash), `LoansPage.tsx`, `LenderPage.tsx`, `schema.ts` if a form is needed, `model.test.ts`.
 - `/loans` and `/loans/:id` routes; **Loans** in the desktop sidebar after Registers and on the mobile More page.
 - Party role list: "Lender" in `lib/labels.ts` and `parties/schema.ts`.
-- `/new`: two entries in `features/entries/types.ts`, group `money`: "Borrowed money" (`loan_received`, fields
+- `/new`: two entries in `features/entries/types.ts`, group `money`: "Receive a loan" (`loan_received`, fields
   date, lender picker `roles: ['lender']` with `allowCreate`, amount, into, memo) and "Repaid a loan"
   (`loan_repayment`, from instead of into). Previews come from `preview_voucher`. Labels for the two types in the
   voucher/entries lists (`lib/labels.ts`, `entryState` untouched).
