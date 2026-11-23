@@ -276,7 +276,7 @@ export const ENTRY_TYPES: EntryType[] = [
   },
   {
     type: 'loan_received',
-    action: 'Borrowed money',
+    action: 'Receive a loan',
     help: 'Someone lent the business money. It is a debt to repay, not income.',
     group: 'money',
     fields: [date, { name: 'party_id', kind: 'party', label: 'Lender', roles: ['lender'], allowCreate: true }, amount(), into(), memo],
