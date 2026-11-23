@@ -66,7 +66,7 @@ Rules (errors use `errcode 22023`, like the other types):
 | Menu | New **Loans** item (desktop sidebar after Registers, and on the mobile More page) |
 | `/loans` | One `<h1>`. A total "Owed now" figure, then a list of lenders: name, borrowed, repaid, owed, last entry date. A lender with a zero balance is shown under "Settled". Empty state: "No loans yet. When someone lends the business money, record it here." Actions (when `canWrite`): **Loan received**, **Loan repayment** |
 | `/loans/:id` | `PageHeader` with the lender name. Three figures: Borrowed, Repaid, Owed now. A statement (table from lg, stacked list on phones, prints) with a running balance and a link to each entry. Voided entries stay visible as elsewhere |
-| `/new` | Two entries in the "Money in & out" group: **Receive a loan** and **Repaid a loan**. The lender picker offers "+ New" and shows lenders first (roles: `lender`) |
+| `/new` | Two entries in the "Money in & out" group: **Received a loan** and **Repaid a loan**. The lender picker offers "+ New" and shows lenders first (roles: `lender`) |
 | Preview | From `preview_voucher` (DB dry run), like every other form; no posting rules in the UI (rule 10) |
 | Entries list, voucher page | Show the two types with their names and the lender |
 | Reports | Balance sheet shows Loans Payable under liabilities (already the case once it has a balance). Income statement unchanged. The party balances report is unchanged |
